@@ -1,0 +1,7 @@
+/**
+ * Create by Amir El Bawab
+ * Date: 1/19/2016
+ */
+
+rootProject.name = 'ABCompiler'
+include 'Scanner'
