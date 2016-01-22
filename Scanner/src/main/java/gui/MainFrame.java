@@ -1,6 +1,7 @@
 package gui;
 
 import gui.editor.CenterPanel;
+import gui.tool.ToolBarPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -14,6 +15,7 @@ public class MainFrame extends JFrame {
 
 	// Components
 	private CenterPanel centerPanel;
+	private ToolBarPanel toolBarPanel;
 	
 	public MainFrame(String title) {
 		
@@ -25,9 +27,11 @@ public class MainFrame extends JFrame {
 		
 		// Init components
 		this.centerPanel = new CenterPanel();
+		this.toolBarPanel = new ToolBarPanel();
 		
 		// Add components
 		add(this.centerPanel, BorderLayout.CENTER);
+		add(this.toolBarPanel, BorderLayout.NORTH);
 		
 		// Screen dim
 		Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
