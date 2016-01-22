@@ -1,7 +1,5 @@
 package gui.center.console;
 
-import gui.center.editor.flavor.TextLineNumber;
-
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +35,7 @@ public class TabbedConsolePanel extends JTabbedPane {
 		
 		// Create and add text editor to panel
 		JTextPane textPane = new JTextPane();
+		textPane.setEditable(false);
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		panel.add(scrollPane, BorderLayout.CENTER);
 		

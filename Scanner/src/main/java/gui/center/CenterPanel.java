@@ -33,7 +33,7 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel = new TabbedConsolePanel();
 		
 		// Add default panel
-		this.tabbedTextEditorPanel.addDefaultTextEditor();
+		addNewFile();
 		
 		// Add Custom consoles
 		this.tabbedConsolePanel.addTextEditor("Scanner");
@@ -45,5 +45,12 @@ public class CenterPanel extends JPanel {
 		
 		// Add components
 		add(this.splitPane, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * Add a new file
+	 */
+	public void addNewFile() {
+		this.tabbedTextEditorPanel.addDefaultTextEditor();
 	}
 }

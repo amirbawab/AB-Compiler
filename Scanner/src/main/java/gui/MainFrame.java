@@ -2,6 +2,8 @@ package gui;
 
 import gui.center.CenterPanel;
 import gui.tool.ToolBarPanel;
+import gui.tool.ToolBarPanel.Button;
+import gui.tool.listeners.ClickListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,6 +30,22 @@ public class MainFrame extends JFrame {
 		// Init components
 		this.centerPanel = new CenterPanel();
 		this.toolBarPanel = new ToolBarPanel();
+		
+		// Set listener
+		this.toolBarPanel.setClickListener(new ClickListener() {
+			
+			@Override
+			public void onClickListener(Button type) {
+				switch(type) {
+				case NEW_FILE:
+					centerPanel.addNewFile();
+					break;
+					
+				case RUN:
+					break;
+				}
+			}
+		});
 		
 		// Add components
 		add(this.centerPanel, BorderLayout.CENTER);
