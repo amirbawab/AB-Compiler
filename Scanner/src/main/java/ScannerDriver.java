@@ -34,7 +34,7 @@ public class ScannerDriver {
 		Config g = Config.getInstance();
 		
 		// Start GUI
-		new MainFrame();
+		new MainFrame("AB Editor");
 		
 		Token[] lexicalTokens = Token.values();
 		String concat = "";
