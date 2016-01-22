@@ -1,6 +1,6 @@
 package gui;
 
-import gui.editor.CenterPanel;
+import gui.center.CenterPanel;
 import gui.tool.ToolBarPanel;
 
 import java.awt.BorderLayout;

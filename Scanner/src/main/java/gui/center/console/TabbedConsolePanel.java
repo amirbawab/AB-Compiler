@@ -1,28 +1,25 @@
-package gui.editor;
+package gui.center.console;
 
-import gui.editor.flavor.TextLineNumber;
+import gui.center.editor.flavor.TextLineNumber;
 
+import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 
-public class TabbedTextEditorPanel extends JTabbedPane {
+public class TabbedConsolePanel extends JTabbedPane {
 	
-	private static final long serialVersionUID = -7457396179112788684L;
-
-	// Constants
-	public static String DEFAULT_TITLE = "New document";
 	
-	// Unique id
-	private static int UNIQUE_ID = 1;
+	private static final long serialVersionUID = 3408129578272533534L;
 	
 	// Store panels
 	private Map<String, JScrollPane> tabPanelsMap;
 	
-	public TabbedTextEditorPanel() {
+	public TabbedConsolePanel() {
 		
 		// Init variables
 		this.tabPanelsMap = new HashMap<>();
@@ -34,24 +31,20 @@ public class TabbedTextEditorPanel extends JTabbedPane {
 	 */
 	public void addTextEditor(String title) {
 		
+		// Create panel
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		
 		// Create and add text editor to panel
 		JTextPane textPane = new JTextPane();
 		JScrollPane scrollPane = new JScrollPane(textPane);
-		TextLineNumber tln = new TextLineNumber(textPane);
-		scrollPane.setRowHeaderView( tln );
+		panel.add(scrollPane, BorderLayout.CENTER);
 		
 		// Add the tab
 		addTab(title, null, scrollPane);
 		
 		// Store it in the map
 		this.tabPanelsMap.put(title, scrollPane);
-	}
-	
-	/**
-	 * Add new default text editor
-	 */
-	public void addDefaultTextEditor() {
-		addTextEditor(String.format("%s - %d", DEFAULT_TITLE, UNIQUE_ID++));
 	}
 	
 	/**

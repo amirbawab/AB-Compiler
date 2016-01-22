@@ -1,4 +1,4 @@
-package gui.editor.flavor;
+package gui.center.editor.flavor;
 
 import java.awt.*;
 import java.beans.*;
