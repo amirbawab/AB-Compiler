@@ -17,10 +17,11 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableDirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
 
+import scanner.Token;
+
 import com.mxgraph.view.mxGraph;
 
 import config.Config;
-import config.Token;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
@@ -34,7 +35,7 @@ public class ScannerDriver {
 		Config g = Config.getInstance();
 		
 		// Start GUI
-		new MainFrame("AB Editor");
+//		new MainFrame("AB Editor");
 		
 		Token[] lexicalTokens = Token.values();
 		String concat = "";
