@@ -1,6 +1,7 @@
 package gui;
 
 import gui.center.CenterPanel;
+import gui.menu.MainMenu;
 import gui.tool.ToolBarPanel;
 import gui.tool.ToolBarPanel.Button;
 import gui.tool.listeners.ClickListener;
@@ -18,6 +19,7 @@ public class MainFrame extends JFrame {
 	// Components
 	private CenterPanel centerPanel;
 	private ToolBarPanel toolBarPanel;
+	private MainMenu mainMenu;
 	
 	public MainFrame(String title) {
 		
@@ -30,6 +32,7 @@ public class MainFrame extends JFrame {
 		// Init components
 		this.centerPanel = new CenterPanel();
 		this.toolBarPanel = new ToolBarPanel();
+		this.mainMenu = new MainMenu(this);
 		
 		// Set listener
 		this.toolBarPanel.setClickListener(new ClickListener() {
@@ -47,6 +50,9 @@ public class MainFrame extends JFrame {
 			}
 		});
 		
+		// Add menu
+		setJMenuBar(mainMenu);
+		
 		// Add components
 		add(this.centerPanel, BorderLayout.CENTER);
 		add(this.toolBarPanel, BorderLayout.NORTH);
@@ -56,7 +62,7 @@ public class MainFrame extends JFrame {
 		
 		 // Configure the JFrame
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);        // Exit when click on X
-        this.setPreferredSize(new Dimension((int) (screenDim.width*0.7), (int) (screenDim.height*0.7)));    // Frame initial size
+        this.setPreferredSize(new Dimension((int) (screenDim.width*0.9), (int) (screenDim.height*0.9)));    // Frame initial size
         this.setMinimumSize(new Dimension(600, 600));        // Minimum window size
         this.setVisible(true);                               // Make the frame visible
         this.pack();                                         // Force setting the size of components

@@ -41,7 +41,7 @@ public class CenterPanel extends JPanel {
 		
 		// Add and configure splitter 
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.tabbedTextEditorPanel, this.tabbedConsolePanel);
-		this.splitPane.setResizeWeight(0.5);
+		this.splitPane.setResizeWeight(0.8);
 		
 		// Add components
 		add(this.splitPane, BorderLayout.CENTER);
