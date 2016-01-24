@@ -13,7 +13,7 @@ apply plugin:'application'
 version = '1.0'
 
 // Driver class
-mainClassName = "ScannerDriver"
+mainClassName = "Application"
 
 // Get dependencies
 dependencies {

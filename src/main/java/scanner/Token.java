@@ -20,31 +20,31 @@ public enum Token {
 //	NONZERO("T_NONZERO", "([1-9])", Type.LEXICAL),
 	
 	// Operators
-	IS_EQUAL("T_IS_EQUAL", "\"\u003D\u003D\"", Type.OPERATOR),					// ==
-	IS_NOT_EQUAL("T_IS_NOT_EQUAL", "\"\u003C\u003E\"", Type.OPERATOR),			// <>
-	LESS_THAN("T_LESS_THAN", "\"\u003C\"", Type.OPERATOR),						// <
-	GREATER_THAN("T_GREATER_THAN", "\"\u003E\"", Type.OPERATOR),				// >
-	LESS_OR_EQUAL("T_LESS_OR_EQUAL", "\"\u003C\u003D\"", Type.OPERATOR),		// <=
-	GREATER_OR_EQUAL("T_GREATER_OR_EQUAL", "\"\u003E\u003D\"", Type.OPERATOR),	// >=
-	PLUS("T_PLUS", "\"\u002B\"", Type.OPERATOR),								// +
-	MINUS("T_MINUS", "\"\u002D\"", Type.OPERATOR),								// -
-	MULTIPLY("T_MULTIPLY", "\"\u002A\"", Type.OPERATOR),						// *
-	DIVIDE("T_DIVIDE", "\"\u002F\"", Type.OPERATOR),							// /
-	ASSIGN("T_ASSIGN", "\"\u003D\"", Type.OPERATOR),							// =
+	IS_EQUAL("T_IS_EQUAL", "\\=\\=", Type.OPERATOR),
+	IS_NOT_EQUAL("T_IS_NOT_EQUAL", "\\<\\>", Type.OPERATOR),
+	LESS_THAN("T_LESS_THAN", "\\<", Type.OPERATOR),
+	GREATER_THAN("T_GREATER_THAN", "\\>", Type.OPERATOR),
+	LESS_OR_EQUAL("T_LESS_OR_EQUAL", "\\<\\=", Type.OPERATOR),
+	GREATER_OR_EQUAL("T_GREATER_OR_EQUAL", "\\>\\=", Type.OPERATOR),
+	PLUS("T_PLUS", "\\+", Type.OPERATOR),
+	MINUS("T_MINUS", "\\-", Type.OPERATOR),
+	MULTIPLY("T_MULTIPLY", "\\*", Type.OPERATOR),
+	DIVIDE("T_DIVIDE", "\\/", Type.OPERATOR),
+	ASSIGN("T_ASSIGN", "\\=", Type.OPERATOR),
 	
 	// Punctuation
-	SEMICOLON("T_SEMICOLON", "\"\u003B\"", Type.PUNCTUATION),					// ;
-	COMMA("T_COMMA", "\"\u002C\"", Type.PUNCTUATION),							// ,
-	DOT("T_DOT", "\"\u002E\"", Type.PUNCTUATION),								// .
-	OPEN_PAREN("T_OPEN_PAREN", "\"\u0028\"", Type.PUNCTUATION),					// (
-	CLOSE_PAREN("T_CLOSE_PAREN", "\"\u0029\"", Type.PUNCTUATION),				// )
-	OPEN_CURLY("T_OPEN_CURLY", "\"\u007B\"", Type.PUNCTUATION),					// {
-	CLOSE_CURLY("T_CLOSE_CURLY", "\"\u007D\"", Type.PUNCTUATION),				// }
-	OPEN_SQUARE("T_OPEN_SQUARE", "\"\u005B\"", Type.PUNCTUATION),				// [
-	CLOSE_SQUARE("T_CLOSE_SQUARE", "\"\u005D\"", Type.PUNCTUATION),				// ]
-	START_COMMENT("T_START_COMMENT", "\"\u002F\u002A\"", Type.PUNCTUATION),		// /*
-	END_COMMENT("T_END_COMMENT", "\"\u002A\u002F\"", Type.PUNCTUATION),			// */
-	INLINE_COMMENT("T_INLINE_COMMENT", "\"\u002F\u002F\"", Type.PUNCTUATION),	// //
+	SEMICOLON("T_SEMICOLON", "\\;", Type.PUNCTUATION),
+	COMMA("T_COMMA", "\\,", Type.PUNCTUATION),
+	DOT("T_DOT", "\\.", Type.PUNCTUATION),
+	OPEN_PAREN("T_OPEN_PAREN", "\\(", Type.PUNCTUATION),
+	CLOSE_PAREN("T_CLOSE_PAREN", "\\)", Type.PUNCTUATION),
+	OPEN_CURLY("T_OPEN_CURLY", "\\{", Type.PUNCTUATION),
+	CLOSE_CURLY("T_CLOSE_CURLY", "\\}", Type.PUNCTUATION),
+	OPEN_SQUARE("T_OPEN_SQUARE", "\\[", Type.PUNCTUATION),
+	CLOSE_SQUARE("T_CLOSE_SQUARE", "\\]", Type.PUNCTUATION),
+	START_COMMENT("T_START_COMMENT", "\\/\\*", Type.PUNCTUATION),
+	END_COMMENT("T_END_COMMENT", "\\*\\/", Type.PUNCTUATION),
+	INLINE_COMMENT("T_INLINE_COMMENT", "\\/\\/", Type.PUNCTUATION),
 	
 	// Reserved words
 	AND("T_AND", "and", Type.RESERVED_WORD),

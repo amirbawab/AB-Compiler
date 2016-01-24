@@ -5,3 +5,5 @@
 **/build
 **/bin
 **/logs
+/bin/
+/build/
