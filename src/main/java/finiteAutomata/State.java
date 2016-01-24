@@ -1,5 +1,7 @@
 package finiteAutomata;
+import graph.Edge;
 import graph.Vertex;
+import graph.doublyLinkedList.NodeIterator;
 
 /**
 * Finite Automata
@@ -137,6 +139,33 @@ public class State{
 	 */
 	public int getVID() {
 		return vertex.getID();
+	}
+	
+	/**
+	 * Get transition from this state
+	 * @return all transition from this state
+	 */
+	public Transition[] getTransition() {
+		Transition[] transitions = new Transition[getVertex().getOutEdges().size()];
+		NodeIterator<Edge<State,Transition>> iterE = getVertex().getOutEdges();
+		int index = 0;
+		while(iterE.hasNext())
+			transitions[index++] = iterE.next().getLabel();
+		return transitions;
+	}
+	
+	/**
+	 * Get on read state
+	 * @param c
+	 * @return state or null if not found
+	 */
+	public State getOnRead(char c) {
+		Transition[] transition = getTransition();
+		for(int i=0; i < transition.length; i++) {
+			if(c == transition[i].getRead())
+				return transition[i].getToState();
+		}
+		return null;
 	}
 	
 	/**

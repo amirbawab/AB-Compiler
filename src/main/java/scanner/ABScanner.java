@@ -22,7 +22,7 @@ public class ABScanner {
 //			char header[] = {'=', '<', '>', ';'};
 			char header[] = machine.getAllTransitionLabels();
 			ABTableModel model = new ABTableModel(machine.getStates(), header);
-			System.out.println(model);
+			l.info(model);
 			
 		} catch (IOException e) {
 			e.printStackTrace();

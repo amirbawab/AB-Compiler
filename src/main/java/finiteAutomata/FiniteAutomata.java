@@ -29,8 +29,7 @@ public class FiniteAutomata {
 	private State initialState;
 	
 	public static final char 	OTHER = 'O', 
-								NON_ZERO = 'N',
-								DIGIT = 'D',
+								NON_ZERO = 'N', // 1-9
 								SPACE = 'S',
 								LETTER = 'L';
 	
@@ -387,10 +386,9 @@ public class FiniteAutomata {
 	 * Get all the labels on edges
 	 * Definition:
 	 * 	- N 1-9
-	 * 	- D 0-9
 	 * 	- L a-zA-Z
 	 * 	- S space
-	 * 	- O other -- Skip the O
+	 * 	- O other
 	 * @return
 	 */
 	public char[] getAllTransitionLabels() {
@@ -401,7 +399,7 @@ public class FiniteAutomata {
 			labels.add(iterE.next().getLabel().getRead());
 		
 		// Remove the O label
-		labels.remove(OTHER);
+		labels.remove(OTHER); // This is all the other characters
 		
 		// Convert to char[]
 		char[] labelsArray = new char[labels.size()];
