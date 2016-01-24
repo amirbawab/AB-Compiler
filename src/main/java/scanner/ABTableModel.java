@@ -49,6 +49,22 @@ public class ABTableModel {
 	}
 	
 	/**
+	 * Get width
+	 * @return table width
+	 */
+	public int getNumOfCol() {
+		return header.length;
+	}
+	
+	/**
+	 * Get height
+	 * @return table height
+	 */
+	public int getNumOfRow() {
+		return states.length;
+	}
+	
+	/**
 	 * Populate table content
 	 */
 	private void populateTable() {
