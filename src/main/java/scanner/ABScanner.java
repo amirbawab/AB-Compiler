@@ -19,9 +19,10 @@ public class ABScanner {
 			// Create finite state machine
 			FiniteAutomata machine = FiniteAutomata.inParser("/scanner/machine.dfa");
 			
-//			char header[] = {'=', '<', '>', ';'};
-			char header[] = machine.getAllTransitionLabels();
-			ABTableModel model = new ABTableModel(machine.getStates(), header);
+			// Create table from machine
+			ABTableModel model = new ABTableModel(machine.getStates(), machine.getAllTransitionLabels());
+			
+			// Store logs
 			l.info(model);
 			
 		} catch (IOException e) {

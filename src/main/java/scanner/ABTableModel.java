@@ -20,6 +20,9 @@ public class ABTableModel {
 		populateTable();
 	}
 	
+	/**
+	 * Populate table content
+	 */
 	private void populateTable() {
 		// Iterate on outgoing transitions
 		for(int row = 0; row < states.length; row++) {
