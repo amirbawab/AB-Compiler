@@ -21,6 +21,34 @@ public class ABTableModel {
 	}
 	
 	/**
+	 * Get row col in a table
+	 * @param row
+	 * @param col
+	 * @return table[row][col]
+	 */
+	public int getAt(int row, int col) {
+		return this.table[row][col];
+	}
+	
+	/**
+	 * Get state at row
+	 * @param row
+	 * @return State
+	 */
+	public State getStateAtRow(int row) {
+		return states[row];
+	}
+	
+	/**
+	 * Get char at col
+	 * @param col
+	 * @return char
+	 */
+	public char getCharAtCol(int col) {
+		return header[col];
+	}
+	
+	/**
 	 * Populate table content
 	 */
 	private void populateTable() {
