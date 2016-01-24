@@ -133,6 +133,13 @@ public class State{
 	}
 	
 	/**
+	 * Get vertex id
+	 */
+	public int getVID() {
+		return vertex.getID();
+	}
+	
+	/**
 	 * To string
 	 * */
 	public String toString(){

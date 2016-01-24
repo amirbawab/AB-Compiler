@@ -34,6 +34,17 @@ repositories {
     }
 }
 
+// Configure JAR
+jar {
+    manifest {
+        attributes  'Implementation-Title': rootProject.name,
+                    'Implementation-Version': version,
+                    'Main-Class': mainClassName
+    }
+    from sourceSets.main.runtimeClasspath
+    from configurations.compile.collect { zipTree it }
+}
+
 // Architecture
 sourceSets {
     main {

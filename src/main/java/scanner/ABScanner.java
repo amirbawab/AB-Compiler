@@ -1,15 +1,9 @@
 package scanner;
 
-import java.io.FileNotFoundException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jgraph.graph.DefaultEdge;
-import org.jgrapht.ListenableGraph;
-import org.jgrapht.ext.JGraphModelAdapter;
-import org.jgrapht.graph.ListenableDirectedGraph;
 
 import finiteAutomata.FiniteAutomata;
 
@@ -22,13 +16,15 @@ public class ABScanner {
 		
 		try {
 			
-			// Get file URI
-			URI fileUri = new URI(getClass().getResource("/scanner/machine.dfa").getPath());
-		
 			// Create finite state machine
-			FiniteAutomata machine = FiniteAutomata.inParser(fileUri.getPath());
-			System.out.println(machine.toDot());
-		} catch (URISyntaxException | FileNotFoundException e) {
+			FiniteAutomata machine = FiniteAutomata.inParser("/scanner/machine.dfa");
+			
+//			char header[] = {'=', '<', '>', ';'};
+			char header[] = machine.getAllTransitionLabels();
+			ABTableModel model = new ABTableModel(machine.getStates(), header);
+			System.out.println(model);
+			
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

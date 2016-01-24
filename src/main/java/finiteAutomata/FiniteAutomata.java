@@ -5,10 +5,12 @@ import graph.Vertex;
 import graph.doublyLinkedList.DoublyLinkedList;
 import graph.doublyLinkedList.NodeIterator;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +27,12 @@ public class FiniteAutomata {
 	private char vertexPrefix;
 	private Transition[] processTransitions;
 	private State initialState;
+	
+	public static final char 	OTHER = 'O', 
+								NON_ZERO = 'N',
+								DIGIT = 'D',
+								SPACE = 'S',
+								LETTER = 'L';
 	
 	/**
 	 * Constructor
@@ -375,18 +383,47 @@ public class FiniteAutomata {
 		return output;
 	}
 	
+	/**
+	 * Get all the labels on edges
+	 * Definition:
+	 * 	- N 1-9
+	 * 	- D 0-9
+	 * 	- L a-zA-Z
+	 * 	- S space
+	 * 	- O other -- Skip the O
+	 * @return
+	 */
+	public char[] getAllTransitionLabels() {
+		Set<Character> labels = new HashSet<>();
+		
+		NodeIterator<Edge<State, Transition>> iterE = FA.edges();
+		while(iterE.hasNext())
+			labels.add(iterE.next().getLabel().getRead());
+		
+		// Remove the O label
+		labels.remove(OTHER);
+		
+		// Convert to char[]
+		char[] labelsArray = new char[labels.size()];
+		int index = 0;
+		for(Character c : labels)
+			labelsArray[index++] = c;
+		
+		return labelsArray;
+	}
+	
 	/////////////////////////// I/O HELPER ///////////////////////////////
 	
 	/**
 	 * Parse input to populate the finite automata machine
 	 * @param file
 	 * @return Finite automata machine
-	 * @throws FileNotFoundException
+	 * @throws IOException 
 	 */
-	public static FiniteAutomata inParser(String file) throws FileNotFoundException{
+	public static FiniteAutomata inParser(String file) throws IOException{
 		FiniteAutomata machine;
 		State states[];
-		Scanner scanFile = new Scanner(new File(file));
+		Scanner scanFile = new Scanner(FiniteAutomata.class.getClass().getResource(file).openStream());
 		String readLine;
 		Pattern pattern;
 		Matcher matcher;
