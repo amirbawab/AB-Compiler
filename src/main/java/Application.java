@@ -1,8 +1,9 @@
+import gui.MainFrame;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import scanner.ABScanner;
-
 import config.Config;
 
 public class Application {
@@ -11,13 +12,10 @@ public class Application {
 		
 	public static void main(String[] args) {
 		
-		// Load configuration
-		Config g = Config.getInstance();
-		
-		ABScanner abScanner = new ABScanner();
+		ABScanner abScanner = new ABScanner("/scanner/machine.dfa");
 		
 		// Start GUI
-//		new MainFrame("AB Editor");
+		new MainFrame("AB Editor");
 	}
 }
 

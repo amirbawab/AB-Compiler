@@ -398,9 +398,6 @@ public class FiniteAutomata {
 		while(iterE.hasNext())
 			labels.add(iterE.next().getLabel().getRead());
 		
-		// Remove the O label
-		labels.remove(OTHER); // This is all the other characters
-		
 		// Convert to char[]
 		char[] labelsArray = new char[labels.size()];
 		int index = 0;

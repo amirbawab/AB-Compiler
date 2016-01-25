@@ -1,22 +1,31 @@
 package scanner;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import finiteAutomata.FiniteAutomata;
 import finiteAutomata.State;
-import finiteAutomata.Transition;
-import graph.Edge;
-import graph.doublyLinkedList.NodeIterator;
 
 public class ABTableModel {
 
-	int row, col;
-	int[][] table;
-	State[] states;
-	char[] header;
+	// Variables
+	private int[][] table;
+	private State[] states;
+	private char[] header;
+	
+	// Header map
+	private Map<Character, Integer> headerMap;
 	
 	public ABTableModel(State[] states, char[] header) {
 		this.table = new int[states.length][header.length];
 		this.states = states;
 		this.header = header;
+		this.headerMap = new HashMap<>();
+		
+		// Store header in map
+		for(int col=0; col<header.length; col++)
+			headerMap.put(header[col], col);
+		
 		populateTable();
 	}
 	
@@ -62,6 +71,46 @@ public class ABTableModel {
 	 */
 	public int getNumOfRow() {
 		return states.length;
+	}
+	
+	/**
+	 * Look up next state
+	 * @param state
+	 * @param c
+	 * @return state index
+	 */
+	public int lookup(int state, char c) {
+		
+		// a-zA-Z
+		if( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+			return table[state][headerMap.get(FiniteAutomata.LETTER)];
+		
+		// 1-9
+		if(c >= '1' && c <= '9')
+			return table[state][headerMap.get(FiniteAutomata.NON_ZERO)];
+
+		// Space
+		if(c == ' ')
+			return table[state][headerMap.get(FiniteAutomata.SPACE)];
+
+		// Other characters
+		for(int col=0; col<header.length; col++) {
+			if(c == header[col]) {
+				return table[state][col];
+			}
+		}
+		
+		// Other ASCII
+		return getOtherOf(state);
+	}
+	
+	/**
+	 * Get the behavior when given an unknown character outside the language (e,g, #~!)
+	 * @param state
+	 * @return index of state when given unknonw character
+	 */
+	public int getOtherOf(int state) {
+		return table[state][headerMap.get(FiniteAutomata.OTHER)];
 	}
 	
 	/**
