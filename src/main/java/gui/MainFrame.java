@@ -1,5 +1,6 @@
 package gui;
 
+import gui.bottom.BottomPanel;
 import gui.center.CenterPanel;
 import gui.listener.ABIDEListener;
 import gui.menu.MainMenu;
@@ -24,6 +25,7 @@ public class MainFrame extends JFrame {
 	private CenterPanel centerPanel;
 	private ToolBarPanel toolBarPanel;
 	private MainMenu mainMenu;
+	private BottomPanel bottomPanel;
 	
 	public MainFrame(String title) {
 		
@@ -37,6 +39,10 @@ public class MainFrame extends JFrame {
 		this.centerPanel = new CenterPanel();
 		this.toolBarPanel = new ToolBarPanel();
 		this.mainMenu = new MainMenu(this);
+		this.bottomPanel = new BottomPanel();
+		
+		// Configure bottom panel
+		this.bottomPanel.setStyle(BottomPanel.Style.NORMAL);
 		
 		// Set listener
 		this.toolBarPanel.setClickListener(new ClickListener() {
@@ -55,10 +61,21 @@ public class MainFrame extends JFrame {
 						abIDElistener.analyze(centerPanel.getFileContent());
 						
 						// Scanner output
-						centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, abIDElistener.scanner_output());
+						Object[][] scannerOutputData = abIDElistener.scanner_output();
+						centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, scannerOutputData);
 						
 						// Error error
-						centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, abIDElistener.scanner_error());
+						Object[][] scannerErrorData = abIDElistener.scanner_error();
+						centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, scannerErrorData);
+						
+						// Update compiler message
+						if(scannerErrorData.length > 0) {
+							bottomPanel.setCompilerMessageText(String.format("Scanner: %d error(s) found!", scannerErrorData.length));
+							bottomPanel.setStyle(BottomPanel.Style.ERROR);
+						} else {
+							bottomPanel.setCompilerMessageText(String.format("No errors found"));
+							bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+						}
 					}
 					break;
 				}
@@ -71,6 +88,7 @@ public class MainFrame extends JFrame {
 		// Add components
 		add(this.centerPanel, BorderLayout.CENTER);
 		add(this.toolBarPanel, BorderLayout.NORTH);
+		add(this.bottomPanel, BorderLayout.SOUTH);
 		
 		// Screen dim
 		Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
