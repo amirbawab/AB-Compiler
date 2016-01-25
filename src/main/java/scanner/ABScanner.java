@@ -159,8 +159,14 @@ public class ABScanner {
 				if(currentChar != null && currentState.getBacktrack())
 					backupChar();
 				
+				// Cache word
+				String word = currentLine.substring(startIndex, col);
+				
+				// Token value
+				String tokenValue = IdentifierHelper.getTokenIfReservedWord(word, currentState.getToken());
+				
 				// Create token
-				token = new ABToken(currentState.getToken(), currentLine.substring(startIndex, col), row, startIndex+1);
+				token = new ABToken(tokenValue, word, row, startIndex+1);
 			}
 		} while(token == null);
 		return token;
