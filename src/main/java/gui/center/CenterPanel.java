@@ -4,6 +4,7 @@ import gui.center.console.TabbedConsolePanel;
 import gui.center.editor.TabbedTextEditorPanel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -18,6 +19,10 @@ public class CenterPanel extends JPanel {
 	private TabbedTextEditorPanel tabbedTextEditorPanel;
 	private TabbedConsolePanel tabbedConsolePanel;
 	private JSplitPane splitPane;
+	
+	// Console title
+	private final String 	SCANNER = "Scanner",
+							ERROR = "Error";
 	
 	public CenterPanel() {
 		
@@ -36,8 +41,12 @@ public class CenterPanel extends JPanel {
 		addNewFile();
 		
 		// Add Custom consoles
-		this.tabbedConsolePanel.addTextEditor("Scanner");
-		this.tabbedConsolePanel.addTextEditor("Errors");
+		this.tabbedConsolePanel.addTable(SCANNER, new Object[]{"Token", "Value", "Row", "Col"});
+		this.tabbedConsolePanel.addTextEditor(ERROR);
+		
+		// Resize
+		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
+		this.tabbedTextEditorPanel.setPreferredSize(new Dimension(0, 0));
 		
 		// Add and configure splitter 
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.tabbedTextEditorPanel, this.tabbedConsolePanel);
