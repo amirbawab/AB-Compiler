@@ -85,7 +85,7 @@ public class ABScanner {
 	
 	/**
 	 * Get next token
-	 * @return next oken
+	 * @return next token
 	 */
 	private ABToken nextToken() {
 		int state = 0;
@@ -118,12 +118,12 @@ public class ABScanner {
 			// If final
 			if(currentState.isFinal()) {
 				
-				token = new ABToken(currentState.getToken(), currentLine.substring(startIndex, col), row, startIndex+1);
-				
 				// If not end of line and should backup, then backup one char
-				if(currentChar != null && currentState.getBacktrack()) {
+				if(currentChar != null && currentState.getBacktrack())
 					backupChar();
-				}
+				
+				// Create token
+				token = new ABToken(currentState.getToken(), currentLine.substring(startIndex, col), row, startIndex+1);
 			}
 		} while(token == null);
 		return token;
