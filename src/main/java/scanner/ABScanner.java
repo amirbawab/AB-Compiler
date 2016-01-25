@@ -24,41 +24,54 @@ public class ABScanner {
 	private String currentLine;
 	private int row, col;
 	
+	// Lists
+	private List<ABToken> nonErrorToken, errorToken;
+	
+	// Prefix
+	private final String ERROR_PREFIX = "T_ERR_";
+	
 	public ABScanner(String dfaFile) {
 		
 		try {
 			// Create finite state machine
 			machine = FiniteAutomata.inParser(dfaFile);
 			
-			// Generate table
-			generateTable();
+			// Create table from machine
+			model = new ABTableModel(machine.getStates(), machine.getAllTransitionLabels());
+			
+			// Store logs
+			l.info(model);
+			
+			// Init list of tokens
+			nonErrorToken = new ArrayList<>();
+			errorToken = new ArrayList<>();
 		} catch (IOException e) {
 			l.error(e.getMessage());
 		}
 	}
 	
 	/**
-	 * Generate table
-	 */
-	private void generateTable() {
-		// Create table from machine
-		model = new ABTableModel(machine.getStates(), machine.getAllTransitionLabels());
-		
-		// Store logs
-		l.info(model);
-	}
-	
-	/**
 	 * Process a full file
 	 * @param text
 	 */
-	public List<ABToken> processText(String text) {
+	public void processText(String text) {
+		
+		// Reset row count
 		this.row = 0;
+		
+		// Scan text
 		Scanner scan = new Scanner(text);
-		List<ABToken> tokens = new ArrayList<>();
+		
+		// Reset list of tokens
+		nonErrorToken.clear();
+		errorToken.clear();
+		
+		// Process lines
 		while(scan.hasNextLine())
-			processLine(scan.nextLine(), tokens);
-		return tokens;
+			processLine(scan.nextLine());
+		
+		// Close scanner
+		scan.close();
 	}
 	
 	/**
@@ -66,11 +79,18 @@ public class ABScanner {
 	 * @param code
 	 * @return list of tokens
 	 */
-	private void processLine(String code, List<ABToken> tokens) {
+	private void processLine(String code) {
+		
+		// Store line
 		this.currentLine = code;
+		
+		// Reset column
 		this.col = 0;
+		
+		// Increment row
 		this.row++;
 		
+		// While there are more tokens to consume
 		while(col < code.length()) {
 			
 			// Get next token
@@ -78,7 +98,15 @@ public class ABScanner {
 			
 			// If token found
 			if(token != null) {
-				tokens.add(token);
+				
+				// If error token, store it in error list
+				if(token.getToken().startsWith(ERROR_PREFIX))
+					errorToken.add(token);
+				
+				// If not error token, store it in non error list
+				else
+					nonErrorToken.add(token);
+					
 			}
 		}
 	}
@@ -144,5 +172,27 @@ public class ABScanner {
 	 */
 	private void backupChar() {
 		col--;
+	}
+	
+	/**
+	 * Get error tokens
+	 * @return error token array
+	 */
+	public ABToken[] getErrorTokens() {
+		ABToken[] tmp = new ABToken[errorToken.size()];
+		for(int i=0; i < tmp.length; i++)
+			tmp[i] = errorToken.get(i);
+		return tmp;
+	}
+	
+	/**
+	 * Get non error tokens
+	 * @return non error token array
+	 */
+	public ABToken[] getNonErrorTokens() {
+		ABToken[] tmp = new ABToken[nonErrorToken.size()];
+		for(int i=0; i < tmp.length; i++)
+			tmp[i] = nonErrorToken.get(i);
+		return tmp;
 	}
 }

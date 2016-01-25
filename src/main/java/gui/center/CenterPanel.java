@@ -20,10 +20,13 @@ public class CenterPanel extends JPanel {
 	private TabbedConsolePanel tabbedConsolePanel;
 	private JSplitPane splitPane;
 	
-	// Constants
-	private final Object[] SCANNER_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
-	private final String 	SCANNER = "Scanner",
-							ERROR = "Error";
+	// Headers
+	private final Object[] SCANNER_OUTPUT_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
+	private final Object[] SCANNER_ERROR_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
+	
+	// Panel titles
+	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",
+								SCANNER_ERROR_TITLE = "Scanner - Error";
 	
 	public CenterPanel() {
 		
@@ -42,8 +45,8 @@ public class CenterPanel extends JPanel {
 		addNewFile();
 		
 		// Add Custom consoles
-		this.tabbedConsolePanel.addTable(SCANNER, SCANNER_HEADER);
-		this.tabbedConsolePanel.addTextEditor(ERROR);
+		this.tabbedConsolePanel.addTable(SCANNER_OUTPUT_TITLE, SCANNER_OUTPUT_HEADER);
+		this.tabbedConsolePanel.addTable(SCANNER_ERROR_TITLE, SCANNER_ERROR_HEADER);
 		
 		// Resize
 		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
@@ -58,14 +61,22 @@ public class CenterPanel extends JPanel {
 	}
 	
 	/**
-	 * Set scanner data
+	 * Set table data
 	 * @param table
 	 */
-	public void setScannerData(Object[][] table) {
-		this.tabbedConsolePanel.resetTable(SCANNER);
+	public void setTableData(String panelTitle, Object[][] table) {
+		this.tabbedConsolePanel.resetTable(panelTitle);
 		for(int row=0; row<table.length; row++) {
-			this.tabbedConsolePanel.addRowToTable(SCANNER, table[row]);
+			this.tabbedConsolePanel.addRowToTable(panelTitle, table[row]);
 		}
+	}
+	
+	/**
+	 * Add table data
+	 * @param table
+	 */
+	public void addTableRowData(String panelTitle, Object[] data) {
+		this.tabbedConsolePanel.addRowToTable(panelTitle, data);
 	}
 	
 	/**

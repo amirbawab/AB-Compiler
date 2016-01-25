@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import gui.MainFrame;
@@ -12,9 +13,6 @@ import scanner.ABToken;
 import config.Config;
 
 public class Application {
-	// Logger
-	private static Logger l = LogManager.getFormatterLogger(Application.class.getClass());
-		
 	public static void main(String[] args) {
 		
 		final ABScanner abScanner = new ABScanner("/scanner/machine.dfa");
@@ -22,21 +20,38 @@ public class Application {
 		// Start GUI
 		MainFrame frame = new MainFrame("AB Editor");
 		
+		// Set listener
 		frame.setABIDEListener(new ABIDEListener() {
 
 			@Override
-			public Object[][] scan(String text) {
-				
-				List<ABToken> tokens = abScanner.processText(text);
-				Object[][] tableData = new Object[tokens.size()][4];
-				for(int row=0; row < tokens.size(); row++) {
-					ABToken token = tokens.get(row);
-					tableData[row][0] = token.getToken();
-					tableData[row][1] = token.getValue();
-					tableData[row][2] = token.getRow();
-					tableData[row][3] = token.getCol();
+			public void analyze(String text) {
+				abScanner.processText(text);
+			}
+			
+			@Override
+			public Object[][] scanner_output() {
+				ABToken[] tokens = abScanner.getNonErrorTokens();
+				Object[][] table = new Object[tokens.length][4];
+				for(int i=0; i < table.length; i++) {
+					table[i][0] = tokens[i].getToken();
+					table[i][1] = tokens[i].getValue();
+					table[i][2] = tokens[i].getRow();
+					table[i][3] = tokens[i].getCol();
 				}
-				return tableData;
+				return table;
+			}
+
+			@Override
+			public Object[][] scanner_error() {
+				ABToken[] tokens = abScanner.getErrorTokens();
+				Object[][] table = new Object[tokens.length][4];
+				for(int i=0; i < table.length; i++) {
+					table[i][0] = tokens[i].getToken();
+					table[i][1] = tokens[i].getValue();
+					table[i][2] = tokens[i].getRow();
+					table[i][3] = tokens[i].getCol();
+				}
+				return table;
 			}
 		});
 	}

@@ -51,7 +51,14 @@ public class MainFrame extends JFrame {
 				case RUN:
 					if(abIDElistener != null) {
 						
-						centerPanel.setScannerData(abIDElistener.scan(centerPanel.getFileContent()));
+						// Analyze input
+						abIDElistener.analyze(centerPanel.getFileContent());
+						
+						// Scanner output
+						centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, abIDElistener.scanner_output());
+						
+						// Error error
+						centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, abIDElistener.scanner_error());
 					}
 					break;
 				}
