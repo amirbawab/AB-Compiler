@@ -10,9 +10,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
-import javax.swing.table.DefaultTableModel;
 
 public class TabbedConsolePanel extends JTabbedPane {
 	
@@ -63,7 +61,6 @@ public class TabbedConsolePanel extends JTabbedPane {
 		
 		// Create and add text editor to panel
 		ConsoleTable table = new ConsoleTable(new Object[][]{}, header);
-		table.setEnabled(false);
 		JScrollPane scrollPane = new JScrollPane(table);
 		panel.add(scrollPane, BorderLayout.CENTER);
 		
@@ -80,9 +77,8 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 * @param data
 	 */
 	public void addRowToTable(String panelTitle, Object[] data) {
-		JTable table = (JTable) getBoard(panelTitle);
-		DefaultTableModel model = (DefaultTableModel) table.getModel();
-		model.addRow(data);
+		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
+		table.addRow(data);
 	}
 
 	/**
@@ -90,11 +86,8 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 * @param panelTitle
 	 */
 	public void resetTable(String panelTitle) {
-		JTable table = (JTable) getBoard(panelTitle);
-		DefaultTableModel model = (DefaultTableModel) table.getModel();
-		int rowCount = model.getRowCount();
-		for(int i=0; i<rowCount; i++)
-			model.removeRow(0);
+		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
+		table.clearAll();
 	}
 	
 	/**
