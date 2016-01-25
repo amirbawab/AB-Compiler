@@ -90,6 +90,9 @@ public class ABScanner {
 	 */
 	private void processLine(String code) {
 		
+		// Log
+		l.info("Scanning line: %s", code);
+		
 		// Store line
 		this.currentLine = code;
 		
@@ -107,6 +110,9 @@ public class ABScanner {
 			
 			// If token found
 			if(token != null) {
+				
+				// Log
+				l.info("%s : %s", token.getValue(), token.getToken());
 				
 				// If error token, store it in error list
 				if(token.getToken().startsWith(ERROR_PREFIX))
