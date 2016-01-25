@@ -25,8 +25,8 @@ public class BottomPanel extends JPanel {
 	// Colors
 	Color LIGHT_RED = new Color(254, 228, 227);
 	Color DARK_RED = new Color(138, 33, 12);
-	Color LIGHT_GREEN = new Color(234, 255, 216);
-	Color DARK_GREEN = new Color(141, 166, 49);
+	Color LIGHT_GREEN = new Color(233, 254, 213);
+	Color DARK_GREEN = new Color(137, 160, 54);
 	Color LIGHT_YELLOW = new Color(255, 251, 219);
 	Color DARK_YELLOW = new Color(251, 198, 132);
 	

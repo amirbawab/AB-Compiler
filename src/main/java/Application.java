@@ -1,20 +1,13 @@
-import java.util.ArrayList;
-import java.util.List;
-
 import gui.MainFrame;
-import gui.center.CenterPanel;
 import gui.listener.ABIDEListener;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import scanner.ABScanner;
 import scanner.ABToken;
-import config.Config;
 
 public class Application {
 	public static void main(String[] args) {
 		
+		// Create scanner
 		final ABScanner abScanner = new ABScanner("/scanner/machine.dfa");
 		
 		// Start GUI
@@ -29,7 +22,7 @@ public class Application {
 			}
 			
 			@Override
-			public Object[][] scanner_output() {
+			public Object[][] getScannerOutput() {
 				ABToken[] tokens = abScanner.getNonErrorTokens();
 				Object[][] table = new Object[tokens.length][4];
 				for(int i=0; i < table.length; i++) {
@@ -42,7 +35,7 @@ public class Application {
 			}
 
 			@Override
-			public Object[][] scanner_error() {
+			public Object[][] getScannerError() {
 				ABToken[] tokens = abScanner.getErrorTokens();
 				Object[][] table = new Object[tokens.length][4];
 				for(int i=0; i < table.length; i++) {
@@ -52,6 +45,11 @@ public class Application {
 					table[i][3] = tokens[i].getCol();
 				}
 				return table;
+			}
+
+			@Override
+			public long getScannerTime() {
+				return abScanner.getScannerProcessTime();
 			}
 		});
 	}

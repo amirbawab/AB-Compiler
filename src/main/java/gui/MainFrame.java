@@ -61,19 +61,22 @@ public class MainFrame extends JFrame {
 						abIDElistener.analyze(centerPanel.getFileContent());
 						
 						// Scanner output
-						Object[][] scannerOutputData = abIDElistener.scanner_output();
+						Object[][] scannerOutputData = abIDElistener.getScannerOutput();
 						centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, scannerOutputData);
 						
 						// Error error
-						Object[][] scannerErrorData = abIDElistener.scanner_error();
+						Object[][] scannerErrorData = abIDElistener.getScannerError();
 						centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, scannerErrorData);
+						
+						// Compilation time
+						long compilationTime = abIDElistener.getScannerTime();
 						
 						// Update compiler message
 						if(scannerErrorData.length > 0) {
-							bottomPanel.setCompilerMessageText(String.format("Scanner: %d error(s) found!", scannerErrorData.length));
+							bottomPanel.setCompilerMessageText(String.format("Scanner: %d error(s) found! Total time: %d ms", scannerErrorData.length, compilationTime));
 							bottomPanel.setStyle(BottomPanel.Style.ERROR);
 						} else {
-							bottomPanel.setCompilerMessageText(String.format("No errors found"));
+							bottomPanel.setCompilerMessageText(String.format("No errors found. Total time: %d ms", compilationTime));
 							bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
 						}
 					}

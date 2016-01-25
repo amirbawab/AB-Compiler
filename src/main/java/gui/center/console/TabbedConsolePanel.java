@@ -1,5 +1,7 @@
 package gui.center.console;
 
+import gui.center.console.components.ConsoleTable;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.HashMap;
@@ -60,7 +62,8 @@ public class TabbedConsolePanel extends JTabbedPane {
 		panel.setLayout(new BorderLayout());
 		
 		// Create and add text editor to panel
-		JTable table = new JTable(new DefaultTableModel(new Object[][]{}, header));
+		ConsoleTable table = new ConsoleTable(new Object[][]{}, header);
+		table.setEnabled(false);
 		JScrollPane scrollPane = new JScrollPane(table);
 		panel.add(scrollPane, BorderLayout.CENTER);
 		

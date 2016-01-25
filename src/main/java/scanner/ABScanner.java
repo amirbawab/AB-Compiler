@@ -27,6 +27,9 @@ public class ABScanner {
 	// Lists
 	private List<ABToken> nonErrorToken, errorToken;
 	
+	// Long scan process time
+	private long scannerProcessTime;
+	
 	// Prefix
 	private final String ERROR_PREFIX = "T_ERR_";
 	
@@ -56,6 +59,9 @@ public class ABScanner {
 	 */
 	public void processText(String text) {
 		
+		// Update time
+		this.scannerProcessTime = System.currentTimeMillis();
+		
 		// Reset row count
 		this.row = 0;
 		
@@ -72,6 +78,9 @@ public class ABScanner {
 		
 		// Close scanner
 		scan.close();
+		
+		// Store scanner time
+		this.scannerProcessTime = System.currentTimeMillis() - this.scannerProcessTime;
 	}
 	
 	/**
@@ -194,5 +203,13 @@ public class ABScanner {
 		for(int i=0; i < tmp.length; i++)
 			tmp[i] = nonErrorToken.get(i);
 		return tmp;
+	}
+	
+	/**
+	 * Get scanner process time
+	 * @return scanner process time in ms
+	 */
+	public long getScannerProcessTime() {
+		return this.scannerProcessTime;
 	}
 }
