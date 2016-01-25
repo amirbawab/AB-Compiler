@@ -2,12 +2,11 @@ package gui.center.editor;
 
 import gui.center.editor.flavor.TextLineNumber;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
 import javax.swing.text.PlainDocument;
 
 public class TabbedTextEditorPanel extends JTabbedPane {
@@ -17,6 +16,9 @@ public class TabbedTextEditorPanel extends JTabbedPane {
 	// Constants
 	public static String DEFAULT_TITLE = "New document";
 	
+	// Store components
+	private List<JEditorPane> tabPanelsList;
+		
 	public TabbedTextEditorPanel() {
 		// Nothing 
 	}
@@ -36,6 +38,9 @@ public class TabbedTextEditorPanel extends JTabbedPane {
 		
 		// Add the tab
 		addTab(title, null, scrollPane);
+		
+		// Store it in the map
+		this.tabPanelsList.add(textPane);
 	}
 	
 	/**
@@ -50,7 +55,24 @@ public class TabbedTextEditorPanel extends JTabbedPane {
 	 * @param title
 	 * @return panel or null
 	 */
-	public JScrollPane getPanel(int index) {
-		return (JScrollPane) getTabComponentAt(index);
+	public String getText(int index) {
+		return this.tabPanelsList.get(index).getText();
+	}
+	
+	/**
+	 * Set text
+	 * @param index
+	 * @param text
+	 */
+	public void setText(int index, String text) {
+		this.tabPanelsList.get(index).setText(text);
+	}
+	
+	/**
+	 * Close tab
+	 * @param index
+	 */
+	public void closeTab(int index) {
+		this.tabPanelsList.remove(index);
 	}
 }

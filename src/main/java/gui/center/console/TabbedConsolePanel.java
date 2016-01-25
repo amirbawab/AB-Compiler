@@ -2,7 +2,6 @@ package gui.center.console;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
