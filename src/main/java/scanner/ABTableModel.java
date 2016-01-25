@@ -90,7 +90,7 @@ public class ABTableModel {
 			return table[state][headerMap.get(FiniteAutomata.NON_ZERO)];
 
 		// Space
-		if(c == ' ')
+		if(String.format("%c", c).matches("\\s"))
 			return table[state][headerMap.get(FiniteAutomata.SPACE)];
 
 		// Other characters

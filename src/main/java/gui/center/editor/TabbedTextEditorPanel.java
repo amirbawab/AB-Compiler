@@ -2,6 +2,7 @@ package gui.center.editor;
 
 import gui.center.editor.flavor.TextLineNumber;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JEditorPane;
@@ -20,7 +21,7 @@ public class TabbedTextEditorPanel extends JTabbedPane {
 	private List<JEditorPane> tabPanelsList;
 		
 	public TabbedTextEditorPanel() {
-		// Nothing 
+		this.tabPanelsList = new ArrayList<>();
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 package gui;
 
 import gui.center.CenterPanel;
+import gui.listener.ABIDEListener;
 import gui.menu.MainMenu;
 import gui.tool.ToolBarPanel;
 import gui.tool.ToolBarPanel.Button;
@@ -16,6 +17,9 @@ public class MainFrame extends JFrame {
 	
 	private static final long serialVersionUID = -8026416994513756565L;
 
+	// Listener
+	private ABIDEListener abIDElistener;
+	
 	// Components
 	private CenterPanel centerPanel;
 	private ToolBarPanel toolBarPanel;
@@ -45,6 +49,10 @@ public class MainFrame extends JFrame {
 					break;
 					
 				case RUN:
+					if(abIDElistener != null) {
+						
+						centerPanel.setScannerData(abIDElistener.scan(centerPanel.getFileContent()));
+					}
 					break;
 				}
 			}
@@ -67,5 +75,13 @@ public class MainFrame extends JFrame {
         this.setVisible(true);                               // Make the frame visible
         this.pack();                                         // Force setting the size of components
         this.setLocationRelativeTo(null);                    // Load on center of the screen
+	}
+	
+	/**
+	 * Set listener
+	 * @param abIDElistener
+	 */
+	public void setABIDEListener(ABIDEListener abIDElistener) {
+		this.abIDElistener = abIDElistener;
 	}
 }

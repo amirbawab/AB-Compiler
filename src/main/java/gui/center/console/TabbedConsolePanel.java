@@ -81,6 +81,18 @@ public class TabbedConsolePanel extends JTabbedPane {
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		model.addRow(data);
 	}
+
+	/**
+	 * Reset table
+	 * @param panelTitle
+	 */
+	public void resetTable(String panelTitle) {
+		JTable table = (JTable) getBoard(panelTitle);
+		DefaultTableModel model = (DefaultTableModel) table.getModel();
+		int rowCount = model.getRowCount();
+		for(int i=0; i<rowCount; i++)
+			model.removeRow(0);
+	}
 	
 	/**
 	 * Get panel by title

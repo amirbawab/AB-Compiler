@@ -20,7 +20,8 @@ public class CenterPanel extends JPanel {
 	private TabbedConsolePanel tabbedConsolePanel;
 	private JSplitPane splitPane;
 	
-	// Console title
+	// Constants
+	private final Object[] SCANNER_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
 	private final String 	SCANNER = "Scanner",
 							ERROR = "Error";
 	
@@ -41,7 +42,7 @@ public class CenterPanel extends JPanel {
 		addNewFile();
 		
 		// Add Custom consoles
-		this.tabbedConsolePanel.addTable(SCANNER, new Object[]{"Token", "Value", "Row", "Col"});
+		this.tabbedConsolePanel.addTable(SCANNER, SCANNER_HEADER);
 		this.tabbedConsolePanel.addTextEditor(ERROR);
 		
 		// Resize
@@ -54,6 +55,25 @@ public class CenterPanel extends JPanel {
 		
 		// Add components
 		add(this.splitPane, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * Set scanner data
+	 * @param table
+	 */
+	public void setScannerData(Object[][] table) {
+		this.tabbedConsolePanel.resetTable(SCANNER);
+		for(int row=0; row<table.length; row++) {
+			this.tabbedConsolePanel.addRowToTable(SCANNER, table[row]);
+		}
+	}
+	
+	/**
+	 * Get file content of the active file
+	 * @return content of active file
+	 */
+	public String getFileContent() {
+		return this.tabbedTextEditorPanel.getText(this.tabbedTextEditorPanel.getSelectedIndex());
 	}
 	
 	/**

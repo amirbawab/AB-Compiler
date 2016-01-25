@@ -53,6 +53,7 @@ public class ABScanner {
 	 * @param text
 	 */
 	public List<ABToken> processText(String text) {
+		this.row = 0;
 		Scanner scan = new Scanner(text);
 		List<ABToken> tokens = new ArrayList<>();
 		while(scan.hasNextLine())
@@ -71,8 +72,14 @@ public class ABScanner {
 		this.row++;
 		
 		while(col < code.length()) {
-			ABToken token = new ABToken(nextToken(), currentLine, row, col+1);
-			tokens.add(token);
+			
+			// Get next token
+			ABToken token = nextToken();
+			
+			// If token found
+			if(token != null) {
+				tokens.add(token);
+			}
 		}
 	}
 	
@@ -80,20 +87,30 @@ public class ABScanner {
 	 * Get next token
 	 * @return next oken
 	 */
-	private String nextToken() {
+	private ABToken nextToken() {
 		int state = 0;
-		String token = null;
+		ABToken token = null;
+		int startIndex = col;
 		
 		do {
 			// Current char
 			Character currentChar = nextChar();
 			
-			// If end of line
+			// If end of line EOL
 			if(currentChar == null){
+				
+				// If previous char is a space
+				if(state == 0)
+					return null;
+				
 				state = model.getOtherOf(state);
 			} else {
 				state = model.lookup(state, currentChar);
 			}
+			
+			// If state is 0, update start index
+			if(state == 0)
+				startIndex = col;
 			
 			// Fetch new state
 			State currentState = model.getStateAtRow(state);
@@ -101,8 +118,7 @@ public class ABScanner {
 			// If final
 			if(currentState.isFinal()) {
 				
-				// Store token
-				token = currentState.getToken();
+				token = new ABToken(currentState.getToken(), currentLine.substring(startIndex, col), row, startIndex+1);
 				
 				// If not end of line and should backup, then backup one char
 				if(currentChar != null && currentState.getBacktrack()) {
