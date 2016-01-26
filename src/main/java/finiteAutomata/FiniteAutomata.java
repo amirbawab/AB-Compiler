@@ -28,11 +28,6 @@ public class FiniteAutomata {
 	private Transition[] processTransitions;
 	private State initialState;
 	
-	public static final char 	OTHER = 'O', 
-								NON_ZERO = 'N', // 1-9
-								SPACE = 'S',
-								LETTER = 'L';
-	
 	/**
 	 * Constructor
 	 * @param vertexPrefix

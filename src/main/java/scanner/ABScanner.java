@@ -30,6 +30,12 @@ public class ABScanner {
 	// Long scan process time
 	private long scannerProcessTime;
 	
+	// Scanner
+	private Scanner scan;
+	
+	// State
+	int state;
+	
 	// Prefix
 	private final String ERROR_PREFIX = "T_ERR_";
 	
@@ -65,8 +71,11 @@ public class ABScanner {
 		// Reset row count
 		this.row = 0;
 		
+		// Reset state
+		this.state = 0;
+		
 		// Scan text
-		Scanner scan = new Scanner(text);
+		scan = new Scanner(text);
 		
 		// Reset list of tokens
 		nonErrorToken.clear();
@@ -131,7 +140,10 @@ public class ABScanner {
 	 * @return next token
 	 */
 	private ABToken nextToken() {
-		int state = 0;
+		
+		// FIXME block comment value
+		// FIXME block comment not closed
+		
 		ABToken token = null;
 		int startIndex = col;
 		
@@ -139,21 +151,11 @@ public class ABScanner {
 			// Current char
 			Character currentChar = nextChar();
 			
-			// If end of line EOL
-			if(currentChar == null){
-				
-				// If previous char is a space
-				if(state == 0)
-					return null;
-				
-				state = model.getOtherOf(state);
-			} else {
-				state = model.lookup(state, currentChar);
-			}
+			// Update state
+			state = model.lookup(state, currentChar);
 			
 			// If state is 0, update start index
-			if(state == 0)
-				startIndex = col;
+			if(state == 0) startIndex = col;
 			
 			// Fetch new state
 			State currentState = model.getStateAtRow(state);
@@ -162,19 +164,22 @@ public class ABScanner {
 			if(currentState.isFinal()) {
 				
 				// If not end of line and should backup, then backup one char
-				if(currentChar != null && currentState.getBacktrack())
+				if(currentState.getBacktrack())
 					backupChar();
 				
 				// Cache word
-				String word = currentLine.substring(startIndex, col);
+				String word = currentLine.substring(startIndex, Math.min(col, currentLine.length()));
 				
 				// Token value
 				String tokenValue = IdentifierHelper.getTokenIfReservedWord(word, currentState.getToken());
 				
 				// Create token
 				token = new ABToken(tokenValue, word, row, startIndex+1);
+				
+				// Reset state
+				state = 0;
 			}
-		} while(token == null);
+		} while(token == null && col <= currentLine.length());
 		return token;
 	}
 	
@@ -185,7 +190,12 @@ public class ABScanner {
 	private Character nextChar() {
 		if(col < currentLine.length())
 			return currentLine.charAt(col++);
-		return null;
+		
+		// EOL and EOF are considered characters and can be repeated on backup, so increment col
+		col++;
+		
+		// Return if end of line or end of file
+		return scan.hasNextLine() ? ABTableModel.EOL_CHAR : ABTableModel.EOF_CHAR;
 	}
 	
 	/**

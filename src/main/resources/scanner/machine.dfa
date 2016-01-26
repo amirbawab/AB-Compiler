@@ -1,5 +1,5 @@
 prefix = q
-states = 50
+states = 52
 lambda = ~
 initial = 0
 final = 2, T_ASSIGN
@@ -16,7 +16,6 @@ final = 14, T_PLUS
 final = 15, T_MINUS
 final = 16, T_MULTIPLY
 final = 18, T_DIVIDE
-final = 19, T_INLINE_COMMENT
 final = 22, T_BLOCK_COMMENT
 final = 23, T_OPEN_PAREN
 final = 24, T_CLOSE_PAREN
@@ -35,6 +34,8 @@ final = 45, T_FLOAT
 final = 47, T_ERR_TRAILING_ZERO
 final = 48, T_ERR_FLOAT_FORMAT
 final = 49, T_ERR_FLOAT_FORMAT
+final = 50, T_INLINE_COMMENT
+final = 51, T_ERR_BLOCK_COMMENT
 ;
 backtrack = 2
 backtrack = 5
@@ -52,6 +53,8 @@ backtrack = 48
 backtrack = 49
 ;
 0,0:S
+0,0:E
+0,0:F
 0,1:=
 0,4:<
 0,8:>
@@ -82,10 +85,15 @@ backtrack = 49
 17,18:O
 17,19:/
 17,20:*
+19,19:O
+19,50:E
+19,50:F
 20,20:O
 20,21:*
+20,51:F
 21,20:O
 21,22:/
+21,51:F
 29,29:L
 29,29:N
 29,29:0

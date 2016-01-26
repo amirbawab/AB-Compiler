@@ -13,6 +13,17 @@ public class ABTableModel {
 	private State[] states;
 	private char[] header;
 	
+	public static final char 	OTHER = 'O', 
+								NON_ZERO = 'N', // 1-9
+								SPACE = 'S',
+								LETTER = 'L',
+								EOL = 'E',
+								EOF = 'F';
+	
+	public static final char	EOL_CHAR = '\n',
+								EOF_CHAR = '\0';
+
+	
 	// Header map
 	private Map<Character, Integer> headerMap;
 	
@@ -83,15 +94,23 @@ public class ABTableModel {
 		
 		// a-zA-Z
 		if( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-			return table[state][headerMap.get(FiniteAutomata.LETTER)];
+			return table[state][headerMap.get(LETTER)];
 		
 		// 1-9
 		if(c >= '1' && c <= '9')
-			return table[state][headerMap.get(FiniteAutomata.NON_ZERO)];
+			return table[state][headerMap.get(NON_ZERO)];
 
 		// Space
-		if(String.format("%c", c).matches("\\s"))
-			return table[state][headerMap.get(FiniteAutomata.SPACE)];
+		if(c == ' ' || c == '\t')
+			return table[state][headerMap.get(SPACE)];
+		
+		// New line character
+		if(c == EOL_CHAR)
+			return table[state][headerMap.get(EOL)];
+
+		// End of file character
+		if(c == EOF_CHAR)
+			return table[state][headerMap.get(EOF)];
 
 		// Other characters
 		for(int col=0; col<header.length; col++) {
@@ -110,7 +129,7 @@ public class ABTableModel {
 	 * @return index of state when given unknonw character
 	 */
 	public int getOtherOf(int state) {
-		return table[state][headerMap.get(FiniteAutomata.OTHER)];
+		return table[state][headerMap.get(OTHER)];
 	}
 	
 	/**
@@ -120,7 +139,7 @@ public class ABTableModel {
 		// Iterate on outgoing transitions
 		for(int row = 0; row < states.length; row++) {
 			State currentState = states[row];
-			State onOther = currentState.getOnRead(FiniteAutomata.OTHER);
+			State onOther = currentState.getOnRead(OTHER);
 			
 			// Adjust the values
 			for(int col = 0; col < header.length; col++) {
