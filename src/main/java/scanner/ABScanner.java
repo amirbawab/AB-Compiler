@@ -20,9 +20,17 @@ public class ABScanner {
 	private FiniteAutomata machine;
 	private ABTableModel model;
 	
-	// Variables
+	// Current line
 	private String currentLine;
-	private int row, col;
+	
+	// File line and index
+	private int line, index;
+	
+	// Word row and column
+	private int wordRow, wordCol;
+	
+	// Current token word
+	private String word;
 	
 	// Lists
 	private List<ABToken> nonErrorToken, errorToken;
@@ -51,9 +59,10 @@ public class ABScanner {
 			// Store logs
 			l.info(model);
 			
-			// Init list of tokens
+			// Init variables
 			nonErrorToken = new ArrayList<>();
 			errorToken = new ArrayList<>();
+			word = "";
 		} catch (IOException e) {
 			l.error(e.getMessage());
 		}
@@ -69,7 +78,7 @@ public class ABScanner {
 		this.scannerProcessTime = System.currentTimeMillis();
 		
 		// Reset row count
-		this.row = 0;
+		this.line = 0;
 		
 		// Reset state
 		this.state = 0;
@@ -109,13 +118,13 @@ public class ABScanner {
 		this.currentLine = code;
 		
 		// Reset column
-		this.col = 0;
+		this.index = 0;
 		
 		// Increment row
-		this.row++;
+		this.line++;
 		
 		// While there are more tokens to consume
-		while(col < code.length()) {
+		while(index < code.length()) {
 			
 			// Get next token
 			ABToken token = nextToken();
@@ -144,21 +153,21 @@ public class ABScanner {
 	 */
 	private ABToken nextToken() {
 		
-		// FIXME block comment value
-		// FIXME block comment not closed
-		
 		ABToken token = null;
-		int startIndex = col;
 		
 		do {
+			
+			// If initial state
+			if(state == 0){ 
+				wordCol = index + 1;
+				wordRow = line;
+			}
+			
 			// Current char
 			Character currentChar = nextChar();
 			
 			// Update state
 			state = model.lookup(state, currentChar);
-			
-			// If state is 0, update start index
-			if(state == 0) startIndex = col;
 			
 			// Fetch new state
 			State currentState = model.getStateAtRow(state);
@@ -166,23 +175,32 @@ public class ABScanner {
 			// If final
 			if(currentState.isFinal()) {
 				
-				// If not end of line and should backup, then backup one char
-				if(currentState.getBacktrack())
+				// If should backup, then backup one char
+				if(currentState.getBacktrack()) {
 					backupChar();
-				
-				// Cache word
-				String word = currentLine.substring(startIndex, Math.min(col, currentLine.length()));
+					
+				// If should not backup, then the character is part of the token value
+				} else {
+					word += currentChar;
+				}
 				
 				// Token value
 				String tokenValue = IdentifierHelper.getTokenIfReservedWord(word, currentState.getToken());
 				
 				// Create token
-				token = new ABToken(tokenValue, word, row, startIndex+1);
+				token = new ABToken(tokenValue, word, wordRow, wordCol);
 				
-				// Reset state
+				// Reset word
+				word = "";
+				
+				// Go to initial state
 				state = 0;
+			
+			// If not final state and not in the initial state
+			} else if(state != 0) {
+				word += currentChar;
 			}
-		} while(token == null && col < currentLine.length());
+		} while(token == null && index < currentLine.length());
 		return token;
 	}
 	
@@ -191,14 +209,14 @@ public class ABScanner {
 	 * @return next char
 	 */
 	private Character nextChar() {
-		return currentLine.charAt(col++);
+		return currentLine.charAt(index++);
 	}
 	
 	/**
 	 * Backup one char
 	 */
 	private void backupChar() {
-		col--;
+		index--;
 	}
 	
 	/**
