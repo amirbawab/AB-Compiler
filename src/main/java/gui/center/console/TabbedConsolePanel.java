@@ -1,5 +1,6 @@
 package gui.center.console;
 
+import gui.center.console.components.ConsoleCellRender;
 import gui.center.console.components.ConsoleTable;
 
 import java.awt.BorderLayout;
@@ -114,5 +115,15 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 */
 	public int getNumberOfTabs() {
 		return this.tabPanelsMap.size();
+	}
+	
+	/**
+	 * Enable tooltip text
+	 * @param panelTitle
+	 * @param identifier
+	 */
+	public void enableTooltipTextForColumn(String panelTitle, Object identifier) {
+		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
+		table.getColumn(identifier).setCellRenderer(new ConsoleCellRender());
 	}
 }
