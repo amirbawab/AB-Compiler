@@ -2,12 +2,10 @@ package scanner;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -258,6 +256,7 @@ public class ABScannerTest {
 			str.add(scanner.nextLine());
 		String strArray[] = new String[str.size()];
 		str.toArray(strArray);
+		scanner.close();
 		return strArray;
 	}
 }
