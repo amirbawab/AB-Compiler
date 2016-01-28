@@ -99,8 +99,11 @@ public class ABScanner {
 	 */
 	private void processLine(String code) {
 		
+		// Append EOL or EOF
+		code += scan.hasNextLine() ? ABTableModel.EOL_CHAR : ABTableModel.EOF_CHAR;
+		
 		// Log
-		l.info("Scanning line: %s", code);
+		l.info("> Scanning line: %s", code.replace(String.format("%c", ABTableModel.EOL_CHAR), "\\n").replace(String.format("%c", ABTableModel.EOF_CHAR), "EOF"));
 		
 		// Store line
 		this.currentLine = code;
@@ -179,7 +182,7 @@ public class ABScanner {
 				// Reset state
 				state = 0;
 			}
-		} while(token == null && col <= currentLine.length());
+		} while(token == null && col < currentLine.length());
 		return token;
 	}
 	
@@ -188,14 +191,7 @@ public class ABScanner {
 	 * @return next char
 	 */
 	private Character nextChar() {
-		if(col < currentLine.length())
-			return currentLine.charAt(col++);
-		
-		// EOL and EOF are considered characters and can be repeated on backup, so increment col
-		col++;
-		
-		// Return if end of line or end of file
-		return scan.hasNextLine() ? ABTableModel.EOL_CHAR : ABTableModel.EOF_CHAR;
+		return currentLine.charAt(col++);
 	}
 	
 	/**
