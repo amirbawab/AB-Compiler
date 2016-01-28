@@ -42,7 +42,7 @@ public class ABScanner {
 	private Scanner scan;
 	
 	// State
-	int state;
+	private int state;
 	
 	// Prefix
 	private final String ERROR_PREFIX = "T_ERR_";

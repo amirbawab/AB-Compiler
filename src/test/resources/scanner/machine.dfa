@@ -1,0 +1,134 @@
+prefix = q
+states = 52
+lambda = ~
+initial = 0
+final = 2, T_ASSIGN
+final = 3, T_IS_EQUAL
+final = 5, T_LESS_THEN
+final = 6, T_LESS_OR_EQUAL
+final = 7, T_IS_NOT_EQUAL
+final = 9, T_GREATER_THAN
+final = 10, T_GREATER_OR_EQUAL
+final = 11, T_SEMICOLON
+final = 12, T_COMMA
+final = 13, T_DOT
+final = 14, T_PLUS
+final = 15, T_MINUS
+final = 16, T_MULTIPLY
+final = 18, T_DIVIDE
+final = 22, T_BLOCK_COMMENT
+final = 23, T_OPEN_PAREN
+final = 24, T_CLOSE_PAREN
+final = 25, T_OPEN_CURLY
+final = 26, T_CLOSE_CURLY
+final = 27, T_OPEN_SQUARE
+final = 28, T_CLOSE_SQUARE
+final = 30, T_IDENTIFIER
+final = 34, T_FLOAT
+final = 36, T_ERR_TRAILING_ZERO
+final = 38, T_INTEGER
+final = 40, T_ERR_LEADING_ZERO
+final = 41, T_ERR_INVALID_CHAR
+final = 42, T_INTEGER
+final = 45, T_FLOAT
+final = 47, T_ERR_TRAILING_ZERO
+final = 48, T_ERR_FLOAT_FORMAT
+final = 49, T_ERR_FLOAT_FORMAT
+final = 50, T_INLINE_COMMENT
+final = 51, T_ERR_BLOCK_COMMENT
+;
+backtrack = 2
+backtrack = 5
+backtrack = 9
+backtrack = 18
+backtrack = 30
+backtrack = 34
+backtrack = 36
+backtrack = 38
+backtrack = 40
+backtrack = 42
+backtrack = 45
+backtrack = 47
+backtrack = 48
+backtrack = 49
+backtrack = 50
+backtrack = 51
+;
+0,0:S
+0,0:E
+0,0:F
+0,1:=
+0,4:<
+0,8:>
+0,11:;
+0,12:,
+0,13:.
+0,14:+
+0,15:-
+0,16:*
+0,17:/
+0,23:(
+0,24:)
+0,25:{
+0,26:}
+0,27:[
+0,28:]
+0,29:L
+0,31:N
+0,37:0
+0,41:O
+1,2:O
+1,3:=
+4,5:O
+4,6:=
+4,7:>
+8,9:O
+8,10:=
+17,18:O
+17,19:/
+17,20:*
+19,19:O
+19,50:E
+19,50:F
+20,20:O
+20,21:*
+20,51:F
+21,20:O
+21,21:*
+21,22:/
+21,51:F
+29,29:L
+29,29:N
+29,29:0
+29,29:_
+29,30:O
+31,31:N
+31,31:0
+31,32:.
+31,38:O
+32,33:N
+32,33:0
+32,48:O
+33,33:N
+33,34:O
+33,35:0
+35,33:N
+35,35:0
+35,36:O
+37,39:N
+37,39:0
+37,42:O
+37,43:.
+39,39:N
+39,39:0
+39,40:O
+43,44:N
+43,44:0
+43,49:O
+44,44:N
+44,45:O
+44,46:0
+46,44:N
+46,46:0
+46,47:O
+;
