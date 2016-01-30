@@ -1,8 +1,8 @@
 import gui.MainFrame;
 import gui.listener.ABIDEListener;
-
 import scanner.ABScanner;
 import scanner.ABToken;
+import scanner.helper.ErrorHelper;
 
 public class Application {
 	public static void main(String[] args) {
@@ -37,12 +37,13 @@ public class Application {
 			@Override
 			public Object[][] getScannerError() {
 				ABToken[] tokens = abScanner.getErrorTokens();
-				Object[][] table = new Object[tokens.length][4];
+				Object[][] table = new Object[tokens.length][5];
 				for(int i=0; i < table.length; i++) {
 					table[i][0] = tokens[i].getToken();
 					table[i][1] = tokens[i].getValue();
 					table[i][2] = tokens[i].getRow();
 					table[i][3] = tokens[i].getCol();
+					table[i][4] = ErrorHelper.getComment(tokens[i].getToken(), tokens[i].getValue(), tokens[i].getRow(), tokens[i].getCol());
 				}
 				return table;
 			}

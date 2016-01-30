@@ -21,8 +21,8 @@ public class CenterPanel extends JPanel {
 	private JSplitPane splitPane;
 	
 	// Headers
-	private final Object[] SCANNER_OUTPUT_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
-	private final Object[] SCANNER_ERROR_HEADER = new Object[]{"Token", "Value", "Row", "Col"};
+	private final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
+	private final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
 	
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",

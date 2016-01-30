@@ -1,6 +1,26 @@
-package scanner;
+package scanner.helper;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class IdentifierHelper {
+	
+	// Reserved word map
+	private Map<String, String> reservedWords = new HashMap<>();
+	
+	// Singleton
+	private static IdentifierHelper instance = new IdentifierHelper();
+	
+	/**
+	 * Construct helper
+	 */
+	private IdentifierHelper() {
+		
+		// Add reserved word to the map
+		ReservedWords values[] = ReservedWords.values();
+		for(ReservedWords reservedWord : values)
+			reservedWords.put(reservedWord.getMatch(), reservedWord.getToken());
+	}
 	
 	/**
 	 * Reserved words
@@ -51,10 +71,7 @@ public class IdentifierHelper {
 	 * @return token
 	 */
 	public static String getTokenIfReservedWord(String value, String defaultToken) {
-		ReservedWords[] words = ReservedWords.values();
-		for(int i=0; i<words.length; i++)
-			if(words[i].getMatch().equals(value))
-				return words[i].getToken();
-		return defaultToken;
+		String token = instance.reservedWords.get(value);
+		return token == null ? defaultToken : token;
 	}
 }
