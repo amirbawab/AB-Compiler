@@ -208,6 +208,132 @@ public class ABScannerTest {
 		}
 	}
 	
+	@Test
+	public void testProcessText_mixed_3_correct_token() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example4.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_1_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_1_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToTokenKey(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToTokenKey(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
+	@Test
+	public void testProcessText_mixed_3_correct_value() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example4.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_2_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_2_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToTokenValue(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToTokenValue(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
+	@Test
+	public void testProcessText_mixed_3_correct_row_col() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example4.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_3_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example4_3_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToPosition(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToPosition(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
+	@Test
+	public void testProcessText_mixed_4_correct_token() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example5.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_1_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_1_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToTokenKey(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToTokenKey(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
+	@Test
+	public void testProcessText_mixed_4_correct_value() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example5.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_2_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_2_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToTokenValue(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToTokenValue(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
+	@Test
+	public void testProcessText_mixed_4_correct_row_col() {
+		try {
+			
+			String input = IOUtils.toString(getClass().getResource("/scanner/input/example5.txt"));
+			String expected_non_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_3_non_error.txt"));
+			String expected_error = IOUtils.toString(getClass().getResource("/scanner/output/example5_3_error.txt"));
+			
+			// Run machine
+			abScanner.processText(input);
+			ABToken nonError[] = abScanner.getNonErrorTokens();
+			ABToken error[] = abScanner.getErrorTokens();
+			
+			// Verify output
+			assertArrayEquals(stringToArray(expected_non_error), ABTokenToPosition(nonError));
+			assertArrayEquals(stringToArray(expected_error), ABTokenToPosition(error));
+		} catch (IOException e) {
+			fail("Failed to load example file");
+		}
+	}
+	
 	/**
 	 * Get tokens keys arrays from an array of token
 	 * @param tokens
