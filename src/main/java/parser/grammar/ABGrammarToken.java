@@ -10,7 +10,7 @@ public class ABGrammarToken {
 	}
 	
 	// Epsilon
-	private static final String EPSILON = "EPSILON";
+	public static final String EPSILON = "EPSILON";
 	
 	// Variables
 	private String value;
@@ -25,6 +25,7 @@ public class ABGrammarToken {
 		
 		// Decide the type
 		if(value.equals(EPSILON)){
+			this.value = value;
 			this.type = Type.EPSILON;
 		
 		} else if(value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'') {
@@ -77,6 +78,7 @@ public class ABGrammarToken {
 		switch (type) {
 		case TERMINAL:
 			return "'" + value + "'";
+		
 		case EPSILON:
 		case NON_TERMINAL:
 		default:
