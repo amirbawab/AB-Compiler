@@ -1,0 +1,81 @@
+prog                                    -> classDeclRpt progBody
+classDeclRpt                            -> classDecl classDeclRpt
+                                        | EPSILON
+classDecl                               -> 'class' 'id' '{' varDeclRptFunc '}' ';'
+varDeclRptFunc                          -> type 'id' varDeclRptFuncDisamb
+                                        | EPSILON
+varDeclRptFuncDisamb                    -> arraySizeRpt ';' varDeclRptFunc
+                                        | '(' fParams ')' funcBody ';' funcDefRpt
+funcDefRpt                              -> funcDef funcDefRpt
+                                        | EPSILON
+progBody                                -> 'program' funcBody ';' funcDefRpt
+funcHead                                -> type 'id' '(' fParams ')'
+funcDef                                 -> funcHead funcBody ';'
+funcBody                                -> '{' varDeclRptStat '}'
+varDeclRptStat                          -> 'int' 'id' arraySizeRpt ';' varDeclRptStat
+                                        | 'float' 'id' arraySizeRpt ';' varDeclRptStat
+                                        | 'id' varDeclRptStatPrime
+                                        | 'if' '(' expr ')' 'then' statBlock 'else' statBlock ';' statementRpt
+                                        | 'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';' statementRpt
+                                        | 'get' '(' variable ')' ';' statementRpt
+                                        | 'put' '(' expr ')' ';' statementRpt
+                                        | 'return' '(' expr ')' ';' statementRpt
+                                        | EPSILON
+varDeclRptStatPrime                     -> 'id' arraySizeRpt ';' varDeclRptStat
+                                        | indiceRpt varDeclRptStatPrimePrime
+varDeclRptStatPrimePrime                -> '.' idnestRptIdIndiceRpt assignOp expr ';' statementRpt
+                                        | assignOp expr ';' statementRpt
+idnestRptIdFactorPrime                  -> 'id' idnestRptIdPrimefactorPrime
+idnestRptIdPrimefactorPrime             -> indiceRpt idnestRptIdPrimefactorPrimePrime
+                                        | '(' aParams ')'
+idnestRptIdPrimefactorPrimePrime        ->  '.' idnestRptIdFactorPrime
+                                        | EPSILON                               
+idnestRptIdIndiceRpt                    -> 'id' idnestRptIdPrimeIndiceRpt
+idnestRptIdPrimeIndiceRpt               -> indiceRpt idnestRptIdPrimeIndiceRptPrime
+idnestRptIdPrimeIndiceRptPrime          -> '.' idnestRptIdIndiceRpt
+                                        | EPSILON
+statementRpt                            -> statement statementRpt
+                                        | EPSILON
+arraySizeRpt                            -> arraySize arraySizeRpt
+                                        | EPSILON
+statement                               -> assignStat ';'
+                                        | 'if' '(' expr ')' 'then' statBlock 'else' statBlock ';'
+                                        | 'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';'
+                                        | 'get' '(' variable ')' ';'
+                                        | 'put' '(' expr ')' ';'
+                                        | 'return' '(' expr ')' ';'
+assignStat                              -> variable assignOp expr
+statBlock                               -> '{' statementRpt '}' | statement | EPSILON
+expr                                    -> arithExpr exprPrime
+exprPrime                               -> relOp arithExpr | EPSILON
+relExpr                                 -> arithExpr relOp arithExpr
+arithExpr                               -> term arithExprPrime
+arithExprPrime                          -> addOp term arithExprPrime
+                                        | EPSILON
+sign                                    -> '+' | '-'
+term                                    -> factor termPrime
+termPrime                               -> multOp factor termPrime
+                                        | EPSILON
+factor                                  -> idnestRptIdFactorPrime
+                                        | 'num'
+                                        | '(' arithExpr ')'
+                                        | 'not' factor
+                                        | sign factor
+variable                                -> idnestRptIdIndiceRpt
+indiceRpt                               -> indice indiceRpt
+                                        | EPSILON
+indice                                  -> '[' arithExpr ']'
+arraySize                               -> '[' 'int' ']'
+type                                    -> 'int' | 'float' | 'id'
+fParams                                 -> type 'id' arraySizeRpt fParamsTailRpt | EPSILON
+fParamsTailRpt                          -> fParamsTail fParamsTailRpt
+                                        | EPSILON
+aParams                                 -> expr aParamsTailRpt | EPSILON
+aParamsTailRpt                          -> aParamsTail aParamsTailRpt
+                                        | EPSILON
+fParamsTail                             -> ',' type 'id' arraySizeRpt
+aParamsTail                             -> ',' expr
+assignOp                                -> '='
+relOp                                   -> '>' | '<' | '<=' | '>=' | '<>' | '=='
+addOp                                   -> '+' | '-' | 'or'
+multOp                                  -> '*' | '/' | 'and'
