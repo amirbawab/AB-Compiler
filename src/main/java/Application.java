@@ -1,3 +1,4 @@
+import parser.ABParser;
 import parser.grammar.ABGrammar;
 import gui.MainFrame;
 import gui.listener.ABIDEListener;
@@ -11,7 +12,7 @@ public class Application {
 		// Create scanner
 //		final ABScanner abScanner = new ABScanner("/scanner/machine.dfa");
 		
-		ABGrammar abGrammar = new ABGrammar("/parser/grammar.bnf");
+		ABParser abParser = new ABParser("/parser/grammar.bnf");
 		
 		// Start GUI
 //		MainFrame frame = new MainFrame("AB Editor");

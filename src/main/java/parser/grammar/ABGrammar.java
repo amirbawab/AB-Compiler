@@ -56,6 +56,109 @@ public class ABGrammar {
 	}
 	
 	/**
+	 * Get terminals
+	 * @return terminals
+	 */
+	public String[] getTerminals() {
+		
+		// Prepare list
+		Set<String> terminals = new HashSet<>();
+		
+		// Add END OF STACK
+		terminals.add(END_OF_STACK);
+		
+		// Rules iterator
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
+	    
+		// While more rules
+		while (it.hasNext()) {
+			
+			// Cache
+	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
+	    
+	        // Get productions
+	        List<List<ABGrammarToken>> productions = pair.getValue();
+	        
+	        // Loop on productions
+	        for(List<ABGrammarToken> production : productions) {
+	        	
+	        	// Loop on production tokens
+	        	for(ABGrammarToken pToken : production) {
+	        		
+	        		// If terminal, add it
+	        		if(pToken.isTerminal())
+	        			terminals.add(pToken.getValue());
+	        	}
+	        }
+		}
+		
+		// Prepare array
+		String[] array = new String[terminals.size()];
+		
+		// Copy to array
+		terminals.toArray(array);
+		
+		// Return array
+		return array;
+	}
+	
+	/**
+	 * Get rules
+	 * @return rules
+	 */
+	public Map<String, List<List<ABGrammarToken>>> getRules() {
+		return this.rules;
+	}
+	
+	/**
+	 * Get first set map
+	 * @return first set map
+	 */
+	public Map<String, Set<String>> getFirstSetMap() {
+		return this.firstSetMap;
+	}
+	
+	/**
+	 * Get follow set map
+	 * @return follow set map
+	 */
+	public Map<String, Set<String>> getFollowSetMap() {
+		return this.followSetMap;
+	}
+	
+	/**
+	 * Get non terminals
+	 * @return non terminals
+	 */
+	public String[] getNonTerminals() {
+		
+		// Prepare list
+		Set<String> nonTerminals = new HashSet<>();
+		
+		// Rules iterator
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
+	    
+		// While more rules
+		while (it.hasNext()) {
+			
+			// Cache
+	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
+	    
+	        // Store key
+	        nonTerminals.add(pair.getKey());
+		}
+		
+		// Prepare array
+		String[] array = new String[nonTerminals.size()];
+		
+		// Copy to array
+		nonTerminals.toArray(array);
+		
+		// Return array
+		return array;
+	}
+	
+	/**
 	 * Compute the First set of all Non-Terminals
 	 */
 	private void computeFirst() {
@@ -232,6 +335,24 @@ public class ABGrammar {
 	        	}
 	        }
 	    }
+	}
+	
+	/**
+	 * Get first of a non terminal
+	 * @param nonTerminal
+	 * @return first set of a non terminal
+	 */
+	public Set<String> getFirstOf(String nonTerminal) {
+		return this.firstSetMap.get(nonTerminal);
+	}
+	
+	/**
+	 * Get follow of a non terminal
+	 * @param nonTerminal
+	 * @return follow set of a non terminal
+	 */
+	public Set<String> getFollowOf(String nonTerminal) {
+		return this.followSetMap.get(nonTerminal);
 	}
 	
 	/**
