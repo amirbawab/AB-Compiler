@@ -22,6 +22,10 @@ public class ABGrammar {
 	// Variables
 	private Map<String, List<List<ABGrammarToken>>> rules;
 	private Map<String, Set<String>> firstSetMap, followSetMap;
+	private String start;
+	
+	// Constant
+	private final String END_OF_STACK = "$";
 	
 	/**
 	 * Create grammar from file
@@ -35,6 +39,7 @@ public class ABGrammar {
 			rules = new HashMap<>();
 			firstSetMap = new HashMap<>();
 			followSetMap = new HashMap<>();
+			start = null;
 			
 			// Parse file
 			parse(file);
@@ -42,10 +47,8 @@ public class ABGrammar {
 			// Computer first
 			computeFirst();
 			
-			for(String s : firstSetMap.get("fParamsTailRpt"))
-				System.out.println(s);
-			
 			// Computer follow
+			computeFollow();
 			
 		} catch (IOException e) {
 			l.error(e.getMessage());
@@ -68,9 +71,6 @@ public class ABGrammar {
 	        
 	        // Compute first
 	        first(new ABGrammarToken(pair.getKey()));
-	        
-	        // Move to next
-	        it.remove();
 	    }
 	}
 	
@@ -136,14 +136,104 @@ public class ABGrammar {
 	}
 	
 	/**
-	 * Get first of a non terminal
-	 * @param token
-	 * @return First set
+	 * Compute the Follow set of all Non-Terminals
 	 */
-	public Set<String> getFirst(String token) {
-		return this.firstSetMap.get(token);
-	}
+	private void computeFollow() {
+		
+		// Rules iterator
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> tmpIt = rules.entrySet().iterator();
 
+		// Init follow set map
+		while (tmpIt.hasNext()) {
+			
+			// Cache
+	        Map.Entry<String, List<List<ABGrammarToken>>> pair = tmpIt.next();
+	    
+	        // Init empty sets
+	        followSetMap.put(pair.getKey(), new HashSet<String>());
+		}
+		
+		// Rules iterator
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
+
+		// Start
+		followSetMap.get(start).add(END_OF_STACK);
+		
+		// While more rules
+		while (it.hasNext()) {
+			
+			// Move to next
+			it.next();
+	        
+	        // Compute follow
+	        follow();
+	    }
+	}
+	
+	/**
+	 * Computer follow set for all elements and cache them
+	 */
+	private void follow() {
+
+		// Rules iterator
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
+			   
+		// While more rules
+		while (it.hasNext()) {
+			
+			// Cache
+	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
+	        
+	        // Loop on productions for the same key
+	        for(List<ABGrammarToken> production : pair.getValue()) {
+	        	
+	        	// Loop on production tokens
+	        	for(int i = 0; i < production.size(); ++i) {
+	        		
+	        		// Current
+	        		ABGrammarToken pToken = production.get(i);
+	        		
+	        		// If non terminal
+	        		if(pToken.isNonTerminal()) {
+	        			
+	        			// If non terminal is the starting point
+		    			if(pToken.getValue().equals(start))
+		    				followSetMap.get(pToken.getValue()).add(END_OF_STACK);
+		    			
+		    			// J
+	        			int j = i;
+	        			
+	        			// While more tokens
+	        			while(++j < production.size()) {
+	        				
+	        				// Get next token
+	        				ABGrammarToken nextToken = production.get(j);
+	    	        		
+	        				// Get the first set
+	        				Set<String> firstSet = first(nextToken);
+	        				
+	        				// Copy into follow set
+	        				for(String str : firstSet)
+	        					if(!str.equals(ABGrammarToken.EPSILON))
+	        						followSetMap.get(pToken.getValue()).add(str);
+	        				
+	        				// If first set doesn't contain epsilon stop
+	        				if(!firstSet.contains(ABGrammarToken.EPSILON))
+	        					break;
+	        			}
+	        			
+	        			// If no more next tokens
+	        			if(j == production.size()) {
+	        				
+        					// Include follow set of LHS into target
+	        				followSetMap.get(pToken.getValue()).addAll(followSetMap.get(pair.getKey()));
+	        			}
+	        		}
+	        	}
+	        }
+	    }
+	}
+	
 	/**
 	 * Parse grammar file
 	 * @param file
@@ -183,6 +273,10 @@ public class ABGrammar {
 					
 					// Update LHS
 					LHS = first;
+					
+					// Start
+					if(start == null)
+						start = LHS;
 					
 					// If first time create list
 					if(rules.get(LHS) == null)
