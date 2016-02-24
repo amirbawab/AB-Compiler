@@ -1,36 +1,47 @@
 package parser;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
 
 public class ABParserTable {
 	
 	// Variables
 	private ABParserTableCell[][] table;
-	private String header[];
-	private String nonTerminal[];
-	private Map<String, List<List<ABGrammarToken>>> rules;
-	private Map<String, Set<String>> firstSetMap, followSetMap;
+	private String terminals[];
+	private String nonTerminals[];
+	private Map<String, Integer> terminalIndexMap, nonTerminalIndexMap;
+	private ABGrammar abGrammar;
 	
 	/**
 	 * Create table
 	 * @param header
 	 * @param nonTerminal
 	 */
-	public ABParserTable(String[] header, String[] nonTerminal, Map<String, List<List<ABGrammarToken>>> rules, Map<String, Set<String>> firstSetMap, Map<String, Set<String>> followSetMap) {
+	public ABParserTable(ABGrammar abGrammar) {
 		
 		// Init variables
-		this.header = header;
-		this.nonTerminal = nonTerminal;
-		this.table = new ABParserTableCell[nonTerminal.length][header.length];
-		this.rules = rules;
-		this.firstSetMap = firstSetMap;
-		this.followSetMap = followSetMap;
+		this.terminals = abGrammar.getTerminals();
+		this.nonTerminals = abGrammar.getNonTerminals();
+		this.table = new ABParserTableCell[nonTerminals.length][terminals.length];
+		this.terminalIndexMap = new HashMap<>();
+		this.nonTerminalIndexMap = new HashMap<>();
+		this.abGrammar = abGrammar;
 		
+		// Cache terminal index
+		for(int i=0; i<terminals.length; i++)
+			terminalIndexMap.put(terminals[i], i);
+		
+		// Cache non-terminal index
+		for(int i=0; i<nonTerminals.length; i++)
+			nonTerminalIndexMap.put(nonTerminals[i], i);
+			
 		// Populate table
 		populate();
 	}
@@ -41,7 +52,7 @@ public class ABParserTable {
 	private void populate() {
 		
 		// Rules iterator
-		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
+		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = abGrammar.getRules().entrySet().iterator();
 	    
 		// While more rules
 		while (it.hasNext()) {
@@ -49,105 +60,103 @@ public class ABParserTable {
 			// Cache
 	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
 	        
+	        // Non terminal
+	        String nonTerminal = pair.getKey();
+	        
 	        // Loop on productions
 	        for(List<ABGrammarToken> production : pair.getValue()) {
 	        	
-	        	// Loop on production tokens
-	        	for(ABGrammarToken pToken : production) {
+	        	// Prepare hash set
+        		Set<String> terminalsSet = new HashSet<>();
+	        	
+        		// Set i
+        		int i = 0;
+        		
+        		// Loop on production tokens
+	        	for(; i < production.size(); ++i) {
 	        		
-	        		// If production is epsilon
-	        		if(pToken.isEpsilon()) {
-	        			
-	        			// Get follow of LHS
-	        			Set<String> followSet = followSetMap.get(pair.getKey());
-	        			
-	        			// Loop on strings
-	        			for(String terminal : followSet) {
-	        				addCell(pair.getKey(), terminal, production);
-	        			}
+	        		// Current
+	        		ABGrammarToken pToken = production.get(i);
 	        		
-	        		// If production is not epsilon
-	        		} else {
-	        			
-	        			// Get first set
-	        			Set<String> firstSet = firstSetMap.get(pair.getKey());
-	        			
-	        			// Loop on strings
-	        			for(String terminal : firstSet) {
-	        				if(!terminal.equals(ABGrammarToken.EPSILON))
-	        					addCell(pair.getKey(), terminal, production);
-	        			}
-	        			
-	        			// If doesn't have epsilon
-	        			if(!firstSet.contains(ABGrammarToken.EPSILON))
-	        				break;
-	        			
-	        			// If last element
-	        			if(production.get(production.size()-1) == pToken) {
-	        				
-	        				// Get follow of LHS
-		        			Set<String> followSet = followSetMap.get(pair.getKey());
-		        			
-		        			// Loop on strings
-		        			for(String terminal : followSet) {
-		        				addCell(pair.getKey(), terminal, production);
-		        			}
-	        			}
-	        		}
+	        		// Get first set
+	        		Set<String> firstSet = abGrammar.getFirstOf(pToken);
+	        		
+	        		// Copy into terminal set
+    				for(String str : firstSet)
+    					if(!str.equals(ABGrammarToken.EPSILON))
+    						terminalsSet.add(str);
+	        		
+	        		// If doesn't have epsilon
+	        		if(!firstSet.contains(ABGrammarToken.EPSILON))
+	        			break;
 	        	}
+	        	
+	        	// If the first(last token) has epsilon
+	        	if(i == production.size()) {
+	        		Set<String> followSet = abGrammar.getFollowOf(pair.getKey());
+	        		terminalsSet.addAll(followSet);
+	        	}
+	        	
+	        	// Add cells
+	        	for(String terminal : terminalsSet)
+	        		table[nonTerminalIndexMap.get(nonTerminal)][terminalIndexMap.get(terminal)] = new ABParserTableCell(production);
 	        }
 		}	   
-	}
-	
-	/**
-	 * Add cell at specific row col
-	 * @param nonTerminal
-	 * @param terminal
-	 * @param production
-	 */
-	public void addCell(String nonTerminal, String terminal, List<ABGrammarToken> production) {
-		
-		// Get index of non terminal
-		for(int N=0; N<this.nonTerminal.length; N++) {
-			
-			// If found
-			if(this.nonTerminal[N].equals(nonTerminal)) {
-				
-				// Get index of terminal
-				for(int T=0; T<this.header.length; T++) {
-					
-					// Set cell
-					table[N][T] = new ABParserTableCell();
-					table[N][T].setProduction(production);
-					
-					// Exit loop
-					break;
-				}
-				
-				// Exit loop
-				break;
-			}
-		}
-		
 	}
 	
 	/**
 	 * Formatted table
 	 */
 	public String toString() {
-		String output = "\n";
 		
-		for(int col = 0; col < header.length; col++)
-			output += header[col] + "\t";
+		// Map
+		Map<List<ABGrammarToken>, Integer> pMap = new HashMap<>();
+		
+		// Counter
+		int rCounter = 0;
+		
+		// Prepare output
+		String output = "\n";
+		String rules = "";
+		
+		for(int col = 0; col < terminals.length; col++)
+			output += terminals[col] + "\t";
 		
 		output += "\n";
-		for(int row = 0; row < nonTerminal.length; row++) {
-			for(int col = 0; col < header.length; col++) {
-				output += /*table[row][col] +*/ "r1\t";
+		for(int row = 0; row < nonTerminals.length; row++) {
+			for(int col = 0; col < terminals.length; col++) {
+				
+				// If no error
+				if(table[row][col] != null) {
+					
+					String rId = "r";
+					
+					// If already registered
+					if(pMap.containsKey(table[row][col].getProduction())) {
+						rId += pMap.get(table[row][col].getProduction());
+					
+					// If not already registered
+					} else {
+						pMap.put(table[row][col].getProduction(), ++rCounter);
+						rId += rCounter;
+						rules += String.format("%s : %s -> %s\n", rId, nonTerminals[row], table[row][col].getProduction());
+					}
+						
+					output += rId + "\t";
+					
+				// If error
+				} else {
+					output += "e\t";
+				}
+				
+				
 			}
-			output += nonTerminal[row] + "\t";
+			output += nonTerminals[row] + "\t";
 			output += "\n";
 		}
+		
+		output += "\n";
+		output += rules;
 		return output;
 	}
 	
@@ -160,11 +169,27 @@ public class ABParserTable {
 		private List<ABGrammarToken> production;
 		
 		/**
+		 * Constructor
+		 * @param production
+		 */
+		public ABParserTableCell(List<ABGrammarToken> production) {
+			setProduction(production);
+		}
+		
+		/**
 		 * Set production
 		 * @param production
 		 */
 		public void setProduction(List<ABGrammarToken> production) {
 			this.production = production;
+		}
+		
+		/**
+		 * Get production
+		 * @return production
+		 */
+		public List<ABGrammarToken> getProduction() {
+			return this.production;
 		}
 	}
 }

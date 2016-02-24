@@ -46,9 +46,11 @@ public class ABGrammar {
 			
 			// Computer first
 			computeFirst();
+			l.info("First sets: %s", firstSetMap.toString());
 			
 			// Computer follow
 			computeFollow();
+			l.info("Follow sets: %s", followSetMap.toString());
 			
 		} catch (IOException e) {
 			l.error(e.getMessage());
@@ -67,18 +69,9 @@ public class ABGrammar {
 		// Add END OF STACK
 		terminals.add(END_OF_STACK);
 		
-		// Rules iterator
-		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
-	    
-		// While more rules
-		while (it.hasNext()) {
-			
-			// Cache
-	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
-	    
-	        // Get productions
-	        List<List<ABGrammarToken>> productions = pair.getValue();
-	        
+        // Get productions
+        for(List<List<ABGrammarToken>> productions : rules.values()) {
+        
 	        // Loop on productions
 	        for(List<ABGrammarToken> production : productions) {
 	        	
@@ -133,20 +126,7 @@ public class ABGrammar {
 	public String[] getNonTerminals() {
 		
 		// Prepare list
-		Set<String> nonTerminals = new HashSet<>();
-		
-		// Rules iterator
-		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
-	    
-		// While more rules
-		while (it.hasNext()) {
-			
-			// Cache
-	        Map.Entry<String, List<List<ABGrammarToken>>> pair = it.next();
-	    
-	        // Store key
-	        nonTerminals.add(pair.getKey());
-		}
+		Set<String> nonTerminals = rules.keySet();
 		
 		// Prepare array
 		String[] array = new String[nonTerminals.size()];
@@ -243,34 +223,13 @@ public class ABGrammar {
 	 */
 	private void computeFollow() {
 		
-		// Rules iterator
-		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> tmpIt = rules.entrySet().iterator();
-
-		// Init follow set map
-		while (tmpIt.hasNext()) {
-			
-			// Cache
-	        Map.Entry<String, List<List<ABGrammarToken>>> pair = tmpIt.next();
-	    
-	        // Init empty sets
-	        followSetMap.put(pair.getKey(), new HashSet<String>());
-		}
+		// Loop on non terminals and init empty sets
+		for(String nonTerminal : rules.keySet())
+			followSetMap.put(nonTerminal, new HashSet<String>());
 		
-		// Rules iterator
-		Iterator<Map.Entry<String, List<List<ABGrammarToken>>>> it = rules.entrySet().iterator();
-
-		// Start
-		followSetMap.get(start).add(END_OF_STACK);
-		
-		// While more rules
-		while (it.hasNext()) {
-			
-			// Move to next
-			it.next();
-	        
-	        // Compute follow
+		// Apply the follow multiple times
+		for (int i=0; i < rules.size(); i++)
 	        follow();
-	    }
 	}
 	
 	/**
@@ -338,12 +297,12 @@ public class ABGrammar {
 	}
 	
 	/**
-	 * Get first of a non terminal
-	 * @param nonTerminal
-	 * @return first set of a non terminal
+	 * Get first of a token
+	 * @param token
+	 * @return first set 
 	 */
-	public Set<String> getFirstOf(String nonTerminal) {
-		return this.firstSetMap.get(nonTerminal);
+	public Set<String> getFirstOf(ABGrammarToken token) {
+		return first(token);
 	}
 	
 	/**
