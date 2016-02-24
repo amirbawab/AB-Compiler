@@ -1,11 +1,14 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
@@ -20,7 +23,8 @@ public class ABParserTable {
 	private ABGrammar abGrammar;
 	private Map<List<ABGrammarToken>, Integer> rMap;
 	private Map<String, Integer> eMap;
-	
+	private List<ABParserTableRule> rMapOrdered;
+	private List<ABParserTableError> eMapOrdered;
 	
 	/**
 	 * Create table
@@ -38,6 +42,8 @@ public class ABParserTable {
 		this.abGrammar = abGrammar;
 		this.rMap = new HashMap<>();
 		this.eMap = new HashMap<>();
+		this.rMapOrdered = new ArrayList<>();
+		this.eMapOrdered = new ArrayList<>();
 		
 		// Cache terminal index
 		for(int i=0; i<terminals.length; i++)
@@ -155,6 +161,7 @@ public class ABParserTable {
 					} else {
 						rMap.put(table[row][col].getProduction(), ++rCounter);
 						table[row][col].setId("r" + rCounter);
+						rMapOrdered.add(new ABParserTableRule(table[row][col].getId(), nonTerminals[row], table[row][col].getProduction()));
 					}
 						
 				// If error
@@ -169,10 +176,31 @@ public class ABParserTable {
 					} else {
 						eMap.put(table[row][col].getErrorMessage(), ++eCounter);
 						table[row][col].setId("e" + eCounter);
+						eMapOrdered.add(new ABParserTableError(table[row][col].getId(), table[row][col].getErrorMessage()));
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Get rules
+	 * @return rules
+	 */
+	public ABParserTableRule[] getRules() {
+		ABParserTableRule[] rules = new ABParserTableRule[rMapOrdered.size()];
+		rMapOrdered.toArray(rules);
+		return rules;
+	}
+	
+	/**
+	 * Get errors
+	 * @return errors
+	 */
+	public ABParserTableError[] getErrors() {
+		ABParserTableError[] errors = new ABParserTableError[eMapOrdered.size()];
+		rMapOrdered.toArray(errors);
+		return errors;
 	}
 	
 	/**
@@ -227,6 +255,81 @@ public class ABParserTable {
 		output += "\nERRORS:\n";
 		output += errors;
 		return output;
+	}
+	
+	/**
+	 * Parser table rule
+	 */
+	public class ABParserTableRule {
+		
+		// Variables
+		private String id;
+		private String LHS;
+		private List<ABGrammarToken> production;
+		
+		/**
+		 * @param id
+		 * @param production
+		 */
+		public ABParserTableRule(String id, String LHS, List<ABGrammarToken> production) {
+			this.id = id;
+			this.LHS = LHS;
+			this.production = production;
+		}
+
+		/**
+		 * @return the id
+		 */
+		public String getId() {
+			return id;
+		}
+
+		/**
+		 * @return LHS
+		 */
+		public String getLHS() {
+			return this.LHS;
+		}
+		
+		/**
+		 * @return the production
+		 */
+		public List<ABGrammarToken> getProduction() {
+			return production;
+		}
+	}
+	
+	/**
+	 * Parser table rule
+	 */
+	public class ABParserTableError {
+		
+		// Variables
+		private String id;
+		private String message;
+		
+		/**
+		 * @param id
+		 * @param message
+		 */
+		public ABParserTableError(String id, String message) {
+			this.id = id;
+			this.message = message;
+		}
+
+		/**
+		 * @return the id
+		 */
+		public String getId() {
+			return id;
+		}
+
+		/**
+		 * @return the message
+		 */
+		public String getMessage() {
+			return message;
+		}
 	}
 	
 	/**

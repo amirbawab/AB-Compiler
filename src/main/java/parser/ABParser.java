@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
-import scanner.ABScanner;
 import scanner.ABToken;
 
 public class ABParser {
