@@ -82,4 +82,12 @@ public class ABToken {
 	public void setCol(int col) {
 		this.col = col;
 	}
+	
+	/**
+	 * Format token
+	 * @return token information
+	 */
+	public String toString() {
+		return String.format("%s : %s", token, value);
+	}
 }

@@ -38,7 +38,8 @@ public class IdentifierHelper {
 		RETURN("return", "T_RETURN"),
 		AND("and", "T_AND"),
 		NOT("not", "T_NOT"),
-		OR("or", "T_OR")
+		OR("or", "T_OR"),
+		PROGRAM("program", "T_PROGRAM")
 		;
 		
 		private String match, token;

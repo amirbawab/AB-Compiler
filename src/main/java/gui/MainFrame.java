@@ -57,6 +57,9 @@ public class MainFrame extends JFrame {
 				case RUN:
 					if(abIDElistener != null) {
 						
+						// Prepare message
+						String message = "";
+						
 						// Analyze input
 						abIDElistener.analyze(centerPanel.getFileContent());
 						
@@ -73,12 +76,22 @@ public class MainFrame extends JFrame {
 						
 						// Update compiler message
 						if(scannerErrorData.length > 0) {
-							bottomPanel.setCompilerMessageText(String.format("Scanner: %d error(s) found! Total time: %d ms", scannerErrorData.length, compilationTime));
+							message += String.format("Scanner: %d error(s) found!", scannerErrorData.length);
 							bottomPanel.setStyle(BottomPanel.Style.ERROR);
+						
+						// No scanner error found
 						} else {
-							bottomPanel.setCompilerMessageText(String.format("No errors found. Total time: %d ms", compilationTime));
-							bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+							
+							// Parser output
+							Object[][] parserOutputData = abIDElistener.getParserOutput();
+							centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
 						}
+						
+						// Insert time
+						message += String.format("Total time: %d ms", compilationTime);
+						
+						// Set message
+						bottomPanel.setCompilerMessageText(message);
 					}
 					break;
 				}

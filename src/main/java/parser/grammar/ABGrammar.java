@@ -24,9 +24,6 @@ public class ABGrammar {
 	private Map<String, Set<String>> firstSetMap, followSetMap;
 	private String start;
 	
-	// Constant
-	private final String END_OF_STACK = "$";
-	
 	/**
 	 * Create grammar from file
 	 * @param file
@@ -67,7 +64,7 @@ public class ABGrammar {
 		Set<String> terminals = new HashSet<>();
 		
 		// Add END OF STACK
-		terminals.add(END_OF_STACK);
+		terminals.add(ABGrammarToken.END_OF_STACK);
 		
         // Get productions
         for(List<List<ABGrammarToken>> productions : rules.values()) {
@@ -228,8 +225,9 @@ public class ABGrammar {
 			followSetMap.put(nonTerminal, new HashSet<String>());
 		
 		// Apply the follow multiple times
-		for (int i=0; i < rules.size(); i++)
-	        follow();
+		for (List<List<ABGrammarToken>> productions : rules.values())
+			for(int i=0; i<productions.size(); i++)
+				follow();
 	}
 	
 	/**
@@ -260,7 +258,7 @@ public class ABGrammar {
 	        			
 	        			// If non terminal is the starting point
 		    			if(pToken.getValue().equals(start))
-		    				followSetMap.get(pToken.getValue()).add(END_OF_STACK);
+		    				followSetMap.get(pToken.getValue()).add(ABGrammarToken.END_OF_STACK);
 		    			
 		    			// J
 	        			int j = i;
@@ -312,6 +310,14 @@ public class ABGrammar {
 	 */
 	public Set<String> getFollowOf(String nonTerminal) {
 		return this.followSetMap.get(nonTerminal);
+	}
+	
+	/**
+	 * Get starting non terminal
+	 * @return starting non terminal
+	 */
+	public String getStart() {
+		return this.start;
 	}
 	
 	/**

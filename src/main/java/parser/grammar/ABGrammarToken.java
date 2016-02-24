@@ -6,11 +6,13 @@ public class ABGrammarToken {
 	private enum Type {
 		TERMINAL,
 		NON_TERMINAL,
+		END_OF_STACK,
 		EPSILON
 	}
 	
 	// Epsilon
 	public static final String EPSILON = "EPSILON";
+	public static final String END_OF_STACK = "$";
 	
 	// Variables
 	private String value;
@@ -28,6 +30,10 @@ public class ABGrammarToken {
 			this.value = value;
 			this.type = Type.EPSILON;
 		
+		} else if(value.equals(END_OF_STACK)) {
+			this.value = value;
+			this.type = Type.END_OF_STACK;
+			
 		} else if(value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'') {
 			this.value = value.substring(1, value.length()-1);
 			this.type = Type.TERMINAL;
@@ -63,6 +69,14 @@ public class ABGrammarToken {
 	}
 	
 	/**
+	 * Check if is end of stack symbol
+	 * @return true if end of stack symbol
+	 */
+	public boolean isEndOfStack() {
+		return type == Type.END_OF_STACK;
+	}
+	
+	/**
 	 * Get value
 	 * @return value
 	 */
@@ -80,6 +94,7 @@ public class ABGrammarToken {
 			return "'" + value + "'";
 		
 		case EPSILON:
+		case END_OF_STACK:
 		case NON_TERMINAL:
 		default:
 			return value;

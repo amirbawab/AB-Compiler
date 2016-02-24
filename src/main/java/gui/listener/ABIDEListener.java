@@ -4,5 +4,6 @@ public interface ABIDEListener {
 	public void analyze(String string);
 	public Object[][] getScannerOutput();
 	public Object[][] getScannerError();
+	public Object[][] getParserOutput();
 	public long getScannerTime();
 }
