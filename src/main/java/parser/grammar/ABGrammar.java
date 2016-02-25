@@ -224,6 +224,9 @@ public class ABGrammar {
 		for(String nonTerminal : rules.keySet())
 			followSetMap.put(nonTerminal, new HashSet<String>());
 		
+		// Add $ to start token
+		followSetMap.get(start).add(ABGrammarToken.END_OF_STACK);
+		
 		// Apply the follow multiple times
 		for (List<List<ABGrammarToken>> productions : rules.values())
 			for(int i=0; i<productions.size(); i++)
@@ -256,10 +259,6 @@ public class ABGrammar {
 	        		// If non terminal
 	        		if(pToken.isNonTerminal()) {
 	        			
-	        			// If non terminal is the starting point
-		    			if(pToken.getValue().equals(start))
-		    				followSetMap.get(pToken.getValue()).add(ABGrammarToken.END_OF_STACK);
-		    			
 		    			// J
 	        			int j = i;
 	        			
