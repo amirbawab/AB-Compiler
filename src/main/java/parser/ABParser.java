@@ -89,15 +89,11 @@ public class ABParser {
 		// Get next token
 		ABToken inputToken = tokens.get(inputTokenIndex);
 		
-		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " ")));
-		
-		// Last snapshot
-		ABParserSnapshot lastSnapshot = snapshots.get(snapshots.size()-1);
-		
 		// Log
 		l.info("Start parsing input ...");
-		l.info("%d || %s || %s || -- || %s", lastSnapshot.getId(), lastSnapshot.getStack(), lastSnapshot.getInput(), lastSnapshot.getDerivation());
+				
+		// Take snapshot
+		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " ")));
 		
 		// While top is not $
 		while(!stack.peek().isEndOfStack()) {
@@ -113,12 +109,6 @@ public class ABParser {
 					
 					// Take snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", ""));
-					
-					// Last snapshot
-					lastSnapshot = snapshots.get(snapshots.size()-1);
-					
-					// Log
-					l.info("%d || %s || %s || -- || --", lastSnapshot.getId(), lastSnapshot.getStack(), lastSnapshot.getInput());
 					
 					// Pop terminal from stack
 					stack.pop();
@@ -150,12 +140,6 @@ public class ABParser {
 					// Take snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), String.format("%s:%s->%s", cell.getId(), grammarToken.getValue(), StringUtils.join(production, " ")), String.format("=>%s", StringUtils.join(derivation, " "))));
 					
-					// Last snapshot
-					lastSnapshot = snapshots.get(snapshots.size()-1);
-					
-					// Log
-					l.info("%d || %s || %s || %s || %s", lastSnapshot.getId(), lastSnapshot.getStack(), lastSnapshot.getInput(), lastSnapshot.getProduction(), lastSnapshot.getDerivation());
-					
 					// Pop
 					stack.pop();
 					
@@ -167,7 +151,32 @@ public class ABParser {
 					
 				// If error
 				} else {
-					// TODO Error found
+					
+					// If pop
+					if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
+						
+						// Pop the stack
+						stack.pop();
+						
+						// Create snapshot
+						ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", cell.getErrorMessage());
+						snapshot.setError(true);
+						
+						// Add snapshot
+						snapshots.add(snapshot);
+						
+					// If scan
+					} else if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.SCAN)) {
+						
+						// Scan next input token
+						inputToken = tokens.get(++inputTokenIndex);
+					
+					// If undefined
+					} else {
+						l.error("Undefined behavior for the error cell: non-terminal: %s, terminal: %s", grammarToken.getValue(), inputToken.getToken());
+					}
+					
+					// Mark error
 					error = true;
 				}
 			}
@@ -175,17 +184,20 @@ public class ABParser {
 		
 		// If input token has more unparsed input or there was an error
 		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) || error){
+			
+			// Create snapshot
+			ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Your code cannot end with a non function declaration");
+			snapshot.setError(true);
+			
+			// Add snapshot
+			snapshots.add(snapshot);
+			
+			// Return false
 			return false;
 		}
 		
 		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "success"));
-		
-		// Last snapshot
-		lastSnapshot = snapshots.get(snapshots.size()-1);
-		
-		// Log
-		l.info("%d || %s || %s || -- || success", lastSnapshot.getId(), lastSnapshot.getStack(), lastSnapshot.getInput());
+		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Success"));
 		
 		// No errors
 		return true;
@@ -251,6 +263,7 @@ public class ABParser {
 		// Variables
 		private String stack, input, production, derivation;
 		private int id;
+		private boolean isError = false;
 
 		/**
 		 * Constructor
@@ -265,6 +278,25 @@ public class ABParser {
 			this.input = input;
 			this.production = production;
 			this.derivation = derivation;
+			
+			// Log
+			l.info("%d || %s || %s || %s || %s", id, stack, input, production, derivation);
+		}
+		
+		/**
+		 * Set is error value
+		 * @param isError
+		 */
+		public void setError(boolean isError) {
+			this.isError = isError;
+		}
+		
+		/**
+		 * Check if is an error snapshot
+		 * @return is error
+		 */
+		public boolean isError() {
+			return this.isError;
 		}
 
 		/**

@@ -132,7 +132,7 @@ public class ABParserTable {
 		for(int row=0; row < nonTerminals.length; row++) {
 			for(int col=0; col < terminals.length; col++) {
 				if(table[row][col] == null)
-					table[row][col] = new ABParserTableCell("Error found!");
+					table[row][col] = new ABParserTableCell(nonTerminals[row], terminals[col], "Error found!");
 			}
 		}
 	}
@@ -179,7 +179,9 @@ public class ABParserTable {
 						
 					// If not already registered
 					} else {
-						rMap.put(table[row][col].getProduction(), new ABParserTableRule(String.format("r%d", ++rCounter), nonTerminals[row], table[row][col].getProduction()));
+						String id = String.format("r%d", ++rCounter);
+						rMap.put(table[row][col].getProduction(), new ABParserTableRule(id, nonTerminals[row], table[row][col].getProduction()));
+						table[row][col].setId(id);
 					}
 						
 				// If error
@@ -192,7 +194,9 @@ public class ABParserTable {
 					
 					// If not already registered
 					} else {
-						eMap.put(table[row][col].getErrorMessage(), new ABParserTableError(String.format("e%d", ++eCounter), table[row][col].getErrorMessage()));
+						String id = String.format("e%d", ++eCounter);
+						eMap.put(table[row][col].getErrorMessage(), new ABParserTableError(id, table[row][col].getErrorMessage()));
+						table[row][col].setId(id);
 					}
 				}
 			}
@@ -234,9 +238,15 @@ public class ABParserTable {
 		for(int row = 0; row < nonTerminals.length; row++) {
 			for(int col = 0; col < terminals.length; col++) {
 				String id = table[row][col].getId();
-				output += id + "\t";
+				output += id;
+				
+				// If error
+				if(table[row][col].isError())
+					output += " " + table[row][col].getErrorDecision();
+					
+				output += "\t";
 			}
-			output += nonTerminals[row] + "\t";
+			output += nonTerminals[row];
 			output += "\n";
 		}
 
@@ -338,33 +348,40 @@ public class ABParserTable {
 		// Variables
 		private List<ABGrammarToken> production;
 		private String errorMessage;
-		private boolean isError = false;
+		private boolean isError;
+		private String errorDecision;
 		private String id;
+		
+		// Constants
+		public static final String SCAN = "S";
+		public static final String POP = "P";
 		
 		/**
 		 * Constructor
 		 * @param production
 		 */
 		public ABParserTableCell(List<ABGrammarToken> production) {
-			setProduction(production);
+			this.isError = false;
+			this.production = production;
 		}
 
 		/**
 		 * Constructor
 		 * @param production
 		 */
-		public ABParserTableCell(String errorMessage) {
+		public ABParserTableCell(String nonTerminal, String terminal, String errorMessage) {
 			this.errorMessage = errorMessage;
 			this.isError = true;
-			setProduction(null);
-		}
-		
-		/**
-		 * Set production
-		 * @param production
-		 */
-		public void setProduction(List<ABGrammarToken> production) {
-			this.production = production;
+			this.production = null;
+			
+			// Get follow set of non terminal
+			Set<String> followSet = abGrammar.getFollowOf(nonTerminal);
+			
+			// If terminal is in the follow set, then it's a pop
+			if(followSet.contains(terminal))
+				errorDecision = POP;
+			else
+				errorDecision = SCAN;
 		}
 		
 		/**
@@ -377,6 +394,7 @@ public class ABParserTable {
 		
 		/**
 		 * Get error message
+		 * Note: Use only if the cell is an error cell
 		 * @return error message
 		 */
 		public String getErrorMessage() {
@@ -385,6 +403,7 @@ public class ABParserTable {
 		
 		/**
 		 * Get production
+		 * Note: Use only if the cell is not an error cell
 		 * @return production
 		 */
 		public List<ABGrammarToken> getProduction() {
@@ -397,6 +416,15 @@ public class ABParserTable {
 		 */
 		public String getId() {
 			return this.id;
+		}
+		
+		/**
+		 * Get error decision
+		 * Note: Use only if the cell is an error cell
+		 * @return POP | SCAN | null
+		 */
+		public String getErrorDecision() {
+			return this.errorDecision;
 		}
 		
 		/**
