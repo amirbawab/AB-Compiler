@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
+import scanner.ABScanner;
 import scanner.ABToken;
 
 public class ABParser {
@@ -48,9 +49,15 @@ public class ABParser {
 	public boolean parse(ABToken[] scannerTokens) {
 		
 		// Add $ to end of tokens
-		ABToken[] tokens = new ABToken[scannerTokens.length + 1];
-		for(int i=0; i < scannerTokens.length; i++) tokens[i] = scannerTokens[i];
-		tokens[tokens.length-1] = new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, -1, -1);
+		ArrayList<ABToken> tokens = new ArrayList<>();
+		for(int i=0; i < scannerTokens.length; i++) {
+			
+			// If token should not be excluded, add it
+			if(!ABScanner.EXCLUDE_PARSER.contains(scannerTokens[i].getToken()))
+				tokens.add(scannerTokens[i]);
+		}
+		
+		tokens.add(new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, -1, -1));
 		
 		// Prepare derivation list
 		List<ABGrammarToken> derivation = new ArrayList<>();
@@ -80,7 +87,7 @@ public class ABParser {
 		int step = 0;
 		
 		// Get next token
-		ABToken inputToken = tokens[inputTokenIndex];
+		ABToken inputToken = tokens.get(inputTokenIndex);
 		
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " ")));
@@ -91,7 +98,6 @@ public class ABParser {
 		// Log
 		l.info("Start parsing input ...");
 		l.info("%d || %s || %s || -- || %s", lastSnapshot.getId(), lastSnapshot.getStack(), lastSnapshot.getInput(), lastSnapshot.getDerivation());
-		
 		
 		// While top is not $
 		while(!stack.peek().isEndOfStack()) {
@@ -118,7 +124,7 @@ public class ABParser {
 					stack.pop();
 					
 					// Update inputToken
-					inputToken = tokens[++inputTokenIndex];
+					inputToken = tokens.get(++inputTokenIndex);
 					
 				// If no match
 				} else {
@@ -191,10 +197,10 @@ public class ABParser {
 	 * @param index
 	 * @return tokens substring
 	 */
-	private String tokensStartAt(ABToken[] tokens, int index) {
+	private String tokensStartAt(ArrayList<ABToken> tokens, int index) {
 		String result = "";
-		for(int i = index; i < tokens.length; i++)
-			result += String.format("%s ", tokens[i].getToken());
+		for(int i = index; i < tokens.size(); i++)
+			result += String.format("%s ", tokens.get(i).getToken());
 		return result;
 	}
 	

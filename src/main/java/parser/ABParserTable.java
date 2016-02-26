@@ -1,30 +1,33 @@
 package parser;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
 
 public class ABParserTable {
 	
+	// Logger
+	private Logger l = LogManager.getFormatterLogger(getClass());
+		
 	// Variables
 	private ABParserTableCell[][] table;
 	private String terminals[];
 	private String nonTerminals[];
 	private Map<String, Integer> terminalIndexMap, nonTerminalIndexMap;
+	private LinkedHashMap<List<ABGrammarToken>, ABParserTableRule> rMap;
+	private LinkedHashMap<String, ABParserTableError> eMap;
 	private ABGrammar abGrammar;
-	private Map<List<ABGrammarToken>, Integer> rMap;
-	private Map<String, Integer> eMap;
-	private List<ABParserTableRule> rMapOrdered;
-	private List<ABParserTableError> eMapOrdered;
 	
 	/**
 	 * Create table
@@ -40,10 +43,8 @@ public class ABParserTable {
 		this.terminalIndexMap = new HashMap<>();
 		this.nonTerminalIndexMap = new HashMap<>();
 		this.abGrammar = abGrammar;
-		this.rMap = new HashMap<>();
-		this.eMap = new HashMap<>();
-		this.rMapOrdered = new ArrayList<>();
-		this.eMapOrdered = new ArrayList<>();
+		this.rMap = new LinkedHashMap<>();
+		this.eMap = new LinkedHashMap<>();
 		
 		// Cache terminal index
 		for(int i=0; i<terminals.length; i++)
@@ -112,8 +113,18 @@ public class ABParserTable {
 	        	}
 	        	
 	        	// Add cells
-	        	for(String terminal : terminalsSet)
+	        	for(String terminal : terminalsSet){
+	        		
+	        		// Log
+	        		if(!nonTerminalIndexMap.containsKey(nonTerminal))
+	        			l.error("Non terminal '%s' not found in table", nonTerminal);
+	        		
+	        		// Log
+	        		if(!terminalIndexMap.containsKey(terminal))
+	        			l.error("Terminal '%s' not found in table", terminal);
+	        		
 	        		table[nonTerminalIndexMap.get(nonTerminal)][terminalIndexMap.get(terminal)] = new ABParserTableCell(production);
+	        	}
 	        }
 		}	   
 		
@@ -133,6 +144,15 @@ public class ABParserTable {
 	 * @return Table cell
 	 */
 	public ABParserTableCell getTableAt(String nonTerminal, String terminal) {
+		
+		// Log
+		if(!nonTerminalIndexMap.containsKey(nonTerminal))
+			l.error("Non terminal '%s' not found in table", nonTerminal);
+		
+		// Log
+		if(!terminalIndexMap.containsKey(terminal))
+			l.error("Terminal '%s' not found in table", terminal);
+		
 		return table[nonTerminalIndexMap.get(nonTerminal)][terminalIndexMap.get(terminal)];
 	}
 	
@@ -154,14 +174,12 @@ public class ABParserTable {
 					
 					// If already registered
 					if(rMap.containsKey(table[row][col].getProduction())) {
-						int id = rMap.get(table[row][col].getProduction());
-						table[row][col].setId("r" + id);
+						ABParserTableRule rule = rMap.get(table[row][col].getProduction());
+						table[row][col].setId(rule.getId());
 						
 					// If not already registered
 					} else {
-						rMap.put(table[row][col].getProduction(), ++rCounter);
-						table[row][col].setId("r" + rCounter);
-						rMapOrdered.add(new ABParserTableRule(table[row][col].getId(), nonTerminals[row], table[row][col].getProduction()));
+						rMap.put(table[row][col].getProduction(), new ABParserTableRule(String.format("r%d", ++rCounter), nonTerminals[row], table[row][col].getProduction()));
 					}
 						
 				// If error
@@ -169,14 +187,12 @@ public class ABParserTable {
 					
 					// If already registered
 					if(eMap.containsKey(table[row][col].getErrorMessage())) {
-						int id = eMap.get(table[row][col].getErrorMessage());
-						table[row][col].setId("e" + id);
+						ABParserTableError error = eMap.get(table[row][col].getErrorMessage());
+						table[row][col].setId(error.getId());
 					
 					// If not already registered
 					} else {
-						eMap.put(table[row][col].getErrorMessage(), ++eCounter);
-						table[row][col].setId("e" + eCounter);
-						eMapOrdered.add(new ABParserTableError(table[row][col].getId(), table[row][col].getErrorMessage()));
+						eMap.put(table[row][col].getErrorMessage(), new ABParserTableError(String.format("e%d", ++eCounter), table[row][col].getErrorMessage()));
 					}
 				}
 			}
@@ -188,8 +204,8 @@ public class ABParserTable {
 	 * @return rules
 	 */
 	public ABParserTableRule[] getRules() {
-		ABParserTableRule[] rules = new ABParserTableRule[rMapOrdered.size()];
-		rMapOrdered.toArray(rules);
+		ABParserTableRule[] rules = new ABParserTableRule[rMap.size()];
+		rMap.values().toArray(rules);
 		return rules;
 	}
 	
@@ -198,8 +214,8 @@ public class ABParserTable {
 	 * @return errors
 	 */
 	public ABParserTableError[] getErrors() {
-		ABParserTableError[] errors = new ABParserTableError[eMapOrdered.size()];
-		rMapOrdered.toArray(errors);
+		ABParserTableError[] errors = new ABParserTableError[eMap.size()];
+		rMap.values().toArray(errors);
 		return errors;
 	}
 	
@@ -210,12 +226,6 @@ public class ABParserTable {
 		
 		// Prepare output
 		String output = "\n";
-		String rules = "";
-		String errors = "";
-		
-		// Sets
-		Set<String> rSet = new HashSet<>();
-		Set<String> eSet = new HashSet<>();
 		
 		for(int col = 0; col < terminals.length; col++)
 			output += terminals[col] + "\t";
@@ -223,37 +233,25 @@ public class ABParserTable {
 		output += "\n";
 		for(int row = 0; row < nonTerminals.length; row++) {
 			for(int col = 0; col < terminals.length; col++) {
-				
 				String id = table[row][col].getId();
 				output += id + "\t";
-				
-				// If no error
-				if(!table[row][col].isError()) {
-					
-					// If not already added
-					if(!rSet.contains(id)){
-						rSet.add(id);
-						rules += String.format("%s : %s -> %s\n", id, nonTerminals[row], table[row][col].getProduction());
-					}
-						
-				// If error
-				} else {
-					
-					// If not already added
-					if(!eSet.contains(id)){
-						eSet.add(id);
-						errors += String.format("%s : %s\n", id, table[row][col].getErrorMessage());
-					}
-				}
 			}
 			output += nonTerminals[row] + "\t";
 			output += "\n";
 		}
 
 		output += "\nRULES:\n";
-		output += rules;
+		
+		// Add rules to output
+		for(ABParserTableRule rule : rMap.values())
+			output += String.format("%s: %s -> %s\n", rule.getId(), rule.getLHS(), StringUtils.join(rule.getProduction(), " "));
+		
 		output += "\nERRORS:\n";
-		output += errors;
+		
+		// Add errors to output
+		for(ABParserTableError error : eMap.values())
+			output += String.format("%s: %s\n", error.getId(), error.getMessage());
+		
 		return output;
 	}
 	

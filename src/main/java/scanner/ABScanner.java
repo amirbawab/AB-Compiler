@@ -2,8 +2,11 @@ package scanner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +50,9 @@ public class ABScanner {
 	
 	// Prefix
 	private final String ERROR_PREFIX = "T_ERR_";
+	
+	// Exclude when parsing
+	public static final Set<String> EXCLUDE_PARSER = new HashSet<>(Arrays.asList("T_BLOCK_COMMENT", "T_INLINE_COMMENT"));
 	
 	public ABScanner(String dfaFile) {
 		

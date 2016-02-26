@@ -1,82 +1,61 @@
-prog                                    -> classDeclRpt progBody
-classDeclRpt                            -> classDecl classDeclRpt
-                                        | EPSILON
-classDecl                               -> 'T_CLASS' 'T_IDENTIFIER' 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY' 'T_SEMICOLON'
-varDeclRptFunc                          -> type 'T_IDENTIFIER' varDeclRptFuncDisamb
-                                        | EPSILON
-varDeclRptFuncDisamb                    -> arraySizeRpt 'T_SEMICOLON' varDeclRptFunc
-                                        | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody 'T_SEMICOLON' funcDefRpt
-funcDefRpt                              -> funcDef funcDefRpt
-                                        | EPSILON
-progBody                                -> 'T_PROGRAM' funcBody 'T_SEMICOLON' funcDefRpt
-funcHead                                -> type 'T_IDENTIFIER' 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN'
-funcDef                                 -> funcHead funcBody 'T_SEMICOLON'
-funcBody                                -> 'T_OPEN_CURLY' varDeclRptStat 'T_CLOSE_CURLY'
-varDeclRptStat                          -> 'T_INT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptStat
-                                        | 'T_FLOAT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptStat
-                                        | 'T_IDENTIFIER' varDeclRptStatPrime
-                                        | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON' statementRpt
-                                        | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON' statementRpt
-                                        | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
-                                        | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
-                                        | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
-                                        | EPSILON
-varDeclRptStatPrime                     -> 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptStat
-                                        | indiceRpt varDeclRptStatPrimePrime
-varDeclRptStatPrimePrime                -> 'T_DOT' idnestRptIdIndiceRpt assignOp expr 'T_SEMICOLON' statementRpt
-                                        | assignOp expr 'T_SEMICOLON' statementRpt
-idnestRptIdFactorPrime                  -> 'T_IDENTIFIER' idnestRptIdPrimefactorPrime
-idnestRptIdPrimefactorPrime             -> indiceRpt idnestRptIdPrimefactorPrimePrime
-                                        | 'T_OPEN_PAREN' aParams 'T_CLOSE_PAREN'
-idnestRptIdPrimefactorPrimePrime        ->  'T_DOT' idnestRptIdFactorPrime
-                                        | EPSILON                               
-idnestRptIdIndiceRpt                    -> 'T_IDENTIFIER' idnestRptIdPrimeIndiceRpt
-idnestRptIdPrimeIndiceRpt               -> indiceRpt idnestRptIdPrimeIndiceRptPrime
-idnestRptIdPrimeIndiceRptPrime          -> 'T_DOT' idnestRptIdIndiceRpt
-                                        | EPSILON
-statementRpt                            -> statement statementRpt
-                                        | EPSILON
-arraySizeRpt                            -> arraySize arraySizeRpt
-                                        | EPSILON
-statement                               -> assignStat 'T_SEMICOLON'
-                                        | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON'
-                                        | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON'
-                                        | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON'
-                                        | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
-                                        | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
-assignStat                              -> variable assignOp expr
-statBlock                               -> 'T_OPEN_CURLY' statementRpt 'T_CLOSE_CURLY' | statement | EPSILON
-expr                                    -> arithExpr exprPrime
-exprPrime                               -> relOp arithExpr | EPSILON
-relExpr                                 -> arithExpr relOp arithExpr
-arithExpr                               -> term arithExprPrime
-arithExprPrime                          -> addOp term arithExprPrime
-                                        | EPSILON
-sign                                    -> 'T_PLUS' | 'T_MINUS'
-term                                    -> factor termPrime
-termPrime                               -> multOp factor termPrime
-                                        | EPSILON
-factor                                  -> idnestRptIdFactorPrime
-                                        | 'T_INTEGER'
-                                        | 'T_FLOAT'
-                                        | 'T_OPEN_PAREN' arithExpr 'T_CLOSE_PAREN'
-                                        | 'T_NOT' factor
-                                        | sign factor
-variable                                -> idnestRptIdIndiceRpt
-indiceRpt                               -> indice indiceRpt
-                                        | EPSILON
-indice                                  -> 'T_OPEN_SQUARE' arithExpr 'T_CLOSE_SQUARE'
-arraySize                               -> 'T_OPEN_SQUARE' 'T_INT_TYPE' 'T_CLOSE_SQUARE'
-type                                    -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
-fParams                                 -> type 'T_IDENTIFIER' arraySizeRpt fParamsTailRpt | EPSILON
-fParamsTailRpt                          -> fParamsTail fParamsTailRpt
-                                        | EPSILON
-aParams                                 -> expr aParamsTailRpt | EPSILON
-aParamsTailRpt                          -> aParamsTail aParamsTailRpt
-                                        | EPSILON
-fParamsTail                             -> 'T_COMMA' type 'T_IDENTIFIER' arraySizeRpt
-aParamsTail                             -> 'T_COMMA' expr
-assignOp                                -> 'T_ASSIGN'
-relOp                                   -> 'T_GREATER_THAN' | 'T_LESS_THAN' | 'T_LESS_OR_EQUAL' | 'T_GREATER_OR_EQUAL' | 'T_IS_NOT_EQUAL' | 'T_IS_EQUAL'
-addOp                                   -> 'T_PLUS' | 'T_MINUS' | 'T_OR'
-multOp                                  -> 'T_MULTIPLY' | 'T_DIVIDE' | 'T_AND'
+prog            -> classDeclRpt progBody
+classDeclRpt    -> classDecl classDeclRpt | EPSILON
+classDecl       -> 'T_CLASS' 'T_IDENTIFIER' 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY' 'T_SEMICOLON'
+varDeclRptFunc  -> type 'T_IDENTIFIER' varFuncDisamb | EPSILON
+varFuncDisamb   -> arraySizeRpt 'T_SEMICOLON' varDeclRptFunc | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody 'T_SEMICOLON' funcDefRpt
+funcDefRpt      -> type 'T_IDENTIFIER' 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody 'T_SEMICOLON' funcDefRpt | EPSILON
+arraySizeRpt    -> arraySize arraySizeRpt | EPSILON
+arraySize       -> 'T_OPEN_SQUARE' 'T_INTEGER' 'T_CLOSE_SQUARE'
+type            -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
+fParams         -> type 'T_IDENTIFIER' arraySizeRpt fParamsTailRpt | EPSILON
+fParamsTail     -> 'T_COMMA' type 'T_IDENTIFIER' arraySizeRpt
+fParamsTailRpt  -> fParamsTail fParamsTailRpt | EPSILON
+progBody        -> 'T_PROGRAM' funcBody 'T_SEMICOLON' funcDefRpt
+funcBody        -> 'T_OPEN_CURLY' varDeclRptSt 'T_CLOSE_CURLY'
+varDeclRptSt    -> 'T_INT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt 
+                | 'T_FLOAT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt 
+                | 'T_IDENTIFIER' varDeclRptStDis
+                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON' statementRpt
+                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON' statementRpt
+                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
+                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
+                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
+                | EPSILON
+varDeclRptStDis -> 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt | idnestRptIdDiIn assignOp expr 'T_SEMICOLON' statementRpt
+statementRpt    -> statement statementRpt | EPSILON
+statement       -> 'T_IDENTIFIER' idnestRptIdDiIn assignOp expr 'T_SEMICOLON'
+                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON'
+                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON'
+                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON'
+                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
+                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
+expr            -> arithExpr exprDisamb 
+exprDisamb      -> relOp arithExpr | EPSILON
+arithExpr       -> term arithExprRpt
+arithExprRpt    -> addOp term arithExprRpt | EPSILON
+relExpr         -> arithExpr relOp arithExpr
+statBlock       -> 'T_OPEN_CURLY' statementRpt 'T_CLOSE_CURLY' | statement | EPSILON
+relOp           -> 'T_GREATER_THAN' | 'T_LESS_THAN' | 'T_LESS_OR_EQUAL' | 'T_GREATER_OR_EQUAL' | 'T_IS_NOT_EQUAL' | 'T_IS_EQUAL'
+assignOp        -> 'T_ASSIGN'
+assignStat      -> variable assignOp expr
+variable        -> 'T_IDENTIFIER' idnestRptIdDiIn
+idnestRptIdDiFa -> indiceRpt idnestRptIdDFD
+                | 'T_OPEN_PAREN' aParams 'T_CLOSE_PAREN'
+idnestRptIdDFD  -> 'T_DOT' 'T_IDENTIFIER' idnestRptIdDiFa | EPSILON
+idnestRptIdDiIn -> indiceRpt indiceRptDis
+indiceRptDis    -> 'T_DOT' 'T_IDENTIFIER' idnestRptIdDiIn | EPSILON
+indiceRpt       -> 'T_OPEN_SQUARE' arithExpr 'T_CLOSE_SQUARE' indiceRpt | EPSILON
+sign            -> 'T_PLUS' | 'T_MINUS'
+term            -> factor termRpt
+termRpt         -> multOp factor termRpt | EPSILON 
+factor          -> 'T_IDENTIFIER' idnestRptIdDiFa
+                | 'T_INTEGER'
+                | 'T_FLOAT'
+                | 'T_OPEN_PAREN' arithExpr 'T_CLOSE_PAREN'
+                | 'T_NOT' factor
+                | sign factor
+aParams         -> expr aParamsTailRpt | EPSILON
+aParamsTailRpt  -> aParamsTail aParamsTailRpt | EPSILON
+aParamsTail     -> 'T_COMMA' expr
+addOp           -> 'T_PLUS' | 'T_MINUS' | 'T_OR'
+multOp          -> 'T_MULTIPLY' | 'T_DIVIDE' | 'T_AND'
