@@ -118,7 +118,21 @@ public class ABParser {
 					
 				// If no match
 				} else {
-					// TODO error found
+					
+					// Prepare message
+					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("Unexpected %s at line: %d col: %d", inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					
+					// Create snapshot
+					ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage);
+					snapshot.setError(true);
+					
+					// Add snapshot
+					snapshots.add(snapshot);
+					
+					// Pop
+					stack.pop();
+					
+					// Error found
 					error = true;
 				}
 			
@@ -152,18 +166,21 @@ public class ABParser {
 				// If error
 				} else {
 					
+					// Prepare message
+					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("%s near %s at line %d col %d", cell.getErrorMessage(), inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					
+					// Create snapshot
+					ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage);
+					snapshot.setError(true);
+					
+					// Add snapshot
+					snapshots.add(snapshot);
+					
 					// If pop
 					if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
 						
 						// Pop the stack
 						stack.pop();
-						
-						// Create snapshot
-						ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", cell.getErrorMessage());
-						snapshot.setError(true);
-						
-						// Add snapshot
-						snapshots.add(snapshot);
 						
 					// If scan
 					} else if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.SCAN)) {
@@ -182,8 +199,8 @@ public class ABParser {
 			}
 		}
 		
-		// If input token has more unparsed input or there was an error
-		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) || error){
+		// If input token has more unparsed input
+		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK)){
 			
 			// Create snapshot
 			ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Your code cannot end with a non function declaration");
@@ -192,10 +209,22 @@ public class ABParser {
 			// Add snapshot
 			snapshots.add(snapshot);
 			
-			// Return false
-			return false;
+			// Error found
+			error = true;
 		}
 		
+		// If there was an error
+		if(error){
+			
+			// Create snapshot
+			ABParserSnapshot snapshot = new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Failure");
+			snapshot.setError(true);
+			
+			// Add snapshot
+			snapshots.add(snapshot);
+			
+			return false;
+		}
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Success"));
 		
