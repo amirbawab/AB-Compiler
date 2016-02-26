@@ -4,6 +4,9 @@ import gui.bottom.BottomPanel;
 import gui.center.CenterPanel;
 import gui.listener.ABIDEListener;
 import gui.menu.MainMenu;
+import gui.menu.dialogs.DFADialog;
+import gui.menu.dialogs.StateTableDialog;
+import gui.menu.listeners.MainMenuListener;
 import gui.tool.ToolBarPanel;
 import gui.tool.ToolBarPanel.Button;
 import gui.tool.listeners.ClickListener;
@@ -11,8 +14,16 @@ import gui.tool.listeners.ClickListener;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.WindowEvent;
 
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 public class MainFrame extends JFrame {
 	
@@ -60,58 +71,122 @@ public class MainFrame extends JFrame {
 						// Prepare message
 						String message = "";
 						
-						// Analyze input
-						abIDElistener.analyze(centerPanel.getFileContent());
+						// Content
+						String content = centerPanel.getFileContent();
 						
-						// Scanner output
-						Object[][] scannerOutputData = abIDElistener.getScannerOutput();
-						centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, scannerOutputData);
-						
-						// Error error
-						Object[][] scannerErrorData = abIDElistener.getScannerError();
-						centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, scannerErrorData);
-						
-						// Compilation time
-						long compilationTime = abIDElistener.getScannerTime();
-						
-						// If scanner error found, update compiler message
-						if(scannerErrorData.length > 0) {
-							message += String.format("Scanner: %d error(s) found! ", scannerErrorData.length);
-							bottomPanel.setStyle(BottomPanel.Style.ERROR);
-						
-						// No scanner error found
+						if(content.isEmpty()) {
+							
+							// Show warning message
+							JOptionPane.showMessageDialog(MainFrame.this, "Please enter code to compile", "Empty file", JOptionPane.WARNING_MESSAGE);
+							
+						// Not empty
 						} else {
 							
-							// Update time
-							compilationTime += abIDElistener.getParserTime();
+							// Analyze input
+							abIDElistener.scan(content);
 							
-							// Parser output
-							Object[][] parserOutputData = abIDElistener.getParserOutput();
-							centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
+							// Scanner output
+							Object[][] scannerOutputData = abIDElistener.getScannerOutput();
+							centerPanel.setTableData(CenterPanel.SCANNER_OUTPUT_TITLE, scannerOutputData);
 							
-							// Parser error
-							Object[][] parserErrorData = abIDElistener.getParserError();
-							centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
+							// Error error
+							Object[][] scannerErrorData = abIDElistener.getScannerError();
+							centerPanel.setTableData(CenterPanel.SCANNER_ERROR_TITLE, scannerErrorData);
 							
-							// If parser error found, update compiler message
-							if(parserErrorData.length > 0) {
-								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
+							// Compilation time
+							long compilationTime = abIDElistener.getScannerTime();
+							
+							// If scanner error found, update compiler message
+							if(scannerErrorData.length > 0) {
+								message += String.format("Scanner: %d error(s) found! ", scannerErrorData.length);
 								bottomPanel.setStyle(BottomPanel.Style.ERROR);
 							
-							// If non parser error
+							// No scanner error found
 							} else {
 								
-								// Success
-								bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+								// Parse token
+								abIDElistener.parse();
+								
+								// Update time
+								compilationTime += abIDElistener.getParserTime();
+								
+								// Parser output
+								Object[][] parserOutputData = abIDElistener.getParserOutput();
+								centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
+								
+								// Parser error
+								Object[][] parserErrorData = abIDElistener.getParserError();
+								centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
+								
+								// If parser error found, update compiler message
+								if(parserErrorData.length > 0) {
+									message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
+									bottomPanel.setStyle(BottomPanel.Style.ERROR);
+								
+								// If non parser error
+								} else {
+									
+									// Success
+									bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+								}
 							}
+							
+							// Insert time
+							message += String.format("Total time: %d ms", compilationTime);
+							
+							// Set message
+							bottomPanel.setCompilerMessageText(message);
+						
 						}
-						
-						// Insert time
-						message += String.format("Total time: %d ms", compilationTime);
-						
-						// Set message
-						bottomPanel.setCompilerMessageText(message);
 					}
+					break;
+				}
+			}
+		});
+		
+		// Add menu listeners
+		mainMenu.setMainMenuListener(new MainMenuListener() {
+			
+			@Override
+			public void menuClicked(MainMenu.Button button) {
+				switch (button) {
+				case DFA:
+					
+					// Open dialog
+					new DFADialog(MainFrame.this);
+					break;
+
+				case FIRST_FOLLOW:
+					break;
+
+				case PARSING_TABLE:
+					break;
+
+				case STATE_TABLE:
+					
+					if(abIDElistener != null) {
+						
+						// Get data
+						Object[][] stateTableData = abIDElistener.getStateTable();
+						
+						// If data exists
+						if(stateTableData.length > 0) {
+							
+							// Open dialog
+							new StateTableDialog(MainFrame.this, stateTableData);
+							
+							// Open another dialog
+//							JDialog stateInfoDialog = new JDialog();
+//							stateInfoDialog.setSize(new Dimension((int) (MainFrame.this.getWidth()*0.9), (int) (MainFrame.this.getHeight()*0.9)));
+//							stateInfoDialog.setLocationRelativeTo(MainFrame.this);
+//							stateInfoDialog.setVisible(true);
+							
+						}
+					}
+					break;
+					
+				case EXIT:
+					MainFrame.this.dispatchEvent(new WindowEvent(MainFrame.this, WindowEvent.WINDOW_CLOSING));
 					break;
 				}
 			}

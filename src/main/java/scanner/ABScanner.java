@@ -243,6 +243,40 @@ public class ABScanner {
 	}
 	
 	/**
+	 * Get table data
+	 * @return model
+	 */
+	public Object[][] getTableData() {
+		Object[][] table = new Object[model.getNumOfRow() + 1][model.getNumOfCol() + 4];
+		
+		// Add columns
+		for(int col = 1; col < table[0].length-3; col++)
+			table[0][col] = model.getCharAtCol(col-1);
+
+		// Add extra columns
+		table[0][table[0].length-3] = "Backtrack";
+		table[0][table[0].length-2] = "Final";
+		table[0][table[0].length-1] = "Token";
+		
+		// Add rows
+		for(int row = 1; row < table.length; row++)
+			table[row][0] = model.getStateAtRow(row-1).getVID();
+		
+		for(int row = 1; row < table.length; row++) {
+			for(int col = 1; col < table[row].length - 3; col++) {
+				table[row][col] = model.getAt(row-1, col-1);
+			}
+		
+			// Add extra columns
+			table[row][table[row].length-3] = model.getStateAtRow(row-1).getBacktrack() ? "yes" : "no";
+			table[row][table[row].length-2] = model.getStateAtRow(row-1).isFinal() ? "yes" : "no";
+			table[row][table[row].length-1] = model.getStateAtRow(row-1).isFinal() ? model.getStateAtRow(row-1).getToken() : "";
+		}
+		
+		return table;
+	}
+	
+	/**
 	 * Get scanner process time
 	 * @return scanner process time in ms
 	 */

@@ -26,10 +26,23 @@ public class Application {
 			private List<ABToken> nonErrorTokens, errorTokens;
 			private List<ABParser.ABParserSnapshot> nonErrorSnapshots, errorSnapshots;
 			
+			/**
+			 * Analyze 
+			 */
+			
 			@Override
-			public void analyze(String text) {
+			public void scan(String text) {
 				abScanner.processText(text);
 			}
+			
+			@Override
+			public void parse() {
+				abParser.parse(nonErrorTokens);
+			}
+			
+			/**
+			 * Console
+			 */
 			
 			@Override
 			public Object[][] getScannerOutput() {
@@ -61,9 +74,6 @@ public class Application {
 			@Override
 			public Object[][] getParserOutput() {
 				
-				// Parse
-				abParser.parse(nonErrorTokens);
-				
 				// Get snapshots
 				nonErrorSnapshots = abParser.getNonErrorSnapshots();
 				
@@ -80,6 +90,7 @@ public class Application {
 
 			@Override
 			public Object[][] getParserError() {
+				
 				// Get snapshots
 				errorSnapshots = abParser.getErrorSnapshots();
 				
@@ -93,6 +104,11 @@ public class Application {
 				return table;
 			}
 
+			
+			/**
+			 * Compilation time
+			 */
+			
 			@Override
 			public long getScannerTime() {
 				return abScanner.getScannerProcessTime();
@@ -101,6 +117,27 @@ public class Application {
 			@Override
 			public long getParserTime() {
 				return abParser.getParserProcessTime();
+			}
+
+			/**
+			 * Menu
+			 */
+			
+			@Override
+			public Object[][] getStateTable() {
+				return abScanner.getTableData();
+			}
+
+			@Override
+			public Object[][] getParsingTable() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Object[][] getFirstAndFollowSets() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		});
 	}
