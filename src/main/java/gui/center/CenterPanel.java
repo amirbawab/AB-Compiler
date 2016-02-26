@@ -73,9 +73,10 @@ public class CenterPanel extends JPanel {
 	 */
 	public void setTableData(String panelTitle, Object[][] table) {
 		this.tabbedConsolePanel.resetTable(panelTitle);
-		for(int row=0; row<table.length; row++) {
-			this.tabbedConsolePanel.addRowToTable(panelTitle, table[row]);
-		}
+		
+		if(table != null)
+			for(int row=0; row<table.length; row++) 
+				this.tabbedConsolePanel.addRowToTable(panelTitle, table[row]);
 	}
 	
 	/**

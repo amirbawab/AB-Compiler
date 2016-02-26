@@ -106,6 +106,10 @@ public class MainFrame extends JFrame {
 								message += String.format("Scanner: %d error(s) found! ", scannerErrorData.length);
 								bottomPanel.setStyle(BottomPanel.Style.ERROR);
 							
+								// Reset parser console
+								centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, null);
+								centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, null);
+								
 							// No scanner error found
 							} else {
 								
