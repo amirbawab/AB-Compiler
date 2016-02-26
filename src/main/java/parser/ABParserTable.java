@@ -37,8 +37,8 @@ public class ABParserTable {
 	public ABParserTable(ABGrammar abGrammar) {
 		
 		// Init variables
-		this.terminals = abGrammar.getTerminals();
-		this.nonTerminals = abGrammar.getNonTerminals();
+		this.terminals = abGrammar.getTerminalsAsArray();
+		this.nonTerminals = abGrammar.getNonTerminalsAsArray();
 		this.table = new ABParserTableCell[nonTerminals.length][terminals.length];
 		this.terminalIndexMap = new HashMap<>();
 		this.nonTerminalIndexMap = new HashMap<>();
@@ -219,8 +219,34 @@ public class ABParserTable {
 	 */
 	public ABParserTableError[] getErrors() {
 		ABParserTableError[] errors = new ABParserTableError[eMap.size()];
-		rMap.values().toArray(errors);
+		eMap.values().toArray(errors);
 		return errors;
+	}
+	
+	/**
+	 * Get index of terminal
+	 * @param terminal
+	 * @return index
+	 */
+	public int getIndexOfTerminal(String terminal) {
+		return terminalIndexMap.get(terminal);
+	}
+	
+	/**
+	 * Get index of non terminal
+	 * @param non terminal
+	 * @return index
+	 */
+	public int getIndexOfNonTerminal(String nonTerminal) {
+		return nonTerminalIndexMap.get(nonTerminal);
+	}
+	
+	/**
+	 * Get table
+	 * @return table
+	 */
+	public ABParserTableCell[][] getTable() {
+		return this.table;
 	}
 	
 	/**

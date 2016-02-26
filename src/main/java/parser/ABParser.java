@@ -2,12 +2,16 @@ package parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import parser.ABParserTable.ABParserTableCell;
+import parser.ABParserTable.ABParserTableError;
+import parser.ABParserTable.ABParserTableRule;
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
 import scanner.ABScanner;
@@ -265,6 +269,118 @@ public class ABParser {
 	 */
 	public List<ABParserSnapshot> getErrorSnapshots() {
 		return this.errorSnapshots;
+	}
+	
+	/**
+	 * Get first and follow sets
+	 * @return first and follow sets data
+	 */
+	public Object[][] getFirstFollowSetsData() {
+		
+		// Get non terminal
+		Set<String> nonTerminals = abGrammar.getNonTerminals();
+		
+		// Prepare table
+		Object[][] table = new Object[nonTerminals.size()][3];
+		
+		// Counter
+		int rowCounter = 0;
+		
+		// Populate table
+		for(String nonTerminal : nonTerminals) {
+			table[rowCounter][0] = nonTerminal;
+			table[rowCounter][1] = StringUtils.join(abGrammar.getFirstOf(nonTerminal), ", ");
+			table[rowCounter][2] = StringUtils.join(abGrammar.getFollowOf(nonTerminal), ", ");
+			++rowCounter;
+		}
+		
+		return table;
+	}
+	
+	/**
+	 * Get parsing data
+	 * @return parsing data
+	 */
+	public Object[][] getParsingTableData() {
+		
+		// Get terminals and non terminals
+		Set<String> terminals = abGrammar.getTerminals();
+		Set<String> nonTerminals = abGrammar.getNonTerminals();
+		
+		// Prepare table
+		Object[][] table = new Object[nonTerminals.size()+1][terminals.size()+1];
+				
+		// Set terminals
+		for(String terminal : terminals) {
+			int index = abParseTable.getIndexOfTerminal(terminal);
+			table[0][index+1] = terminal;
+		}
+		
+		// Set non terminals
+		for(String nonTerminal : nonTerminals) {
+			int index = abParseTable.getIndexOfNonTerminal(nonTerminal);
+			table[index+1][0] = nonTerminal;
+		}
+		
+		// Get table
+		ABParserTableCell[][] parseTable = abParseTable.getTable();
+		
+		// Copy data
+		for(int row = 1; row < table.length; ++row) {
+			for(int col = 1; col < table[row].length; ++col) {
+				ABParserTableCell cell = parseTable[row-1][col-1];
+				table[row][col] = cell.getId();
+				if(cell.isError()) {
+					if(cell.getErrorDecision().equals(ABParserTableCell.POP))
+						table[row][col] += " Pop";
+					
+					else if (cell.getErrorDecision().equals(ABParserTableCell.SCAN))
+						table[row][col] += " Scan";
+				}
+			}
+		}
+		
+		return table;
+	}
+	
+	/**
+	 * Get parsing table rules data
+	 * @return parsing table rules data
+	 */
+	public Object[][] getParsingTableRulesData() {
+		
+		// Get rules
+		ABParserTableRule[] tableRules = abParseTable.getRules();
+		
+		// Prepare table
+		Object[][] table = new Object[tableRules.length][2];
+				
+		for(int row = 0; row < table.length; row++) {
+			table[row][0] = tableRules[row].getId();
+			table[row][1] = tableRules[row].getLHS() + " -> " + StringUtils.join(tableRules[row].getProduction(), " ");
+		}
+		
+		return table;
+	}
+	
+	/**
+	 * Get parsing table error data
+	 * @return parsing table error data
+	 */
+	public Object[][] getParsingTableErrorsData() {
+		
+		// Get rules
+		ABParserTableError[] tableErrors = abParseTable.getErrors();
+		
+		// Prepare table
+		Object[][] table = new Object[tableErrors.length][2];
+				
+		for(int row = 0; row < table.length; row++) {
+			table[row][0] = tableErrors[row].getId();
+			table[row][1] = tableErrors[row].getMessage();
+		}
+		
+		return table;
 	}
 	
 	/**

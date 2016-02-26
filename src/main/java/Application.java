@@ -130,14 +130,22 @@ public class Application {
 
 			@Override
 			public Object[][] getParsingTable() {
-				// TODO Auto-generated method stub
-				return null;
+				return abParser.getParsingTableData();
 			}
 
 			@Override
 			public Object[][] getFirstAndFollowSets() {
-				// TODO Auto-generated method stub
-				return null;
+				return abParser.getFirstFollowSetsData();
+			}
+
+			@Override
+			public Object[][] getParsingTableRules() {
+				return abParser.getParsingTableRulesData();
+			}
+
+			@Override
+			public Object[][] getParsingTableErrors() {
+				return abParser.getParsingTableErrorsData();
 			}
 		});
 	}

@@ -8,22 +8,21 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-public class StateTableDialog extends JDialog {
+public class ParsingTableDialog extends JDialog {
 
 	private static final long serialVersionUID = -7402407159765350532L;
 	
-	public StateTableDialog(JFrame parent, Object[][] stateTableData) {
+	public ParsingTableDialog(JFrame parent, Object[][] parsingTableData) {
 		
 		// Set title
-		setTitle("State transition table");
+		setTitle("Parsing table");
 		
 		// Init components
-		StateTableModel stateTableModel = new StateTableModel(stateTableData, new Object[stateTableData[0].length]);
+		ParsingTableModel stateTableModel = new ParsingTableModel(parsingTableData, new Object[parsingTableData[0].length]);
 		JTable stateTable = new JTable(stateTableModel);
 		
 		// Config table
 		stateTable.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
-		stateTable.getColumnModel().getColumn(stateTableData[0].length-1).setPreferredWidth(200);
 		
 		// Scroll
 		JScrollPane stateScrollPane = new JScrollPane(stateTable);
@@ -38,11 +37,11 @@ public class StateTableDialog extends JDialog {
 		setVisible(true);
 	}
 	
-	private class StateTableModel extends DefaultTableModel {
+	private class ParsingTableModel extends DefaultTableModel {
 
-		private static final long serialVersionUID = -1178640675013081336L;
+		private static final long serialVersionUID = 2928330731470579769L;
 
-		public StateTableModel(Object[][] data, Object[] cols) {
+		public ParsingTableModel(Object[][] data, Object[] cols) {
 			super(data, cols);
 		}
 		

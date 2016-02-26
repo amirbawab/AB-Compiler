@@ -15,5 +15,8 @@ public interface ABIDEListener {
 	// Menu
 	public Object[][] getStateTable();
 	public Object[][] getParsingTable();
+	public Object[][] getParsingTableRules();
+	public Object[][] getParsingTableErrors();
 	public Object[][] getFirstAndFollowSets();
+	
 }

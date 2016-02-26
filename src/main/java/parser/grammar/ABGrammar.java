@@ -23,6 +23,8 @@ public class ABGrammar {
 	private Map<String, List<List<ABGrammarToken>>> rules;
 	private Map<String, Set<String>> firstSetMap, followSetMap;
 	private String start;
+	private Set<String> terminals;
+			
 	
 	/**
 	 * Create grammar from file
@@ -36,7 +38,11 @@ public class ABGrammar {
 			rules = new HashMap<>();
 			firstSetMap = new HashMap<>();
 			followSetMap = new HashMap<>();
+			terminals = new HashSet<>();
 			start = null;
+			
+			// Add $ to terminal
+			terminals.add(ABGrammarToken.END_OF_STACK);
 			
 			// Parse file
 			parse(file);
@@ -55,32 +61,10 @@ public class ABGrammar {
 	}
 	
 	/**
-	 * Get terminals
-	 * @return terminals
+	 * Get terminals as array
+	 * @return terminals array
 	 */
-	public String[] getTerminals() {
-		
-		// Prepare list
-		Set<String> terminals = new HashSet<>();
-		
-		// Add END OF STACK
-		terminals.add(ABGrammarToken.END_OF_STACK);
-		
-        // Get productions
-        for(List<List<ABGrammarToken>> productions : rules.values()) {
-        
-	        // Loop on productions
-	        for(List<ABGrammarToken> production : productions) {
-	        	
-	        	// Loop on production tokens
-	        	for(ABGrammarToken pToken : production) {
-	        		
-	        		// If terminal, add it
-	        		if(pToken.isTerminal())
-	        			terminals.add(pToken.getValue());
-	        	}
-	        }
-		}
+	public String[] getTerminalsAsArray() {
 		
 		// Prepare array
 		String[] array = new String[terminals.size()];
@@ -90,6 +74,16 @@ public class ABGrammar {
 		
 		// Return array
 		return array;
+	}
+	
+	/**
+	 * Get terminals as array
+	 * @return terminals array
+	 */
+	public Set<String> getTerminals() {
+		
+		// Return array
+		return terminals;
 	}
 	
 	/**
@@ -120,7 +114,17 @@ public class ABGrammar {
 	 * Get non terminals
 	 * @return non terminals
 	 */
-	public String[] getNonTerminals() {
+	public Set<String> getNonTerminals() {
+		
+		// Prepare list
+		return rules.keySet();
+	}
+	
+	/**
+	 * Get non terminals as array
+	 * @return non terminals array
+	 */
+	public String[] getNonTerminalsAsArray() {
 		
 		// Prepare list
 		Set<String> nonTerminals = rules.keySet();
@@ -303,6 +307,15 @@ public class ABGrammar {
 	}
 	
 	/**
+	 * Get first of a token
+	 * @param token Terminal should be inside single quote
+	 * @return first set
+	 */
+	public Set<String> getFirstOf(String token) {
+		return first(new ABGrammarToken(token));
+	}
+	
+	/**
 	 * Get follow of a non terminal
 	 * @param nonTerminal
 	 * @return follow set of a non terminal
@@ -396,7 +409,12 @@ public class ABGrammar {
 					production = new ArrayList<>();
 					
 				} else {
-					production.add(new ABGrammarToken(current));
+					ABGrammarToken token = new ABGrammarToken(current);
+					production.add(token);
+					
+					// If terminal, add it to list of terminals
+					if(token.isTerminal())
+						terminals.add(token.getValue());
 				}
 			}
 			

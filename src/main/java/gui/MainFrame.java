@@ -5,7 +5,12 @@ import gui.center.CenterPanel;
 import gui.listener.ABIDEListener;
 import gui.menu.MainMenu;
 import gui.menu.dialogs.DFADialog;
+import gui.menu.dialogs.FirstFollowDialog;
+import gui.menu.dialogs.ParsingTableDialog;
+import gui.menu.dialogs.ParsingTableErrorsDialog;
+import gui.menu.dialogs.ParsingTableRulesDialog;
 import gui.menu.dialogs.StateTableDialog;
+import gui.menu.dialogs.StateTableInfoDialog;
 import gui.menu.listeners.MainMenuListener;
 import gui.tool.ToolBarPanel;
 import gui.tool.ToolBarPanel.Button;
@@ -157,9 +162,31 @@ public class MainFrame extends JFrame {
 					break;
 
 				case FIRST_FOLLOW:
+					
+					if(abIDElistener != null) {
+						
+						// Get data
+						Object[][] firstFollowData = abIDElistener.getFirstAndFollowSets();
+						
+						if(firstFollowData.length > 0)
+							new FirstFollowDialog(MainFrame.this, firstFollowData);
+					}
 					break;
 
 				case PARSING_TABLE:
+					if(abIDElistener != null) {
+						
+						// Get data
+						Object[][] parsingData = abIDElistener.getParsingTable();
+						Object[][] parsingRulesData = abIDElistener.getParsingTableRules();
+						Object[][] parsingErrorData = abIDElistener.getParsingTableErrors();
+						
+						if(parsingData.length > 0) {
+							new ParsingTableDialog(MainFrame.this, parsingData);
+							new ParsingTableRulesDialog(MainFrame.this, parsingRulesData);
+							new ParsingTableErrorsDialog(MainFrame.this, parsingErrorData);
+						}
+					}
 					break;
 
 				case STATE_TABLE:
@@ -169,18 +196,9 @@ public class MainFrame extends JFrame {
 						// Get data
 						Object[][] stateTableData = abIDElistener.getStateTable();
 						
-						// If data exists
 						if(stateTableData.length > 0) {
-							
-							// Open dialog
 							new StateTableDialog(MainFrame.this, stateTableData);
-							
-							// Open another dialog
-//							JDialog stateInfoDialog = new JDialog();
-//							stateInfoDialog.setSize(new Dimension((int) (MainFrame.this.getWidth()*0.9), (int) (MainFrame.this.getHeight()*0.9)));
-//							stateInfoDialog.setLocationRelativeTo(MainFrame.this);
-//							stateInfoDialog.setVisible(true);
-							
+							new StateTableInfoDialog(MainFrame.this);
 						}
 					}
 					break;
