@@ -228,24 +228,18 @@ public class ABScanner {
 	
 	/**
 	 * Get error tokens
-	 * @return error token array
+	 * @return error token
 	 */
-	public ABToken[] getErrorTokens() {
-		ABToken[] tmp = new ABToken[errorToken.size()];
-		for(int i=0; i < tmp.length; i++)
-			tmp[i] = errorToken.get(i);
-		return tmp;
+	public List<ABToken> getErrorTokens() {
+		return errorToken;
 	}
 	
 	/**
 	 * Get non error tokens
-	 * @return non error token array
+	 * @return non error token
 	 */
-	public ABToken[] getNonErrorTokens() {
-		ABToken[] tmp = new ABToken[nonErrorToken.size()];
-		for(int i=0; i < tmp.length; i++)
-			tmp[i] = nonErrorToken.get(i);
-		return tmp;
+	public List<ABToken> getNonErrorTokens() {
+		return nonErrorToken;
 	}
 	
 	/**

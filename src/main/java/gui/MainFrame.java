@@ -74,17 +74,36 @@ public class MainFrame extends JFrame {
 						// Compilation time
 						long compilationTime = abIDElistener.getScannerTime();
 						
-						// Update compiler message
+						// If scanner error found, update compiler message
 						if(scannerErrorData.length > 0) {
-							message += String.format("Scanner: %d error(s) found!", scannerErrorData.length);
+							message += String.format("Scanner: %d error(s) found! ", scannerErrorData.length);
 							bottomPanel.setStyle(BottomPanel.Style.ERROR);
 						
 						// No scanner error found
 						} else {
 							
+							// Update time
+							compilationTime += abIDElistener.getParserTime();
+							
 							// Parser output
 							Object[][] parserOutputData = abIDElistener.getParserOutput();
 							centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
+							
+							// Parser error
+							Object[][] parserErrorData = abIDElistener.getParserError();
+							centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
+							
+							// If parser error found, update compiler message
+							if(parserErrorData.length > 0) {
+								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
+								bottomPanel.setStyle(BottomPanel.Style.ERROR);
+							
+							// If non parser error
+							} else {
+								
+								// Success
+								bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+							}
 						}
 						
 						// Insert time

@@ -31,8 +31,8 @@ public class ABScannerTest {
 			
 			// Run machine
 			abScanner.processText(input);
-			ABToken nonError[] = abScanner.getNonErrorTokens();
-			ABToken error[] = abScanner.getErrorTokens();
+			List<ABToken> nonError = abScanner.getNonErrorTokens();
+			List<ABToken> error = abScanner.getErrorTokens();
 			
 			// Verify output
 			assertArrayEquals(stringToArray(expected_non_error), ABTokenToString(nonError));
@@ -52,8 +52,8 @@ public class ABScannerTest {
 			
 			// Run machine
 			abScanner.processText(input);
-			ABToken nonError[] = abScanner.getNonErrorTokens();
-			ABToken error[] = abScanner.getErrorTokens();
+			List<ABToken> nonError = abScanner.getNonErrorTokens();
+			List<ABToken> error = abScanner.getErrorTokens();
 			
 			// Verify output
 			assertArrayEquals(stringToArray(expected_non_error), ABTokenToString(nonError));
@@ -73,8 +73,8 @@ public class ABScannerTest {
 			
 			// Run machine
 			abScanner.processText(input);
-			ABToken nonError[] = abScanner.getNonErrorTokens();
-			ABToken error[] = abScanner.getErrorTokens();
+			List<ABToken> nonError = abScanner.getNonErrorTokens();
+			List<ABToken> error = abScanner.getErrorTokens();
 			
 			// Verify output
 			assertArrayEquals(stringToArray(expected_non_error), ABTokenToString(nonError));
@@ -94,8 +94,8 @@ public class ABScannerTest {
 			
 			// Run machine
 			abScanner.processText(input);
-			ABToken nonError[] = abScanner.getNonErrorTokens();
-			ABToken error[] = abScanner.getErrorTokens();
+			List<ABToken> nonError = abScanner.getNonErrorTokens();
+			List<ABToken> error = abScanner.getErrorTokens();
 			
 			// Verify output
 			assertArrayEquals(stringToArray(expected_non_error), ABTokenToString(nonError));
@@ -115,8 +115,8 @@ public class ABScannerTest {
 			
 			// Run machine
 			abScanner.processText(input);
-			ABToken nonError[] = abScanner.getNonErrorTokens();
-			ABToken error[] = abScanner.getErrorTokens();
+			List<ABToken> nonError = abScanner.getNonErrorTokens();
+			List<ABToken> error = abScanner.getErrorTokens();
 			
 			// Verify output
 			assertArrayEquals(stringToArray(expected_non_error), ABTokenToString(nonError));
@@ -131,10 +131,10 @@ public class ABScannerTest {
 	 * @param tokens
 	 * @return tokens keys array
 	 */
-	public String[] ABTokenToString(ABToken tokens[]) {
-		String tokensKeys[] = new String[tokens.length];
-		for(int i=0; i<tokens.length; i++)
-			tokensKeys[i] = String.format("%s %s %d %d", tokens[i].getToken(), tokens[i].getValue().replace("\n", ""), tokens[i].getRow(), tokens[i].getCol());
+	public String[] ABTokenToString(List<ABToken> tokens) {
+		String tokensKeys[] = new String[tokens.size()];
+		for(int i=0; i<tokens.size(); i++)
+			tokensKeys[i] = String.format("%s %s %d %d", tokens.get(i).getToken(), tokens.get(i).getValue().replace("\n", ""), tokens.get(i).getRow(), tokens.get(i).getCol());
 		return tokensKeys;
 	}
 	

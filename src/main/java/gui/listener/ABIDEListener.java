@@ -5,5 +5,7 @@ public interface ABIDEListener {
 	public Object[][] getScannerOutput();
 	public Object[][] getScannerError();
 	public Object[][] getParserOutput();
+	public Object[][] getParserError();
 	public long getScannerTime();
+	public long getParserTime();
 }

@@ -24,11 +24,14 @@ public class CenterPanel extends JPanel {
 	private final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
 	private final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
 	private final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
+	private final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
 	
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",
 								SCANNER_ERROR_TITLE = "Scanner - Error",
-								PARSER_OUTPUT_TITLE = "Parser - Output";
+								PARSER_OUTPUT_TITLE = "Parser - Output",
+								PARSER_ERROR_TITLE = "Parser - Error";
+	
 	
 	public CenterPanel() {
 		
@@ -50,6 +53,7 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel.addTable(SCANNER_OUTPUT_TITLE, SCANNER_OUTPUT_HEADER);
 		this.tabbedConsolePanel.addTable(SCANNER_ERROR_TITLE, SCANNER_ERROR_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_OUTPUT_TITLE, PARSER_OUTPUT_HEADER);
+		this.tabbedConsolePanel.addTable(PARSER_ERROR_TITLE, PARSER_ERROR_HEADER);
 		
 		// Resize
 		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
