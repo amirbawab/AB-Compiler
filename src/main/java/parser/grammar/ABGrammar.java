@@ -354,6 +354,11 @@ public class ABGrammar {
 					// Nothing
 				
 				// If word
+				} else if(first.startsWith("%")) {
+					
+					// Skip line because it's a comment
+					continue;
+					
 				} else {
 					
 					// Update LHS
