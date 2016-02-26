@@ -378,7 +378,7 @@ public class ABParserTable {
 			Set<String> followSet = abGrammar.getFollowOf(nonTerminal);
 			
 			// If terminal is in the follow set, then it's a pop
-			if(followSet.contains(terminal))
+			if(terminal.equals(ABGrammarToken.END_OF_STACK) || followSet.contains(terminal))
 				errorDecision = POP;
 			else
 				errorDecision = SCAN;
