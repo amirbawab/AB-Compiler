@@ -68,7 +68,15 @@ public class ABParser {
 				tokens.add(scannerTokens.get(i));
 		}
 		
-		tokens.add(new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, -1, -1));
+		// If there are token to parse
+		if(scannerTokens.size() > 0){
+			ABToken token = scannerTokens.get(scannerTokens.size()-1);
+			tokens.add(new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, token.getRow(), token.getCol() + token.getValue().length()));
+		
+		// If no token to parse
+		} else {
+			tokens.add(new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, 0, 0));
+		}
 		
 		// Prepare derivation list
 		List<ABGrammarToken> derivation = new ArrayList<>();
@@ -130,8 +138,10 @@ public class ABParser {
 				// If no match
 				} else {
 					
+					// TODO This part has to be avoided
+					
 					// Prepare message
-					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? GENERIC_UNEXPECTED_END_OF_FILE : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
@@ -173,8 +183,15 @@ public class ABParser {
 				// If error
 				} else {
 					
+					// Input value
+					String inputValue = inputToken.getValue();
+					
+					// Adjust value if $
+					if(inputValue.equals(ABGrammarToken.END_OF_STACK))
+						inputValue = EOF;
+					
 					// Prepare message
-					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? GENERIC_UNEXPECTED_END_OF_FILE : String.format(cell.getErrorMessage(), inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					String errorMessage =  String.format(cell.getErrorMessage(), inputValue, inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
