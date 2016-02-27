@@ -1,34 +1,36 @@
 prog            -> classDeclRpt progBody
 classDeclRpt    -> classDecl classDeclRpt | EPSILON
-classDecl       -> 'T_CLASS' 'T_IDENTIFIER' 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY' 'T_SEMICOLON'
+classDecl       -> 'T_CLASS' 'T_IDENTIFIER' classBody semicolon
+classBody		-> 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY'
+semicolon       -> 'T_SEMICOLON'
 varDeclRptFunc  -> type 'T_IDENTIFIER' varFuncDisamb | EPSILON
-varFuncDisamb   -> arraySizeRpt 'T_SEMICOLON' varDeclRptFunc | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody 'T_SEMICOLON' funcDefRpt
-funcDefRpt      -> type 'T_IDENTIFIER' 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody 'T_SEMICOLON' funcDefRpt | EPSILON
+varFuncDisamb   -> arraySizeRpt semicolon varDeclRptFunc | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody semicolon funcDefRpt
+funcDefRpt      -> type 'T_IDENTIFIER' 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody semicolon funcDefRpt | EPSILON
 arraySizeRpt    -> arraySize arraySizeRpt | EPSILON
 arraySize       -> 'T_OPEN_SQUARE' 'T_INTEGER' 'T_CLOSE_SQUARE'
 type            -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
 fParams         -> type 'T_IDENTIFIER' arraySizeRpt fParamsTailRpt | EPSILON
 fParamsTail     -> 'T_COMMA' type 'T_IDENTIFIER' arraySizeRpt
 fParamsTailRpt  -> fParamsTail fParamsTailRpt | EPSILON
-progBody        -> 'T_PROGRAM' funcBody 'T_SEMICOLON' funcDefRpt
+progBody        -> 'T_PROGRAM' funcBody semicolon funcDefRpt
 funcBody        -> 'T_OPEN_CURLY' varDeclRptSt 'T_CLOSE_CURLY'
-varDeclRptSt    -> 'T_INT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt 
-                | 'T_FLOAT_TYPE' 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt 
+varDeclRptSt    -> 'T_INT_TYPE' 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt 
+                | 'T_FLOAT_TYPE' 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt 
                 | 'T_IDENTIFIER' varDeclRptStDis
-                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON' statementRpt
-                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON' statementRpt
-                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
-                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
-                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON' statementRpt
+                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock semicolon statementRpt
+                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr semicolon relExpr semicolon assignStat 'T_CLOSE_PAREN' statBlock semicolon statementRpt
+                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' semicolon statementRpt
+                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' semicolon statementRpt
+                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' semicolon statementRpt
                 | EPSILON
-varDeclRptStDis -> 'T_IDENTIFIER' arraySizeRpt 'T_SEMICOLON' varDeclRptSt | idnestRptIdDiIn assignOp expr 'T_SEMICOLON' statementRpt
+varDeclRptStDis -> 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt | idnestRptIdDiIn assignOp expr semicolon statementRpt
 statementRpt    -> statement statementRpt | EPSILON
-statement       -> 'T_IDENTIFIER' idnestRptIdDiIn assignOp expr 'T_SEMICOLON'
-                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock 'T_SEMICOLON'
-                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr 'T_SEMICOLON' relExpr 'T_SEMICOLON' assignStat 'T_CLOSE_PAREN' statBlock 'T_SEMICOLON'
-                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' 'T_SEMICOLON'
-                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
-                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_SEMICOLON'
+statement       -> 'T_IDENTIFIER' idnestRptIdDiIn assignOp expr semicolon
+                | 'T_IF' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' 'T_THEN' statBlock 'T_ELSE' statBlock semicolon
+                | 'T_FOR' 'T_OPEN_PAREN' type 'T_IDENTIFIER' assignOp expr semicolon relExpr semicolon assignStat 'T_CLOSE_PAREN' statBlock semicolon
+                | 'T_GET' 'T_OPEN_PAREN' variable 'T_CLOSE_PAREN' semicolon
+                | 'T_PUT' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' semicolon
+                | 'T_RETURN' 'T_OPEN_PAREN' expr 'T_CLOSE_PAREN' semicolon
 expr            -> arithExpr exprDisamb 
 exprDisamb      -> relOp arithExpr | EPSILON
 arithExpr       -> term arithExprRpt

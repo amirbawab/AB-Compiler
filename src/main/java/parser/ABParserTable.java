@@ -133,7 +133,7 @@ public class ABParserTable {
 		for(int row=0; row < nonTerminals.length; row++) {
 			for(int col=0; col < terminals.length; col++) {
 				if(table[row][col] == null)
-					table[row][col] = new ABParserTableCell(nonTerminals[row], terminals[col], ABParserMessageHelper.ERR_DEFAULT);
+					table[row][col] = new ABParserTableCell(nonTerminals[row], terminals[col], ABParserMessageHelper.getErrorMessage(nonTerminals[row]));
 			}
 		}
 	}
