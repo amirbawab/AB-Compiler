@@ -14,6 +14,7 @@ import parser.ABParserTable.ABParserTableError;
 import parser.ABParserTable.ABParserTableRule;
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
+import static parser.helper.ABParserMessageHelper.*;
 import scanner.ABScanner;
 import scanner.ABToken;
 
@@ -130,7 +131,7 @@ public class ABParser {
 				} else {
 					
 					// Prepare message
-					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("Unexpected %s at line: %d col: %d", inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? GENERIC_UNEXPECTED_END_OF_FILE : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
@@ -173,7 +174,7 @@ public class ABParser {
 				} else {
 					
 					// Prepare message
-					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("%s near %s at line %d col %d", cell.getErrorMessage(), inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? GENERIC_UNEXPECTED_END_OF_FILE : String.format(cell.getErrorMessage(), inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
@@ -205,7 +206,7 @@ public class ABParser {
 		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK)){
 			
 			// Add snapshot
-			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", String.format("Unexpected code starting %s at line %d col %d", inputToken.getValue(), inputToken.getRow(), inputToken.getCol()), true));
+			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", String.format(GENERIC_UNEXPECTED_CODE_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()), true));
 			
 			// Error found
 			error = true;
@@ -215,7 +216,7 @@ public class ABParser {
 		if(error){
 			
 			// Add snapshot
-			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Failure", false));
+			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", FAILURE, false));
 			
 			// Update time
 			parserProcessTime = System.currentTimeMillis() - parserProcessTime;
@@ -224,7 +225,7 @@ public class ABParser {
 		}
 		
 		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Success", false));
+		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
 		
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
