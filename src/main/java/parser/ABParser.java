@@ -30,7 +30,7 @@ public class ABParser {
 	private long parserProcessTime;
 	
 	// Store Snapshots
-	private List<ABParserSnapshot> nonErrorSnapshots, errorSnapshots;
+	private List<ABParserSnapshot> snapshots;
 	
 	/**
 	 * Constructor
@@ -76,8 +76,7 @@ public class ABParser {
 		Stack<ABGrammarToken> stack = new Stack<>();
 		
 		// Reset the snapshot list
-		nonErrorSnapshots = new ArrayList<>();
-		errorSnapshots = new ArrayList<>();
+		snapshots = new ArrayList<>();
 		
 		// $
 		stack.push(new ABGrammarToken(ABGrammarToken.END_OF_STACK));
@@ -104,7 +103,7 @@ public class ABParser {
 		l.info("Start parsing input ...");
 				
 		// Take snapshot
-		nonErrorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " ")));
+		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
 		
 		// While top is not $
 		while(!stack.peek().isEndOfStack()) {
@@ -119,7 +118,7 @@ public class ABParser {
 				if(grammarToken.getValue().equals(inputToken.getToken())) {
 					
 					// Take snapshot
-					nonErrorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", ""));
+					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "", false));
 					
 					// Pop terminal from stack
 					stack.pop();
@@ -134,7 +133,7 @@ public class ABParser {
 					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("Unexpected %s at line: %d col: %d", inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
-					errorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage));
+					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
 					
 					// Pop
 					stack.pop();
@@ -159,7 +158,7 @@ public class ABParser {
 					derive(grammarToken, production, derivation);
 					
 					// Take snapshot
-					nonErrorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), String.format("%s:%s->%s", cell.getId(), grammarToken.getValue(), StringUtils.join(production, " ")), String.format("=>%s", StringUtils.join(derivation, " "))));
+					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), String.format("%s: %s->%s", cell.getId(), grammarToken.getValue(), StringUtils.join(production, " ")), String.format("=> %s", StringUtils.join(derivation, " ")), false));
 					
 					// Pop
 					stack.pop();
@@ -177,7 +176,7 @@ public class ABParser {
 					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format("%s near %s at line %d col %d", cell.getErrorMessage(), inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
-					errorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage));
+					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
 					
 					// If pop
 					if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
@@ -206,7 +205,7 @@ public class ABParser {
 		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK)){
 			
 			// Add snapshot
-			errorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Your code cannot end with a non function declaration"));
+			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", String.format("Unexpected code starting %s at line %d col %d", inputToken.getValue(), inputToken.getRow(), inputToken.getCol()), true));
 			
 			// Error found
 			error = true;
@@ -216,7 +215,7 @@ public class ABParser {
 		if(error){
 			
 			// Add snapshot
-			errorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Failure"));
+			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Failure", false));
 			
 			// Update time
 			parserProcessTime = System.currentTimeMillis() - parserProcessTime;
@@ -225,7 +224,7 @@ public class ABParser {
 		}
 		
 		// Take snapshot
-		nonErrorSnapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Success"));
+		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "Success", false));
 		
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
@@ -259,16 +258,38 @@ public class ABParser {
 	 * Get non error snapshot
 	 * @return snapshots
 	 */
-	public List<ABParserSnapshot> getNonErrorSnapshots() {
-		return this.nonErrorSnapshots;
+	public List<ABParserSnapshot> getAllSnapshots() {
+		return this.snapshots;
 	}
 	
 	/**
 	 * Get error snapshot
 	 * @return snapshots
 	 */
-	public List<ABParserSnapshot> getErrorSnapshots() {
-		return this.errorSnapshots;
+	public List<ABParserSnapshot> getFilteredErrorSnapshots() {
+		
+		// Prepare list
+		List<ABParserSnapshot> filterError = new ArrayList<>();
+		
+		// Loop on snapshots
+		for(int i=0; i < snapshots.size(); i++) {
+			
+			// If error
+			if(snapshots.get(i).isError()) {
+				
+				// Cache
+				ABParserSnapshot snapshot = snapshots.get(i);
+				
+				// Add to list
+				filterError.add(snapshot);
+				
+				// Skip the other consecutive errors
+				while (snapshot.isError() && ++i < snapshots.size()) {
+					snapshot = snapshots.get(i);
+				}
+			}
+		}
+		return filterError;
 	}
 	
 	/**
@@ -422,6 +443,7 @@ public class ABParser {
 		// Variables
 		private String stack, input, production, derivation;
 		private int id;
+		private boolean isError;
 
 		/**
 		 * Constructor
@@ -430,12 +452,13 @@ public class ABParser {
 		 * @param production
 		 * @param derivation
 		 */
-		public ABParserSnapshot(int id, String stack, String input, String production,String derivation) {
+		public ABParserSnapshot(int id, String stack, String input, String production,String derivation, boolean isError) {
 			this.id = id;
 			this.stack = stack;
 			this.input = input;
 			this.production = production;
 			this.derivation = derivation;
+			this.isError = isError;
 			
 			// Log
 			l.info("%d || %s || %s || %s || %s", id, stack, input, production, derivation);
@@ -460,6 +483,22 @@ public class ABParser {
 		 */
 		public String getInput() {
 			return input;
+		}
+		
+		/**
+		 * Check if is error
+		 * @return true if error snapshot
+		 */
+		public boolean isError() {
+			return this.isError;
+		}
+		
+		/**
+		 * Set error
+		 * @param isError boolean
+		 */
+		public void setError(boolean isError) {
+			this.isError = isError;
 		}
 
 		/**

@@ -29,7 +29,7 @@ public class CenterPanel extends JPanel {
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",
 								SCANNER_ERROR_TITLE = "Scanner - Error",
-								PARSER_OUTPUT_TITLE = "Parser - Output",
+								PARSER_OUTPUT_TITLE = "Parser - Steps",
 								PARSER_ERROR_TITLE = "Parser - Error";
 	
 	

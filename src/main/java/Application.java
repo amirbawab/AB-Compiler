@@ -75,7 +75,7 @@ public class Application {
 			public Object[][] getParserOutput() {
 				
 				// Get snapshots
-				nonErrorSnapshots = abParser.getNonErrorSnapshots();
+				nonErrorSnapshots = abParser.getAllSnapshots();
 				
 				Object[][] table = new Object[nonErrorSnapshots.size()][5];
 				for(int i=0; i < table.length; i++) {
@@ -92,7 +92,7 @@ public class Application {
 			public Object[][] getParserError() {
 				
 				// Get snapshots
-				errorSnapshots = abParser.getErrorSnapshots();
+				errorSnapshots = abParser.getFilteredErrorSnapshots();
 				
 				Object[][] table = new Object[errorSnapshots.size()][5];
 				for(int i=0; i < table.length; i++) {
