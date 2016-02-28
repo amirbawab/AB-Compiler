@@ -26,20 +26,20 @@ public class IdentifierHelper {
 	 * Reserved words
 	 */
 	public enum ReservedWords {
-		IF("if", "T_IF"),
-		THEN("then", "T_THEN"),
-		ELSE("else", "T_ELSE"),
-		FOR("for", "T_FOR"),
-		CLASS("class", "T_CLASS"),
-		INT("int", "T_INT_TYPE"),
-		FLOAT("float", "T_FLOAT_TYPE"),
-		GET("get", "T_GET"),
-		PUT("put", "T_PUT"),
-		RETURN("return", "T_RETURN"),
-		AND("and", "T_AND"),
-		NOT("not", "T_NOT"),
-		OR("or", "T_OR"),
-		PROGRAM("program", "T_PROGRAM")
+		IF("if", ABTokenHelper.T_IF),
+		THEN("then", ABTokenHelper.T_THEN),
+		ELSE("else", ABTokenHelper.T_ELSE),
+		FOR("for", ABTokenHelper.T_FOR),
+		CLASS("class", ABTokenHelper.T_CLASS),
+		INT("int", ABTokenHelper.T_INT_TYPE),
+		FLOAT("float", ABTokenHelper.T_FLOAT_TYPE),
+		GET("get", ABTokenHelper.T_GET),
+		PUT("put", ABTokenHelper.T_PUT),
+		RETURN("return", ABTokenHelper.T_RETURN),
+		AND("and", ABTokenHelper.T_AND),
+		NOT("not", ABTokenHelper.T_NOT),
+		OR("or", ABTokenHelper.T_OR),
+		PROGRAM("program", ABTokenHelper.T_PROGRAM)
 		;
 		
 		private String match, token;

@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import scanner.helper.ABTokenHelper;
 import scanner.helper.IdentifierHelper;
 import finiteAutomata.FiniteAutomata;
 import finiteAutomata.State;
@@ -48,11 +49,8 @@ public class ABScanner {
 	// State
 	private int state;
 	
-	// Prefix
-	private final String ERROR_PREFIX = "T_ERR_";
-	
 	// Exclude when parsing
-	public static final Set<String> EXCLUDE_PARSER = new HashSet<>(Arrays.asList("T_BLOCK_COMMENT", "T_INLINE_COMMENT"));
+	public static final Set<String> EXCLUDE_PARSER = new HashSet<>(Arrays.asList(ABTokenHelper.T_BLOCK_COMMENT, ABTokenHelper.T_INLINE_COMMENT));
 	
 	public ABScanner(String dfaFile) {
 		
@@ -143,7 +141,7 @@ public class ABScanner {
 				l.info("%s : %s", token.getValue(), token.getToken());
 				
 				// If error token, store it in error list
-				if(token.getToken().startsWith(ERROR_PREFIX))
+				if(token.getToken().startsWith(ABTokenHelper.ERROR_TOKEN_PREFIX))
 					errorToken.add(token);
 				
 				// If not error token, store it in non error list

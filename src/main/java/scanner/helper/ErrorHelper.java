@@ -28,11 +28,11 @@ public class ErrorHelper {
 	}
 	
 	public enum ErrorToken {
-		INVALID_CHAR("T_ERR_INVALID_CHAR", "Invalid character '%s' at line %d col %d"),
-		FLOAT_FORMAT("T_ERR_FLOAT_FORMAT", "Wrong float numer '%s' at line %d col %d"),
-		UNCLOSED_BLOCK_COMMENT("T_ERR_BLOCK_COMMENT", "Block comment '%s' at line %d col %d is not closed"),
-		TRAILING_ZERO("T_ERR_TRAILING_ZERO", "Float number '%s' at line %d col %d cannot end with a zero"),
-		LEADING_ZERO("T_ERR_LEADING_ZERO", "Number '%s' at line %d col %d cannot start with a zero")
+		INVALID_CHAR(ABTokenHelper.T_ERR_INVALID_CHAR, "Invalid character '%s' at line %d col %d"),
+		FLOAT_FORMAT(ABTokenHelper.T_ERR_FLOAT_FORMAT, "Wrong float numer '%s' at line %d col %d"),
+		UNCLOSED_BLOCK_COMMENT(ABTokenHelper.T_ERR_BLOCK_COMMENT, "Block comment '%s' at line %d col %d is not closed"),
+		TRAILING_ZERO(ABTokenHelper.T_ERR_TRAILING_ZERO, "Float number '%s' at line %d col %d cannot end with a zero"),
+		LEADING_ZERO(ABTokenHelper.T_ERR_LEADING_ZERO, "Number '%s' at line %d col %d cannot start with a zero")
 		;
 		
 		private String token, comment;

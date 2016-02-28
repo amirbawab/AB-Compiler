@@ -31,8 +31,9 @@ public class ABParserMessageHelper {
 		// Init map
 		eMap = new HashMap<>();
 		
+		// Messages
 		eMap.put(N_SEMICOLON, "Missing ; before '%s' at line %d column %d");
-		eMap.put(N_CLASSIDEN, "A class name is expected instead of '%s' at line %d column %d");
+		eMap.put(N_CLASSIDEN, "Class name expected instead of '%s' at line %d column %d");
 		eMap.put(generateKey(N_CLASSIDEN, T_OPEN_CURLY), "Missing class name before '%s' at line %d column %d");
 	};
 	
