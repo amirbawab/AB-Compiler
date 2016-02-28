@@ -31,10 +31,16 @@ public class ABParserMessageHelper {
 		// Init map
 		eMap = new HashMap<>();
 		
-		// Messages
+		// Non terminal messages
 		eMap.put(N_SEMICOLON, "Missing ; before '%s' at line %d column %d");
 		eMap.put(N_CLASSIDEN, "Class name expected instead of '%s' at line %d column %d");
+		eMap.put(N_CLASSBODY, "Expecting a { before '%s' at line %d column %d");
+		eMap.put(N_ARRAYSIZEINT, "Expecting an integer instead of '%s' at line %d column %d");
+		eMap.put(N_ARRAYSIZECLOSQ, "Missing ] before '%s' at line %d column %d");
+		
+		// Combination message
 		eMap.put(generateKey(N_CLASSIDEN, T_OPEN_CURLY), "Missing class name before '%s' at line %d column %d");
+		eMap.put(generateKey(N_ARRAYSIZEINT, T_CLOSE_SQUARE), "Missing integer before '%s' at line %d column %d");
 	};
 	
 	/**

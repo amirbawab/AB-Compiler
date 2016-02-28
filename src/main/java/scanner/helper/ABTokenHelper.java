@@ -56,5 +56,7 @@ public class ABTokenHelper {
 	// Non terminals
 	public static final String N_SEMICOLON = "semicolon";
 	public static final String N_CLASSIDEN = "classIden";
-	
+	public static final String N_CLASSBODY = "classBody";
+	public static final String N_ARRAYSIZEINT = "arraySizeInt";
+	public static final String N_ARRAYSIZECLOSQ = "arraySizeCloSq";
 }

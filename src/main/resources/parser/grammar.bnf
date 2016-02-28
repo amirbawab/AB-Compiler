@@ -2,19 +2,22 @@ prog            -> classDeclRpt progBody
 classDeclRpt    -> classDecl classDeclRpt | EPSILON
 classDecl       -> 'T_CLASS' classIden classBody semicolon
 classIden       -> 'T_IDENTIFIER'
-classBody       -> 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY'
+classBody       -> 'T_OPEN_CURLY' varDeclRptFunc closeCurly
+closeCurly      -> 'T_CLOSE_CURLY'
 semicolon       -> 'T_SEMICOLON'
 varDeclRptFunc  -> type 'T_IDENTIFIER' varFuncDisamb | EPSILON
 varFuncDisamb   -> arraySizeRpt semicolon varDeclRptFunc | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody semicolon funcDefRpt
 funcDefRpt      -> type 'T_IDENTIFIER' 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody semicolon funcDefRpt | EPSILON
 arraySizeRpt    -> arraySize arraySizeRpt | EPSILON
-arraySize       -> 'T_OPEN_SQUARE' 'T_INTEGER' 'T_CLOSE_SQUARE'
+arraySize       -> 'T_OPEN_SQUARE' arraySizeInt arraySizeCloSq
+arraySizeInt	-> 'T_INTEGER'
+arraySizeCloSq	-> 'T_CLOSE_SQUARE'
 type            -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
 fParams         -> type 'T_IDENTIFIER' arraySizeRpt fParamsTailRpt | EPSILON
 fParamsTail     -> 'T_COMMA' type 'T_IDENTIFIER' arraySizeRpt
 fParamsTailRpt  -> fParamsTail fParamsTailRpt | EPSILON
 progBody        -> 'T_PROGRAM' funcBody semicolon funcDefRpt
-funcBody        -> 'T_OPEN_CURLY' varDeclRptSt 'T_CLOSE_CURLY'
+funcBody        -> 'T_OPEN_CURLY' varDeclRptSt closeCurly
 varDeclRptSt    -> 'T_INT_TYPE' 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt 
                 | 'T_FLOAT_TYPE' 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt 
                 | 'T_IDENTIFIER' varDeclRptStDis
@@ -37,7 +40,7 @@ exprDisamb      -> relOp arithExpr | EPSILON
 arithExpr       -> term arithExprRpt
 arithExprRpt    -> addOp term arithExprRpt | EPSILON
 relExpr         -> arithExpr relOp arithExpr
-statBlock       -> 'T_OPEN_CURLY' statementRpt 'T_CLOSE_CURLY' | statement | EPSILON
+statBlock       -> 'T_OPEN_CURLY' statementRpt closeCurly | statement | EPSILON
 relOp           -> 'T_GREATER_THAN' | 'T_LESS_THAN' | 'T_LESS_OR_EQUAL' | 'T_GREATER_OR_EQUAL' | 'T_IS_NOT_EQUAL' | 'T_IS_EQUAL'
 assignOp        -> 'T_ASSIGN'
 assignStat      -> variable assignOp expr
