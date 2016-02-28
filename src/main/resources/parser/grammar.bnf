@@ -1,7 +1,8 @@
 prog            -> classDeclRpt progBody
 classDeclRpt    -> classDecl classDeclRpt | EPSILON
-classDecl       -> 'T_CLASS' 'T_IDENTIFIER' classBody semicolon
-classBody		-> 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY'
+classDecl       -> 'T_CLASS' classIden classBody semicolon
+classIden       -> 'T_IDENTIFIER'
+classBody       -> 'T_OPEN_CURLY' varDeclRptFunc 'T_CLOSE_CURLY'
 semicolon       -> 'T_SEMICOLON'
 varDeclRptFunc  -> type 'T_IDENTIFIER' varFuncDisamb | EPSILON
 varFuncDisamb   -> arraySizeRpt semicolon varDeclRptFunc | 'T_OPEN_PAREN' fParams 'T_CLOSE_PAREN' funcBody semicolon funcDefRpt
