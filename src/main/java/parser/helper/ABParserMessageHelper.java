@@ -37,10 +37,28 @@ public class ABParserMessageHelper {
 		eMap.put(N_CLASSBODY, "Expecting a { before '%s' at line %d column %d");
 		eMap.put(N_ARRAYSIZEINT, "Expecting an integer instead of '%s' at line %d column %d");
 		eMap.put(N_ARRAYSIZECLOSQ, "Missing ] before '%s' at line %d column %d");
+		eMap.put(N_VARFUNCIDEN, "Expecting an identifier instead of '%s' at line %d column %d");
+		eMap.put(N_OPENPAREN, "Expecting ( before '%s' at line %d column %d");
+		eMap.put(N_CLOSEPAREN, "Expecting ) before '%s' at line %d column %d");
+		eMap.put(N_FUNCDEFIDEN, "Expecting an identifier instead of '%s' at line %d column %d");
+		eMap.put(N_FPARAMSIDEN, "Expecting an identifier instead of '%s' at line %d column %d");
+		eMap.put(N_IDENTIFIER, "Expecting an identifier before '%s' at line %d column %d");
+		eMap.put(N_THEN, "Expecting then before '%s' at line %d column %d");
+		eMap.put(N_ELSE, "Expecting else before '%s' at line %d column %d");
+		eMap.put(N_TYPE, "Expecting a type before '%s' at line %d column %d");
+		eMap.put(N_RELOP, "Expecting a relational operator before '%s' at line %d column %d");
+		eMap.put(N_ASSIGNOP, "Expecting = before '%s' at line %d column %d");
+		eMap.put(N_CLOSESQUARE, "Expecting ] before '%s' at line %d column %d");
+		eMap.put(N_SIGN, "Expecting a sign before '%s' at line %d column %d");
 		
 		// Combination message
 		eMap.put(generateKey(N_CLASSIDEN, T_OPEN_CURLY), "Missing class name before '%s' at line %d column %d");
 		eMap.put(generateKey(N_ARRAYSIZEINT, T_CLOSE_SQUARE), "Missing integer before '%s' at line %d column %d");
+		eMap.put(generateKey(N_VARFUNCIDEN, T_OPEN_SQUARE), "Missing identifier before '%s' at line %d column %d");
+		eMap.put(generateKey(N_VARFUNCIDEN, T_OPEN_PAREN), "Missing identifier before '%s' at line %d column %d");
+		eMap.put(generateKey(N_FUNCDEFIDEN, T_OPEN_PAREN), "Missing identifier before '%s' at line %d column %d");
+		eMap.put(generateKey(N_FPARAMSIDEN, T_OPEN_SQUARE), "Missing identifier before '%s' at line %d column %d");
+		eMap.put(generateKey(N_FPARAMSIDEN, T_COMMA), "Missing identifier before '%s' at line %d column %d");
 	};
 	
 	/**

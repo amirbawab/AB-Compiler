@@ -59,4 +59,17 @@ public class ABTokenHelper {
 	public static final String N_CLASSBODY = "classBody";
 	public static final String N_ARRAYSIZEINT = "arraySizeInt";
 	public static final String N_ARRAYSIZECLOSQ = "arraySizeCloSq";
+	public static final String N_VARFUNCIDEN = "varFuncIden";
+	public static final String N_CLOSEPAREN = "closeParen";
+	public static final String N_FUNCDEFIDEN = "funcDefIden";
+	public static final String N_OPENPAREN = "openParen";
+	public static final String N_FPARAMSIDEN = "fParamsIden";
+	public static final String N_IDENTIFIER = "identifier";
+	public static final String N_THEN = "then";
+	public static final String N_ELSE = "else";
+	public static final String N_TYPE = "type";
+	public static final String N_RELOP = "relOp";
+	public static final String N_ASSIGNOP = "assignOp";
+	public static final String N_CLOSESQUARE = "closeSquare";
+	public static final String N_SIGN = "sign";
 }
