@@ -26,6 +26,9 @@ public class Application {
 			private List<ABToken> nonErrorTokens, errorTokens;
 			private List<ABParser.ABParserSnapshot> nonErrorSnapshots, errorSnapshots;
 			
+			// Compile
+			boolean doesCompile = true;
+			
 			/**
 			 * Analyze 
 			 */
@@ -33,11 +36,12 @@ public class Application {
 			@Override
 			public void scan(String text) {
 				abScanner.processText(text);
+				doesCompile &= abScanner.getErrorTokens().size() == 0;
 			}
 			
 			@Override
 			public void parse() {
-				abParser.parse(nonErrorTokens);
+				doesCompile &= abParser.parse(nonErrorTokens);
 			}
 			
 			/**
@@ -146,6 +150,11 @@ public class Application {
 			@Override
 			public Object[][] getParsingTableErrors() {
 				return abParser.getParsingTableErrorsData();
+			}
+
+			@Override
+			public boolean doesCompile() {
+				return doesCompile;
 			}
 		});
 	}

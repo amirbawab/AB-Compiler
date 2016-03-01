@@ -11,6 +11,7 @@ public interface ABIDEListener {
 	public Object[][] getParserError();
 	public long getScannerTime();
 	public long getParserTime();
+	public boolean doesCompile();
 	
 	// Menu
 	public Object[][] getStateTable();

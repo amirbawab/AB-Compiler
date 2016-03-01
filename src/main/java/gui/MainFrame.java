@@ -79,7 +79,7 @@ public class MainFrame extends JFrame {
 						// Content
 						String content = centerPanel.getFileContent();
 						
-						if(content.isEmpty()) {
+						if(content.replace("\n", "").trim().isEmpty()) {
 							
 							// Show warning message
 							JOptionPane.showMessageDialog(MainFrame.this, "Please enter code to compile", "Empty file", JOptionPane.WARNING_MESSAGE);
@@ -101,43 +101,29 @@ public class MainFrame extends JFrame {
 							// Compilation time
 							long compilationTime = abIDElistener.getScannerTime();
 							
-							// If scanner error found, update compiler message
-							if(scannerErrorData.length > 0) {
+							// Scanner error
+							if(scannerErrorData.length > 0)
+								
+								// Update compiler message
 								message += String.format("Scanner: %d error(s) found! ", scannerErrorData.length);
-								bottomPanel.setStyle(BottomPanel.Style.ERROR);
+
+							// Parse token
+							abIDElistener.parse();
 							
-								// Reset parser console
-								centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, null);
-								centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, null);
-								
-							// No scanner error found
-							} else {
-								
-								// Parse token
-								abIDElistener.parse();
-								
-								// Update time
-								compilationTime += abIDElistener.getParserTime();
-								
-								// Parser output
-								Object[][] parserOutputData = abIDElistener.getParserOutput();
-								centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
-								
-								// Parser error
-								Object[][] parserErrorData = abIDElistener.getParserError();
-								centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
-								
-								// If parser error found, update compiler message
-								if(parserErrorData.length > 0) {
-									message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
-									bottomPanel.setStyle(BottomPanel.Style.ERROR);
-								
-								// If non parser error
-								} else {
-									
-									// Success
-									bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
-								}
+							// Update time
+							compilationTime += abIDElistener.getParserTime();
+							
+							// Parser output
+							Object[][] parserOutputData = abIDElistener.getParserOutput();
+							centerPanel.setTableData(CenterPanel.PARSER_OUTPUT_TITLE, parserOutputData);
+							
+							// Parser error
+							Object[][] parserErrorData = abIDElistener.getParserError();
+							centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
+							
+							// If parser error found, update compiler message
+							if(parserErrorData.length > 0) {
+								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
 							}
 							
 							// Insert time
@@ -145,7 +131,12 @@ public class MainFrame extends JFrame {
 							
 							// Set message
 							bottomPanel.setCompilerMessageText(message);
-						
+							
+							// Change color
+							if(abIDElistener.doesCompile())
+								bottomPanel.setStyle(BottomPanel.Style.SUCCESS);
+							else
+								bottomPanel.setStyle(BottomPanel.Style.ERROR);
 						}
 					}
 					break;
