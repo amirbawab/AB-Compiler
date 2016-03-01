@@ -122,9 +122,8 @@ public class MainFrame extends JFrame {
 							centerPanel.setTableData(CenterPanel.PARSER_ERROR_TITLE, parserErrorData);
 							
 							// If parser error found, update compiler message
-							if(parserErrorData.length > 0) {
+							if(parserErrorData.length > 0)
 								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
-							}
 							
 							// Insert time
 							message += String.format("Total time: %d ms", compilationTime);

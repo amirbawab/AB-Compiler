@@ -36,7 +36,7 @@ public class Application {
 			@Override
 			public void scan(String text) {
 				abScanner.processText(text);
-				doesCompile &= abScanner.getErrorTokens().size() == 0;
+				doesCompile = abScanner.getErrorTokens().size() == 0;
 			}
 			
 			@Override
