@@ -1,0 +1,8 @@
+program {
+	int a;
+	// This is a comment
+};
+
+int hello( a  {
+
+};

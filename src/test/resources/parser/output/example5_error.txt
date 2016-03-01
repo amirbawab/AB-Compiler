@@ -1,0 +1,1 @@
+30	$ funcDefRpt semicolon funcBody closeParen fParamsTailRpt arraySizeRpt fParamsIden	T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	Expecting an identifier instead of '{' at line 6 column 15

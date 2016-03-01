@@ -1,0 +1,8 @@
+program {
+	int array[a];
+	int array[];
+};
+
+int hello() {
+	int a;
+};
