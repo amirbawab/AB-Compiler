@@ -9,9 +9,17 @@
         </File>
     </Appenders>
     <Loggers>
-        <Root level="off">
+
+        <!--Change off to debug-->
+        <Root level="debug">
             <AppenderRef ref="Console" />
             <AppenderRef ref="MyFile" />
         </Root>
+
+        <!--Allow for parser-->
+        <!--<Logger name="parser" level="debug">-->
+            <!--<AppenderRef ref="Console" />-->
+            <!--<AppenderRef ref="MyFile" />-->
+        <!--</Logger>-->
     </Loggers>
 </Configuration>

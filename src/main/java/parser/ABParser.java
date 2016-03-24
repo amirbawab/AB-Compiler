@@ -1,9 +1,6 @@
 package parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +48,7 @@ public class ABParser {
 	
 	/**
 	 * Parse input
-	 * @param tokens
+	 * @param scannerTokens
 	 * @return true if parse was successful, otherwise false
 	 */
 	public boolean parse(List<ABToken> scannerTokens) {
@@ -60,9 +57,9 @@ public class ABParser {
 		parserProcessTime = System.currentTimeMillis();
 		
 		// Add $ to end of tokens
-		ArrayList<ABToken> tokens = new ArrayList<>();
+		ArrayList<ABToken> tokens = new ArrayList<>(scannerTokens.size()+1);
 		for(int i=0; i < scannerTokens.size(); i++) {
-			
+
 			// If token should not be excluded, add it
 			if(!ABScanner.EXCLUDE_PARSER.contains(scannerTokens.get(i).getToken()))
 				tokens.add(scannerTokens.get(i));
@@ -368,14 +365,15 @@ public class ABParser {
 		for(int row = 1; row < table.length; ++row) {
 			for(int col = 1; col < table[row].length; ++col) {
 				ABParserTableCell cell = parseTable[row-1][col-1];
-				table[row][col] = cell.getId();
+				String data = cell.getId();
 				if(cell.isError()) {
 					if(cell.getErrorDecision().equals(ABParserTableCell.POP))
-						table[row][col] += " Pop";
+						data += " Pop";
 					
 					else if (cell.getErrorDecision().equals(ABParserTableCell.SCAN))
-						table[row][col] += " Scan";
+						data += " Scan";
 				}
+				table[row][col] = data;
 			}
 		}
 		
@@ -389,14 +387,15 @@ public class ABParser {
 	public Object[][] getParsingTableRulesData() {
 		
 		// Get rules
-		ABParserTableRule[] tableRules = abParseTable.getRules();
+		Collection<ABParserTableRule> tableRules = abParseTable.getRules();
 		
 		// Prepare table
-		Object[][] table = new Object[tableRules.length][2];
-				
-		for(int row = 0; row < table.length; row++) {
-			table[row][0] = tableRules[row].getId();
-			table[row][1] = tableRules[row].getLHS() + " -> " + StringUtils.join(tableRules[row].getProduction(), " ");
+		Object[][] table = new Object[tableRules.size()][2];
+
+		int row = 0;
+		for(ABParserTableRule tableRule : tableRules) {
+			table[row][0] = tableRule.getId();
+			table[row++][1] = tableRule.getLHS() + " -> " + StringUtils.join(tableRule.getProduction(), " ");
 		}
 		
 		return table;
@@ -409,14 +408,15 @@ public class ABParser {
 	public Object[][] getParsingTableErrorsData() {
 		
 		// Get rules
-		ABParserTableError[] tableErrors = abParseTable.getErrors();
+		Collection<ABParserTableError> tableErrors = abParseTable.getErrors();
 		
 		// Prepare table
-		Object[][] table = new Object[tableErrors.length][2];
-				
-		for(int row = 0; row < table.length; row++) {
-			table[row][0] = tableErrors[row].getId();
-			table[row][1] = tableErrors[row].getMessage();
+		Object[][] table = new Object[tableErrors.size()][2];
+
+		int row = 0;
+		for(ABParserTableError tableError : tableErrors) {
+			table[row][0] = tableError.getId();
+			table[row++][1] = tableError.getMessage();
 		}
 		
 		return table;

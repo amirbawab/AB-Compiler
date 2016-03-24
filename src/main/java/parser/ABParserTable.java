@@ -1,12 +1,6 @@
 package parser;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -208,20 +202,16 @@ public class ABParserTable {
 	 * Get rules
 	 * @return rules
 	 */
-	public ABParserTableRule[] getRules() {
-		ABParserTableRule[] rules = new ABParserTableRule[rMap.size()];
-		rMap.values().toArray(rules);
-		return rules;
+	public Collection<ABParserTableRule> getRules() {
+		return rMap.values();
 	}
 	
 	/**
 	 * Get errors
 	 * @return errors
 	 */
-	public ABParserTableError[] getErrors() {
-		ABParserTableError[] errors = new ABParserTableError[eMap.size()];
-		eMap.values().toArray(errors);
-		return errors;
+	public Collection<ABParserTableError> getErrors() {
+		return eMap.values();
 	}
 	
 	/**
