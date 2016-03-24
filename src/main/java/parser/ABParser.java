@@ -265,7 +265,7 @@ public class ABParser {
 	private String tokensStartAt(ArrayList<ABToken> tokens, int index) {
 		String result = "";
 		for(int i = index; i < tokens.size(); i++)
-			result += String.format("%s ", tokens.get(i).getToken());
+			result += tokens.get(i).getToken() + " ";
 		return result;
 	}
 	
