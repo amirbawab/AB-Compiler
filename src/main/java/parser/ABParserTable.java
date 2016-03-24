@@ -13,7 +13,7 @@ import parser.helper.ABParserMessageHelper;
 public class ABParserTable {
 	
 	// Logger
-	private Logger l = LogManager.getFormatterLogger(getClass());
+	private Logger l = LogManager.getLogger(getClass());
 		
 	// Variables
 	private ABParserTableCell[][] table;

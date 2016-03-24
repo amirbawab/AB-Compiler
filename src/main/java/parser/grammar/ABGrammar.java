@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class ABGrammar {
 	
 	// Logger
-	private Logger l = LogManager.getFormatterLogger(getClass());
+	private Logger l = LogManager.getLogger(getClass());
 	
 	// Variables
 	private Map<String, List<List<ABGrammarToken>>> rules;
