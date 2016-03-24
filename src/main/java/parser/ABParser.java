@@ -166,8 +166,8 @@ public class ABParser {
 					derive(grammarToken, production, derivation);
 					
 					// Take snapshot
-					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), String.format("%s: %s->%s", cell.getId(), grammarToken.getValue(), StringUtils.join(production, " ")), String.format("=> %s", StringUtils.join(derivation, " ")), false));
-					
+					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), cell.getId() +": "+ grammarToken.getValue()+"->"+StringUtils.join(production, " "), "=> "+ StringUtils.join(derivation, " "), false));
+
 					// Pop
 					stack.pop();
 					
@@ -237,7 +237,7 @@ public class ABParser {
 			
 			return false;
 		}
-		
+
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
 		

@@ -11,7 +11,7 @@
     <Loggers>
 
         <!--Change off to debug-->
-        <Root level="debug">
+        <Root level="off">
             <AppenderRef ref="Console" />
             <AppenderRef ref="MyFile" />
         </Root>
