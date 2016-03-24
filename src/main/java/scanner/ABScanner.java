@@ -19,7 +19,7 @@ import finiteAutomata.State;
 public class ABScanner {
 	
 	// Logger
-	private Logger l = LogManager.getLogger(getClass());
+	private Logger l = LogManager.getFormatterLogger(getClass());
 		
 	// Components
 	private FiniteAutomata machine;

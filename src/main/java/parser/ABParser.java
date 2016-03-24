@@ -18,7 +18,7 @@ import scanner.ABToken;
 public class ABParser {
 	
 	// Logger
-	private Logger l = LogManager.getLogger(getClass());
+	private Logger l = LogManager.getFormatterLogger(getClass());
 		
 	// Variables
 	private ABParserTable abParseTable;
