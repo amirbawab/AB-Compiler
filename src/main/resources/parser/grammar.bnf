@@ -1,4 +1,4 @@
-prog            -> classDeclRpt progBody
+prog            -> #createGlobalTable# classDeclRpt progBody
 classDeclRpt    -> classDecl classDeclRpt | EPSILON
 classDecl       -> 'T_CLASS' classIden classBody semicolon
 classIden       -> 'T_IDENTIFIER'

@@ -116,9 +116,15 @@ public class ABParser {
 			
 			// Store top
 			ABGrammarToken grammarToken = stack.peek();
-			
+
+			// If action
+			if(grammarToken.isAction()) {
+
+				// Pop for now
+				stack.pop();
+
 			// If is terminal
-			if(grammarToken.isTerminal()) {
+			} else if(grammarToken.isTerminal()) {
 				
 				// If match
 				if(grammarToken.getValue().equals(inputToken.getToken())) {
@@ -160,8 +166,9 @@ public class ABParser {
 				if(!cell.isError()) {
 					
 					// Store production
+					List<ABGrammarToken> productionWithAction = cell.getProductionWithAction();
 					List<ABGrammarToken> production = cell.getProduction();
-					
+
 					// Adjust the derivation
 					derive(grammarToken, production, derivation);
 					
@@ -172,9 +179,9 @@ public class ABParser {
 					stack.pop();
 					
 					// Inverse RHS multiple push. Don't push EPSILON
-					for(int pTokenId = production.size()-1; pTokenId >= 0; --pTokenId) {
-						if(!production.get(pTokenId).isEpsilon())
-							stack.push(production.get(pTokenId));
+					for(int pTokenId = productionWithAction.size()-1; pTokenId >= 0; --pTokenId) {
+						if(!productionWithAction.get(pTokenId).isEpsilon())
+							stack.push(productionWithAction.get(pTokenId));
 					}
 					
 				// If error

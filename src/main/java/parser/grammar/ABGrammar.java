@@ -187,27 +187,31 @@ public class ABGrammar {
 	        	
 	        	// Loop on production tokens
 	        	for(ABGrammarToken pToken : production) {
-	        		
-	        		// Get first of pToken
-	        		Set<String> pFirstSet = first(pToken);
-	        		
-	        		// If doesn't have epsilon, or last token in the production
-	        		if(!pFirstSet.contains(ABGrammarToken.EPSILON) || pToken == production.get(production.size()-1)) {
-	        			
-	        			// Superset
-	        			firstSet.addAll(pFirstSet);
-	        			
-	        			// Don't try next token
-	        			break;
-	        		
-	        		// If has epsilon
-	        		} else {
-	        			
-	        			// Superset minus epsilon
-	        			for(String str : pFirstSet)
-	        				if(!str.equals(ABGrammarToken.EPSILON))
-	        					firstSet.add(str);
-	        		}
+
+					// If epsilon, non terminal or terminal
+					if(pToken.isEpsilon() || pToken.isNonTerminal() || pToken.isTerminal()) {
+
+						// Get first of pToken
+						Set<String> pFirstSet = first(pToken);
+
+						// If doesn't have epsilon, or last token in the production
+						if(!pFirstSet.contains(ABGrammarToken.EPSILON) || pToken == production.get(production.size()-1)) {
+
+							// Superset
+							firstSet.addAll(pFirstSet);
+
+							// Don't try next token
+							break;
+
+							// If has epsilon
+						} else {
+
+							// Superset minus epsilon
+							for(String str : pFirstSet)
+								if(!str.equals(ABGrammarToken.EPSILON))
+									firstSet.add(str);
+						}
+					}
 	        	}
 	        }
 	        

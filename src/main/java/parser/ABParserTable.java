@@ -87,18 +87,22 @@ public class ABParserTable {
 	        		
 	        		// Current
 	        		ABGrammarToken pToken = production.get(i);
-	        		
-	        		// Get first set
-	        		Set<String> firstSet = abGrammar.getFirstOf(pToken);
-	        		
-	        		// Copy into terminal set
-    				for(String str : firstSet)
-    					if(!str.equals(ABGrammarToken.EPSILON))
-    						terminalsSet.add(str);
-	        		
-	        		// If doesn't have epsilon
-	        		if(!firstSet.contains(ABGrammarToken.EPSILON))
-	        			break;
+
+					// If epsilon, terminal or non terminal
+					if(pToken.isEpsilon() || pToken.isNonTerminal() || pToken.isTerminal()) {
+
+						// Get first set
+						Set<String> firstSet = abGrammar.getFirstOf(pToken);
+
+						// Copy into terminal set
+						for (String str : firstSet)
+							if (!str.equals(ABGrammarToken.EPSILON))
+								terminalsSet.add(str);
+
+						// If doesn't have epsilon
+						if (!firstSet.contains(ABGrammarToken.EPSILON))
+							break;
+					}
 	        	}
 	        	
 	        	// If the first(last token) has epsilon
@@ -364,6 +368,7 @@ public class ABParserTable {
 
 		// Variables
 		private List<ABGrammarToken> production;
+		private List<ABGrammarToken> productionWithAction;
 		private String errorMessage;
 		private boolean isError;
 		private String errorDecision;
@@ -379,7 +384,13 @@ public class ABParserTable {
 		 */
 		public ABParserTableCell(List<ABGrammarToken> production) {
 			this.isError = false;
-			this.production = production;
+			this.productionWithAction = production;
+			this.production = new ArrayList<>(production.size());
+
+			// Do not include actions
+			for(ABGrammarToken token : production)
+				if(token.isEpsilon() || token.isNonTerminal() || token.isTerminal())
+					this.production.add(token);
 		}
 
 		/**
@@ -390,6 +401,7 @@ public class ABParserTable {
 			this.errorMessage = errorMessage;
 			this.isError = true;
 			this.production = null;
+			this.productionWithAction = null;
 			
 			// Get follow set of non terminal
 			Set<String> followSet = abGrammar.getFollowOf(nonTerminal);
@@ -426,7 +438,15 @@ public class ABParserTable {
 		public List<ABGrammarToken> getProduction() {
 			return this.production;
 		}
-		
+
+		/**
+		 * Get production with the action token
+		 * @return production including action tokens
+         */
+		public List<ABGrammarToken> getProductionWithAction() {
+			return productionWithAction;
+		}
+
 		/**
 		 * Get id
 		 * @return id

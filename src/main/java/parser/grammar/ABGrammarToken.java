@@ -7,6 +7,7 @@ public class ABGrammarToken {
 		TERMINAL,
 		NON_TERMINAL,
 		END_OF_STACK,
+		ACTION,
 		EPSILON
 	}
 	
@@ -21,7 +22,6 @@ public class ABGrammarToken {
 	/**
 	 * Create grammar token
 	 * @param value
-	 * @param type
 	 */
 	public ABGrammarToken(String value) {
 		
@@ -38,6 +38,10 @@ public class ABGrammarToken {
 			this.value = value.substring(1, value.length()-1);
 			this.type = Type.TERMINAL;
 		
+		} else if(value.charAt(0) == '#' && value.charAt(value.length()-1) == '#') {
+			this.value = value.substring(1, value.length()-1);
+			this.type = Type.ACTION;
+
 		} else {
 			this.value = value;
 			this.type = Type.NON_TERMINAL;
@@ -75,7 +79,13 @@ public class ABGrammarToken {
 	public boolean isEndOfStack() {
 		return type == Type.END_OF_STACK;
 	}
-	
+
+	/**
+	 * Check if is action
+	 * @return true if action token
+     */
+	public boolean isAction() { return type == Type.ACTION; }
+
 	/**
 	 * Get value
 	 * @return value
@@ -92,7 +102,10 @@ public class ABGrammarToken {
 		switch (type) {
 		case TERMINAL:
 			return "'" + value + "'";
-		
+
+		case ACTION:
+			return "#" + value + "#";
+
 		case EPSILON:
 		case END_OF_STACK:
 		case NON_TERMINAL:
