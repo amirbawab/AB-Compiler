@@ -21,16 +21,18 @@ public class CenterPanel extends JPanel {
 	private JSplitPane splitPane;
 	
 	// Headers
-	private final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
-	private final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
-	private final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
-	private final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
-	
+	public final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
+	public final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
+	public final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
+	public final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
+	public final Object[] SYMBOL_TABLE_HEADER = {"Name", "Kind", "Type", "Parameter", "Link"};
+
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",
 								SCANNER_ERROR_TITLE = "Scanner - Error",
 								PARSER_OUTPUT_TITLE = "Parser - Steps",
-								PARSER_ERROR_TITLE = "Parser - Error";
+								PARSER_ERROR_TITLE = "Parser - Error",
+								SYMBOL_TABLE_TITLE = "Symbol tables";
 	
 	
 	public CenterPanel() {
@@ -54,11 +56,12 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel.addTable(SCANNER_ERROR_TITLE, SCANNER_ERROR_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_OUTPUT_TITLE, PARSER_OUTPUT_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_ERROR_TITLE, PARSER_ERROR_HEADER);
-		
+		this.tabbedConsolePanel.addTableNavigation(SYMBOL_TABLE_TITLE);
+
 		// Resize
 		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
 		this.tabbedTextEditorPanel.setPreferredSize(new Dimension(0, 0));
-		
+
 		// Add and configure splitter 
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.tabbedTextEditorPanel, this.tabbedConsolePanel);
 		this.splitPane.setResizeWeight(0.8);
@@ -78,10 +81,37 @@ public class CenterPanel extends JPanel {
 			for(int row=0; row<table.length; row++) 
 				this.tabbedConsolePanel.addRowToTable(panelTitle, table[row]);
 	}
+
+	/**
+	 * Set table data
+	 * @param table
+	 */
+	public void setTableOfTableData(String inTable, String panelTitle, Object[][] table) {
+		if(table != null)
+			for(int row=0; row<table.length; row++)
+				this.tabbedConsolePanel.addRowToTableInTableNavigation(inTable, panelTitle, table[row]);
+	}
+
+	/**
+	 * Remove tables in a navigation table
+	 * @param title
+     */
+	public void removeTablesInNavigationTable(String title) {
+		this.tabbedConsolePanel.removeTablesInNavigationTable(title);
+	}
+
+	/**
+	 * Add a table to a navigation table
+	 * @param table
+	 * @param subTable
+	 * @param header
+     */
+	public void addTableToNavigationTable(String table, String subTable, Object[] header) {
+		this.tabbedConsolePanel.addTableToTabelNavigation(table, subTable, header);
+	}
 	
 	/**
 	 * Add table data
-	 * @param table
 	 */
 	public void addTableRowData(String panelTitle, Object[] data) {
 		this.tabbedConsolePanel.addRowToTable(panelTitle, data);

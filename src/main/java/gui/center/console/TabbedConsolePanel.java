@@ -2,6 +2,7 @@ package gui.center.console;
 
 import gui.center.console.components.ConsoleCellRender;
 import gui.center.console.components.ConsoleTable;
+import gui.center.console.components.ConsoleTableNavigation;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -71,6 +72,50 @@ public class TabbedConsolePanel extends JTabbedPane {
 		// Store it in the map
 		this.tabPanelsMap.put(title, table);
 	}
+
+	/**
+	 * Add a new table for a table navigation panel
+	 * @param title
+     */
+	public void addTableNavigation(String title) {
+
+		// Create panel
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+
+		// Create and add text editor to panel
+		ConsoleTableNavigation table = new ConsoleTableNavigation();
+		JScrollPane scrollPane = new JScrollPane(table);
+		panel.add(scrollPane, BorderLayout.CENTER);
+
+		// Add the tab
+		addTab(title, null, scrollPane);
+
+		// Store it in the map
+		this.tabPanelsMap.put(title, table);
+	}
+
+	/**
+	 * Add table to table navigation
+	 * @param subTableTitle
+	 * @param header
+     */
+	public void addTableToTabelNavigation(String tableTitle, String subTableTitle, Object[] header) {
+		ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(tableTitle);
+		table.getTabbedPane().addTable(subTableTitle, header);
+	}
+
+	/**
+	 * Add row to a table in  table navigation
+	 * @param tableNavigationTitle
+	 * @param tableTitle
+	 * @param data
+     */
+	public void addRowToTableInTableNavigation(String tableNavigationTitle, String tableTitle, Object[] data) {
+		ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(tableNavigationTitle);
+		ConsoleTable subTable = (ConsoleTable) table.getTabbedPane().getBoard(tableTitle);
+		subTable.addRow(data);
+	}
 	
 	/**
 	 * Add row to table panel
@@ -89,6 +134,15 @@ public class TabbedConsolePanel extends JTabbedPane {
 	public void resetTable(String panelTitle) {
 		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
 		table.clearAll();
+	}
+
+	/**
+	 * Remove tables in a navigation table
+	 * @param panelTitle
+     */
+	public void removeTablesInNavigationTable(String panelTitle) {
+		ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(panelTitle);
+		table.removeTables();
 	}
 	
 	/**
@@ -125,5 +179,9 @@ public class TabbedConsolePanel extends JTabbedPane {
 	public void enableTooltipTextForColumn(String panelTitle, Object identifier) {
 		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
 		table.getColumn(identifier).setCellRenderer(new ConsoleCellRender());
+	}
+
+	public Map<String, Component> getTabPanelsMap() {
+		return tabPanelsMap;
 	}
 }
