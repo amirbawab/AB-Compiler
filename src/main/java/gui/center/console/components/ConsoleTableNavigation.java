@@ -4,6 +4,8 @@ import gui.center.console.TabbedConsolePanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Amir on 3/26/2016.
@@ -13,12 +15,14 @@ public class ConsoleTableNavigation extends JPanel {
     // Components
     private TabbedConsolePanel tabbedPane;
     private JPanel navigationPanel;
+    private Map<String, Integer> entryLink;
 
     public ConsoleTableNavigation() {
 
         // Init components
         tabbedPane = new TabbedConsolePanel();
         navigationPanel = new JPanel();
+        entryLink = new HashMap<>();
 
         // Set layout
         setLayout(new BorderLayout());
@@ -41,8 +45,17 @@ public class ConsoleTableNavigation extends JPanel {
         return tabbedPane;
     }
 
+    public void addEntryLink(String panelTitle, int row, int link) {
+        entryLink.put(panelTitle+"#"+row, link);
+    }
+
+    public int getEntryLink(String panelTitle, int row, int link) {
+        return entryLink.get(panelTitle+"#"+row);
+    }
+
     public void removeTables() {
         tabbedPane.removeAll();
         tabbedPane.getTabPanelsMap().clear();
+        entryLink.clear();
     }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 public class ABSymbolTable {
     private List<ABSymbolTableEntry> rows;
     private String name;
+    private int id;
 
     /**
      * Constructor
@@ -27,6 +28,33 @@ public class ABSymbolTable {
     public void addRow(ABSymbolTableEntry entry) { this.rows.add(entry); }
     public String getName() {
         return name;
+    }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Object[][] getTableData() {
+        Object[][] tableData = new Object[rows.size()][5];
+
+        for(int i=0; i < tableData.length; i++) {
+            ABSymbolTableEntry entry = rows.get(i);
+
+            String entryName = entry.getName();
+            String entryKind = entry.getKind().getName();
+            String entryType = entry.getType().toString();
+
+            String entryParams = "Not applicable";
+            if(entry.getParameters() != null)
+                entryParams = entry.getParameters().toString();
+
+            int entryLink = entry.getLink() == null ? -1 : entry.getLink().getId();
+
+            tableData[i] = new Object[]{entryName, entryKind, entryType, entryParams, entryLink};
+        }
+        return tableData;
     }
 
     /**

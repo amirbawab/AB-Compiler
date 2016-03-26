@@ -21,11 +21,11 @@ public class CenterPanel extends JPanel {
 	private JSplitPane splitPane;
 	
 	// Headers
-	public final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
-	public final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
-	public final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
-	public final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
-	public final Object[] SYMBOL_TABLE_HEADER = {"Name", "Kind", "Type", "Parameter", "Link"};
+	public static final Object[] SCANNER_OUTPUT_HEADER = {"Token", "Value", "Row", "Col"};
+	public static final Object[] SCANNER_ERROR_HEADER = {"Token", "Value", "Row", "Col", "Comment"};
+	public static final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
+	public static final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
+	public static final Object[] SYMBOL_TABLE_HEADER = {"Name", "Kind", "Type", "Parameter", "Link"};
 
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Output",
@@ -89,7 +89,7 @@ public class CenterPanel extends JPanel {
 	public void setTableOfTableData(String inTable, String panelTitle, Object[][] table) {
 		if(table != null)
 			for(int row=0; row<table.length; row++)
-				this.tabbedConsolePanel.addRowToTableInTableNavigation(inTable, panelTitle, table[row]);
+				this.tabbedConsolePanel.addRowToTableInTableNavigation(row, inTable, panelTitle, table[row]);
 	}
 
 	/**

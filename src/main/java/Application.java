@@ -6,6 +6,7 @@ import gui.listener.ABIDEListener;
 import scanner.ABScanner;
 import scanner.ABToken;
 import scanner.helper.ErrorHelper;
+import semantic.ABSymbolTable;
 
 public class Application {
 	public static void main(String[] args) {
@@ -108,7 +109,24 @@ public class Application {
 				return table;
 			}
 
-			
+			@Override
+			public Object[][][] getSymbolTables() {
+				List<ABSymbolTable> tablesList = abParser.getSymbolTables();
+				Object[][][] tablesArray = new Object[tablesList.size()][][];
+
+				// Populate data
+				for(int tableId = 0; tableId < tablesArray.length; tableId++) {
+					// Add values
+					tablesArray[tableId] = tablesList.get(tableId).getTableData();
+				}
+				return tablesArray;
+			}
+
+			@Override
+			public String getSymbolTableName(int id) {
+				return abParser.getSymbolTables().get(id).getName();
+			}
+
 			/**
 			 * Compilation time
 			 */

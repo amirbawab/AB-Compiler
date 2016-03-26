@@ -12,6 +12,8 @@ public interface ABIDEListener {
 	public long getScannerTime();
 	public long getParserTime();
 	public boolean doesCompile();
+	public Object[][][] getSymbolTables();
+	public String getSymbolTableName(int id);
 	
 	// Menu
 	public Object[][] getStateTable();

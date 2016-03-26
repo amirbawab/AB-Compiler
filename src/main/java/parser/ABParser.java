@@ -47,9 +47,6 @@ public class ABParser {
 		// Create parse table
 		this.abParseTable = new ABParserTable(abGrammar);
 
-		// Create semantic
-		this.semantic = new ABSemantic();
-
 		// Log
 		l.info("Parse table: %s", abParseTable);
 	}
@@ -88,6 +85,9 @@ public class ABParser {
 		
 		// Prepare stack
 		Stack<ABGrammarToken> stack = new Stack<>();
+
+		// Create semantic
+		this.semantic = new ABSemantic();
 		
 		// Reset the snapshot list
 		snapshots = new ArrayList<>();
@@ -130,7 +130,10 @@ public class ABParser {
 
 				// Pop for now
 				ABGrammarToken token = stack.pop();
-				semantic.eval(token, tokens, inputTokenIndex);
+
+				// If no  errors
+				if(!error)
+					semantic.eval(token, tokens, inputTokenIndex);
 
 			// If is terminal
 			} else if(grammarToken.isTerminal()) {

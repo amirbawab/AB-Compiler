@@ -111,9 +111,15 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 * @param tableTitle
 	 * @param data
      */
-	public void addRowToTableInTableNavigation(String tableNavigationTitle, String tableTitle, Object[] data) {
+	public void addRowToTableInTableNavigation(int row, String tableNavigationTitle, String tableTitle, Object[] data) {
 		ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(tableNavigationTitle);
 		ConsoleTable subTable = (ConsoleTable) table.getTabbedPane().getBoard(tableTitle);
+
+		// Adjust the link
+		int link = (int)data[data.length-1];
+		table.addEntryLink(tableTitle, row, link);
+		data[data.length-1] = link >= 0 ? "<html><u>View table</u></html>" : "<html><em>No table</em></html>";
+
 		subTable.addRow(data);
 	}
 	

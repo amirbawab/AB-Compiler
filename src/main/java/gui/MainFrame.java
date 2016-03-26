@@ -124,7 +124,20 @@ public class MainFrame extends JFrame {
 							// If parser error found, update compiler message
 							if(parserErrorData.length > 0)
 								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
-							
+
+							// Clear symbol tables
+							centerPanel.removeTablesInNavigationTable(CenterPanel.SYMBOL_TABLE_TITLE);
+
+							// If no parsing errors
+							if(parserErrorData.length == 0){
+								Object[][][] symbolTables = abIDElistener.getSymbolTables();
+								for(int i=0; i < symbolTables.length; i++) {
+									String subTableName = abIDElistener.getSymbolTableName(i);
+									centerPanel.addTableToNavigationTable(CenterPanel.SYMBOL_TABLE_TITLE, subTableName, CenterPanel.SYMBOL_TABLE_HEADER);
+									centerPanel.setTableOfTableData(CenterPanel.SYMBOL_TABLE_TITLE, subTableName, symbolTables[i]);
+								}
+							}
+
 							// Insert time
 							message += String.format("Total time: %d ms", compilationTime);
 							

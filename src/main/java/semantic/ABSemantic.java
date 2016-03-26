@@ -64,6 +64,7 @@ public class ABSemantic {
             globalTable = new ABSymbolTable("Global");
 
             // Push global to stack
+            globalTable.setId(allTables.size());
             allTables.add(globalTable);
             tablesStack.push(globalTable);
 
@@ -74,6 +75,7 @@ public class ABSemantic {
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
+            entry.getLink().setId(allTables.size());
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
 
@@ -115,6 +117,7 @@ public class ABSemantic {
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
+            entry.getLink().setId(allTables.size());
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
 
@@ -125,6 +128,7 @@ public class ABSemantic {
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
+            entry.getLink().setId(allTables.size());
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
 

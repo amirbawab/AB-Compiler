@@ -81,8 +81,9 @@ class ABSymbolTableEntry {
     }
 
     public List<List<ABToken>> getParameters() {
-        List<List<ABToken>> parameters = new ArrayList<>();
+        List<List<ABToken>> parameters = null;
         if(link != null) {
+            parameters = new ArrayList<>();
             for(ABSymbolTableEntry entry : link.getRows()) {
                 if(entry.getKind() == Kind.PARAMETER)
                     parameters.add(entry.getType());
@@ -92,6 +93,7 @@ class ABSymbolTableEntry {
     }
 
     public String toString() {
-        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), getParameters().toString());
+        String parameters = getParameters() == null ? "Not applicable" : getParameters().toString();
+        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), parameters);
     }
 }
