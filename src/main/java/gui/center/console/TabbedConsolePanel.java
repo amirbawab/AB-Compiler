@@ -111,13 +111,11 @@ public class TabbedConsolePanel extends JTabbedPane {
 		consoleTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 1) {
-					int row = consoleTable.getSelectedRow();
-					int col = consoleTable.getSelectedColumn();
-					Integer link = table.getEntryLink(subTableTitle, row);
-					if(row >=0 && col == consoleTable.getColumnCount()-1 && link != null) {
-						table.setSelectedIndex(link);
-					}
+				int row = consoleTable.getSelectedRow();
+				int col = consoleTable.getSelectedColumn();
+				Integer link = table.getEntryLink(subTableTitle, row);
+				if(row >=0 && col == consoleTable.getColumnCount()-1 && link != null && link >= 0) {
+					table.setSelectedIndex(link);
 				}
 			}
 		});
