@@ -1,5 +1,6 @@
 package semantic;
 
+import parser.grammar.ABGrammarToken;
 import scanner.ABToken;
 
 import java.util.ArrayList;
@@ -9,7 +10,6 @@ class ABSymbolTableEntry {
     private String name;
     private Kind kind;
     private List<ABToken> type;
-    private List<List<ABToken>> paramtersTypes;
     private ABSymbolTable link;
 
     /**
@@ -42,15 +42,6 @@ class ABSymbolTableEntry {
         this.name = name;
         this.kind = kind;
         this.type = new ArrayList<>();
-        this.paramtersTypes = new ArrayList<>();
-    }
-
-    /**
-     * Add function parameter
-     * @param tokens
-     */
-    public void addParameter(List<ABToken> tokens) {
-        this.paramtersTypes.add(tokens);
     }
 
     /**
@@ -81,14 +72,6 @@ class ABSymbolTableEntry {
         return type;
     }
 
-    public List<List<ABToken>> getParamtersTypes() {
-        return paramtersTypes;
-    }
-
-    public void setParamtersTypes(List<List<ABToken>> paramtersTypes) {
-        this.paramtersTypes = paramtersTypes;
-    }
-
     public ABSymbolTable getLink() {
         return link;
     }
@@ -97,7 +80,18 @@ class ABSymbolTableEntry {
         this.link = link;
     }
 
+    public List<List<ABToken>> getParameters() {
+        List<List<ABToken>> parameters = new ArrayList<>();
+        if(link != null) {
+            for(ABSymbolTableEntry entry : link.getRows()) {
+                if(entry.getKind() == Kind.PARAMETER)
+                    parameters.add(entry.getType());
+            }
+        }
+        return parameters;
+    }
+
     public String toString() {
-        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), paramtersTypes.toString());
+        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), getParameters().toString());
     }
 }

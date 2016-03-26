@@ -94,12 +94,14 @@ public class ABSemantic {
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tokens.get(tokenIndex-1).getValue());
+            entry.setType(type_buffer);
             tables.peek().addRow(entry);
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tokens.get(tokenIndex-1).getValue());
+            entry.setType(type_buffer);
             tables.peek().addRow(entry);
 
             // Push class to stack
