@@ -15,6 +15,7 @@ import static parser.helper.ABParserMessageHelper.*;
 import scanner.ABScanner;
 import scanner.ABToken;
 import semantic.ABSemantic;
+import semantic.ABSymbolTable;
 
 public class ABParser {
 	
@@ -470,7 +471,15 @@ public class ABParser {
 			}
 		}
 	}
-	
+
+	/**
+	 * Get all symbol tables
+	 * @return
+     */
+	public List<ABSymbolTable> getSymbolTables() {
+		return semantic.getAllTables();
+	}
+
 	/**
 	 * Snapshot of the data at a particular moment
 	 */

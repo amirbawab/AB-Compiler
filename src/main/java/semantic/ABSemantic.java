@@ -18,7 +18,8 @@ public class ABSemantic {
     private Logger l = LogManager.getFormatterLogger(getClass());
 
     private ABSymbolTable globalTable;
-    private Stack<ABSymbolTable> tables;
+    private List<ABSymbolTable> allTables;
+    private Stack<ABSymbolTable> tablesStack;
 
     // Buffers
     List<ABToken> type_buffer;
@@ -46,9 +47,16 @@ public class ABSemantic {
     }
 
     public ABSemantic() {
-        tables = new Stack<>();
+        tablesStack = new Stack<>();
+        allTables = new ArrayList<>();
     }
 
+    /**
+     * Evaluate action token
+     * @param token
+     * @param tokens
+     * @param tokenIndex
+     */
     public void eval(ABGrammarToken token, List<ABToken> tokens, int tokenIndex) {
         if(token.getValue().equals(Type.CREATE_GLOBAL_TABLE.getName())) {
 
@@ -56,21 +64,23 @@ public class ABSemantic {
             globalTable = new ABSymbolTable("Global");
 
             // Push global to stack
-            tables.push(globalTable);
+            allTables.add(globalTable);
+            tablesStack.push(globalTable);
 
         } else if(token.getValue().equals(Type.CREATE_CLASS_TABLE_AND_ENTRY.getName())) {
 
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(tokens.get(tokenIndex-1).getValue());
-            tables.peek().addRow(entry);
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
+            tablesStack.peek().addRow(entry);
 
             // Push class to stack
-            tables.push(entry.getLink());
+            allTables.add(entry.getLink());
+            tablesStack.push(entry.getLink());
 
         } else if(token.getValue().equals(Type.PARENT.getName())) {
 
             // Pop the table
-            tables.pop();
+            tablesStack.pop();
 
         } else if(token.getValue().equals(Type.TYPE.getName())) {
 
@@ -83,7 +93,7 @@ public class ABSemantic {
             // Create variable entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(tokens.get(tokenIndex-1).getValue());
             entry.setType(type_buffer);
-            tables.peek().addRow(entry);
+            tablesStack.peek().addRow(entry);
 
         } else if(token.getValue().equals(Type.MORE_TYPE.getName())) {
 
@@ -95,26 +105,28 @@ public class ABSemantic {
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tokens.get(tokenIndex-1).getValue());
             entry.setType(type_buffer);
-            tables.peek().addRow(entry);
+            tablesStack.peek().addRow(entry);
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {
 
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tokens.get(tokenIndex-1).getValue());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
             entry.setType(type_buffer);
-            tables.peek().addRow(entry);
+            tablesStack.peek().addRow(entry);
 
             // Push class to stack
-            tables.push(entry.getLink());
+            allTables.add(entry.getLink());
+            tablesStack.push(entry.getLink());
 
         } else if(token.getValue().equals(Type.CREATE_PROGRAM_ENTRY_AND_TABLE.getName())) {
 
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(tokens.get(tokenIndex-1).getValue());
-            tables.peek().addRow(entry);
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
+            tablesStack.peek().addRow(entry);
 
             // Push class to stack
-            tables.push(entry.getLink());
+            allTables.add(entry.getLink());
+            tablesStack.push(entry.getLink());
 
         } else {
             l.error("Action token: %s not found!", token.getValue());
@@ -129,16 +141,17 @@ public class ABSemantic {
         this.globalTable = globalTable;
     }
 
-    public Stack<ABSymbolTable> getTables() {
-        return tables;
+    public Stack<ABSymbolTable> getTablesStack() {
+        return tablesStack;
     }
 
-    public void setTables(Stack<ABSymbolTable> tables) {
-        this.tables = tables;
+    public void setTablesStack(Stack<ABSymbolTable> tablesStack) {
+        this.tablesStack = tablesStack;
     }
 
-
-    // TODO Remove the methods below
+    public List<ABSymbolTable> getAllTables() {
+        return allTables;
+    }
 
     public void printTables() {
         printTables(globalTable);
