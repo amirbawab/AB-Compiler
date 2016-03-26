@@ -28,4 +28,17 @@ public class ABSymbolTable {
     public String getName() {
         return name;
     }
+
+    /**
+     * Print table
+     * @return
+     */
+    public String toString() {
+        String result = "\n======================\n";
+        result += "Symbol table: " + name;
+        for(ABSymbolTableEntry entry : rows)
+            result += "\n" + entry;
+        result += "\n====================\n";
+        return result;
+    }
 }

@@ -26,4 +26,10 @@ public class ABSymbolTableEntryFactory {
         ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.VARIABLE);
         return entry;
     }
+
+    public static ABSymbolTableEntry createProgramEntry(String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.PROGRAM);
+        entry.setLink(new ABSymbolTable(name));
+        return entry;
+    }
 }

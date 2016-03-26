@@ -14,6 +14,7 @@ import parser.grammar.ABGrammarToken;
 import static parser.helper.ABParserMessageHelper.*;
 import scanner.ABScanner;
 import scanner.ABToken;
+import semantic.ABSemantic;
 
 public class ABParser {
 	
@@ -29,6 +30,9 @@ public class ABParser {
 	
 	// Store Snapshots
 	private List<ABParserSnapshot> snapshots;
+
+	// Semantic
+	private ABSemantic semantic;
 	
 	/**
 	 * Constructor
@@ -41,7 +45,10 @@ public class ABParser {
 		
 		// Create parse table
 		this.abParseTable = new ABParserTable(abGrammar);
-		
+
+		// Create semantic
+		this.semantic = new ABSemantic();
+
 		// Log
 		l.info("Parse table: %s", abParseTable);
 	}
@@ -122,7 +129,7 @@ public class ABParser {
 
 				// Pop for now
 				ABGrammarToken token = stack.pop();
-				System.out.println(token);
+				semantic.eval(token, tokens, inputTokenIndex);
 
 			// If is terminal
 			} else if(grammarToken.isTerminal()) {
@@ -252,7 +259,9 @@ public class ABParser {
 		
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
-					
+
+		semantic.printTables();
+
 		// No errors
 		return true;
 	}

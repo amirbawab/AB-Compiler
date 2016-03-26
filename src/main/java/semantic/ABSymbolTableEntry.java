@@ -19,7 +19,8 @@ class ABSymbolTableEntry {
         FUNCTION("function"),
         CLASS("class"),
         VARIABLE("variable"),
-        PARAMETER("parameter");
+        PARAMETER("parameter"),
+        PROGRAM("program");
 
         private String name;
 
@@ -94,5 +95,9 @@ class ABSymbolTableEntry {
 
     public void setLink(ABSymbolTable link) {
         this.link = link;
+    }
+
+    public String toString() {
+        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), paramtersTypes.toString());
     }
 }
