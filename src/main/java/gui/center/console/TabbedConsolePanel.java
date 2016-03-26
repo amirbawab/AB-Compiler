@@ -1,11 +1,15 @@
 package gui.center.console;
 
+import gui.center.CenterPanel;
 import gui.center.console.components.ConsoleCellRender;
 import gui.center.console.components.ConsoleTable;
 import gui.center.console.components.ConsoleTableNavigation;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.Console;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,9 +104,23 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 * @param subTableTitle
 	 * @param header
      */
-	public void addTableToTabelNavigation(String tableTitle, String subTableTitle, Object[] header) {
-		ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(tableTitle);
+	public void addTableToTabelNavigation(String tableTitle, final String subTableTitle, Object[] header) {
+		final ConsoleTableNavigation table = (ConsoleTableNavigation) getBoard(tableTitle);
 		table.getTabbedPane().addTable(subTableTitle, header);
+		final ConsoleTable consoleTable = (ConsoleTable) table.getTabbedPane().getBoard(subTableTitle);
+		consoleTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 1) {
+					int row = consoleTable.getSelectedRow();
+					int col = consoleTable.getSelectedColumn();
+					Integer link = table.getEntryLink(subTableTitle, row);
+					if(row >=0 && col == consoleTable.getColumnCount()-1 && link != null) {
+						table.setSelectedIndex(link);
+					}
+				}
+			}
+		});
 	}
 
 	/**
