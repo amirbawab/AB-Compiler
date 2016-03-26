@@ -1,15 +1,15 @@
 prog            -> #createGlobalTable# classDeclRpt progBody
 classDeclRpt    -> classDecl classDeclRpt | EPSILON
-classDecl       -> 'T_CLASS' classIden classBody semicolon
+classDecl       -> 'T_CLASS' classIden #createClassTableAndEntry# classBody semicolon #parent#
 classIden       -> 'T_IDENTIFIER'
 classBody       -> 'T_OPEN_CURLY' varDeclRptFunc closeCurly
 closeCurly      -> 'T_CLOSE_CURLY'
 semicolon       -> 'T_SEMICOLON'
-varDeclRptFunc  -> type varFuncIden varFuncDisamb | EPSILON
+varDeclRptFunc  -> #startType# type varFuncIden varFuncDisamb | EPSILON
 varFuncIden		-> 'T_IDENTIFIER'
-varFuncDisamb   -> arraySizeRpt semicolon varDeclRptFunc | 'T_OPEN_PAREN' fParams closeParen funcBody semicolon funcDefRpt
+varFuncDisamb   -> #createVarEntry# arraySizeRpt #stopType# semicolon varDeclRptFunc | #createFunctionEntryAndTable# #stopType# 'T_OPEN_PAREN' fParams closeParen funcBody semicolon #parent# funcDefRpt
 closeParen		-> 'T_CLOSE_PAREN'
-funcDefRpt      -> type funcDefIden openParen fParams closeParen funcBody semicolon funcDefRpt | EPSILON
+funcDefRpt      -> #startType# type funcDefIden #createFunctionEntryAndTable# #stopType# openParen fParams closeParen funcBody semicolon #parent# funcDefRpt | EPSILON
 funcDefIden		-> 'T_IDENTIFIER'
 openParen		-> 'T_OPEN_PAREN'
 arraySizeRpt    -> arraySize arraySizeRpt | EPSILON
@@ -17,15 +17,15 @@ arraySize       -> 'T_OPEN_SQUARE' arraySizeInt arraySizeCloSq
 arraySizeInt	-> 'T_INTEGER'
 arraySizeCloSq	-> 'T_CLOSE_SQUARE'
 type            -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
-fParams         -> type fParamsIden arraySizeRpt fParamsTailRpt | EPSILON
+fParams         -> #startType# type fParamsIden #createParamEntry# arraySizeRpt #stopType# fParamsTailRpt | EPSILON
 fParamsIden		-> 'T_IDENTIFIER'
-fParamsTail     -> 'T_COMMA' type fParamsIden arraySizeRpt
+fParamsTail     -> 'T_COMMA' #startType# type fParamsIden #createParamEntry# arraySizeRpt #stopType#
 fParamsTailRpt  -> fParamsTail fParamsTailRpt | EPSILON
-progBody        -> 'T_PROGRAM' funcBody semicolon funcDefRpt
+progBody        -> 'T_PROGRAM' #createProgramEntryAndTable# funcBody semicolon #parent# funcDefRpt
 funcBody        -> 'T_OPEN_CURLY' varDeclRptSt closeCurly
-varDeclRptSt    -> 'T_INT_TYPE' identifier arraySizeRpt semicolon varDeclRptSt 
-                | 'T_FLOAT_TYPE' identifier arraySizeRpt semicolon varDeclRptSt 
-                | 'T_IDENTIFIER' varDeclRptStDis
+varDeclRptSt    -> #startType# 'T_INT_TYPE' identifier #createVarEntry# arraySizeRpt #stopType# semicolon varDeclRptSt
+                | #startType# 'T_FLOAT_TYPE' identifier #createVarEntry# arraySizeRpt #stopType# semicolon varDeclRptSt
+                | #startType# 'T_IDENTIFIER' varDeclRptStDis
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon statementRpt
                 | 'T_FOR' openParen type identifier assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon statementRpt
                 | 'T_GET' openParen variable closeParen semicolon statementRpt
@@ -35,7 +35,7 @@ varDeclRptSt    -> 'T_INT_TYPE' identifier arraySizeRpt semicolon varDeclRptSt
 then			-> 'T_THEN'
 else			-> 'T_ELSE'
 identifier		-> 'T_IDENTIFIER'               
-varDeclRptStDis -> 'T_IDENTIFIER' arraySizeRpt semicolon varDeclRptSt | idnestRptIdDiIn assignOp expr semicolon statementRpt
+varDeclRptStDis -> 'T_IDENTIFIER' #createVarEntry# arraySizeRpt #stopType# semicolon varDeclRptSt | #stopType# idnestRptIdDiIn assignOp expr semicolon statementRpt
 statementRpt    -> statement statementRpt | EPSILON
 statement       -> 'T_IDENTIFIER' idnestRptIdDiIn assignOp expr semicolon
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon

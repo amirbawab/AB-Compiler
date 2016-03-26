@@ -121,7 +121,8 @@ public class ABParser {
 			if(grammarToken.isAction()) {
 
 				// Pop for now
-				stack.pop();
+				ABGrammarToken token = stack.pop();
+				System.out.println(token);
 
 			// If is terminal
 			} else if(grammarToken.isTerminal()) {
@@ -140,15 +141,16 @@ public class ABParser {
 					
 				// If no match
 				} else {
-					
-					// TODO This part has to be avoided
-					
+
 					// Prepare message
 					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
 					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
-					
+
+					// TODO This part has to be avoided
+					l.error("This statement should never execute. Step log: %s", snapshots.get(snapshots.size()-1));
+
 					// Pop
 					stack.pop();
 					

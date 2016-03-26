@@ -10,72 +10,22 @@ import java.util.List;
  */
 public class ABSymbolTable {
     private List<ABSymbolTableEntry> rows;
-    public enum Kind {
-        FUNCTION("function"),
-        CLASS("class"),
-        VARIABLE("variable"),
-        PARAMETER("parameter");
-
-        private String name;
-
-        Kind(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    public ABSymbolTable() {
-        rows = new ArrayList<>();
-    }
+    private String name;
 
     /**
-     * Add a new entry
-     * @param name
-     * @param kind
-     * @return
+     * Constructor
      */
-    public ABSymbolTableEntry addRow(String name, Kind kind) {
-        ABSymbolTableEntry row = new ABSymbolTableEntry(name, kind);
-        rows.add(row);
-        return row;
+    public ABSymbolTable(String name) {
+        this.name = name;
+        this.rows = new ArrayList<>();
     }
 
-    class ABSymbolTableEntry {
-        private String name;
-        private Kind kind;
-        private List<ABToken> type;
-        private List<List<ABToken>> paramtersTypes;
-        private ABSymbolTableEntry link;
+    public List<ABSymbolTableEntry> getRows() {
+        return rows;
+    }
 
-        /**
-         * Constructor
-         * @param name
-         * @param kind
-         */
-        public ABSymbolTableEntry(String name, Kind kind) {
-            this.name = name;
-            this.kind = kind;
-            this.type = new ArrayList<>();
-            this.paramtersTypes = new ArrayList<>();
-        }
-
-        /**
-         * Add function parameter
-         * @param tokens
-         */
-        public void addParameter(List<ABToken> tokens) {
-            this.paramtersTypes.add(tokens);
-        }
-
-        /**
-         * Set function type
-         * @param tokens
-         */
-        public void setType(List<ABToken> tokens) {
-            this.type = tokens;
-        }
+    public void addRow(ABSymbolTableEntry entry) { this.rows.add(entry); }
+    public String getName() {
+        return name;
     }
 }

@@ -275,18 +275,22 @@ public class ABGrammar {
 	        				
 	        				// Get next token
 	        				ABGrammarToken nextToken = production.get(j);
-	    	        		
-	        				// Get the first set
-	        				Set<String> firstSet = first(nextToken);
-	        				
-	        				// Copy into follow set
-	        				for(String str : firstSet)
-	        					if(!str.equals(ABGrammarToken.EPSILON))
-	        						followSetMap.get(pToken.getValue()).add(str);
-	        				
-	        				// If first set doesn't contain epsilon stop
-	        				if(!firstSet.contains(ABGrammarToken.EPSILON))
-	        					break;
+
+							// If not an action token
+							if(!nextToken.isAction()) {
+
+								// Get the first set
+								Set<String> firstSet = first(nextToken);
+
+								// Copy into follow set
+								for (String str : firstSet)
+									if (!str.equals(ABGrammarToken.EPSILON))
+										followSetMap.get(pToken.getValue()).add(str);
+
+								// If first set doesn't contain epsilon stop
+								if (!firstSet.contains(ABGrammarToken.EPSILON))
+									break;
+							}
 	        			}
 	        			
 	        			// If no more next tokens
