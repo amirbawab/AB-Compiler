@@ -117,7 +117,7 @@ public class ABParser {
 		l.info("Start parsing input ...");
 				
 		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
+		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
 		
 		// While top is not $
 		while(!stack.peek().isEndOfStack()) {
@@ -142,7 +142,7 @@ public class ABParser {
 				if(grammarToken.getValue().equals(inputToken.getToken())) {
 					
 					// Take snapshot
-					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", "", false));
+					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", "", false));
 					
 					// Pop terminal from stack
 					stack.pop();
@@ -157,7 +157,7 @@ public class ABParser {
 					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
-					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
+					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
 
 					// TODO This part has to be avoided
 					l.error("This statement should never execute. Step log: %s", snapshots.get(snapshots.size()-1));
@@ -186,7 +186,7 @@ public class ABParser {
 					derive(grammarToken, production, derivation);
 					
 					// Take snapshot
-					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), cell.getId() +": "+ grammarToken.getValue()+"->"+StringUtils.join(production, " "), "=> "+ StringUtils.join(derivation, " "), false));
+					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), cell.getId() +": "+ grammarToken.getValue()+"->"+StringUtils.join(production, " "), "=> "+ StringUtils.join(derivation, " "), false));
 
 					// Pop
 					stack.pop();
@@ -211,7 +211,7 @@ public class ABParser {
 					String errorMessage =  String.format(cell.getErrorMessage(), inputValue, inputToken.getRow(), inputToken.getCol());
 					
 					// Add snapshot
-					snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
+					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
 					
 					// If pop
 					if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
@@ -240,7 +240,7 @@ public class ABParser {
 		if(!inputToken.getToken().equals(ABGrammarToken.END_OF_STACK)){
 			
 			// Add snapshot
-			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", String.format(GENERIC_UNEXPECTED_CODE_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()), true));
+			snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", String.format(GENERIC_UNEXPECTED_CODE_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()), true));
 			
 			// Error found
 			error = true;
@@ -250,7 +250,7 @@ public class ABParser {
 		if(error){
 			
 			// Add snapshot
-			snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", FAILURE, false));
+			snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", FAILURE, false));
 			
 			// Update time
 			parserProcessTime = System.currentTimeMillis() - parserProcessTime;
@@ -259,7 +259,7 @@ public class ABParser {
 		}
 
 		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, StringUtils.join(stack, " "), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
+		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
 		
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
@@ -482,6 +482,19 @@ public class ABParser {
      */
 	public List<ABSymbolTable> getSymbolTables() {
 		return semantic.getAllTables();
+	}
+
+	/**
+	 * Get string representatin of stack without action tokens
+	 * @param stack
+     * @return
+     */
+	private String stackNoAction(Stack<ABGrammarToken> stack) {
+		String value = "";
+		for(ABGrammarToken token : stack)
+			if(!token.isAction())
+				value += token.getValue() + " ";
+		return value.trim();
 	}
 
 	/**
