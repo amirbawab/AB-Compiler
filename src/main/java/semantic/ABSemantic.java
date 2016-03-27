@@ -77,7 +77,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -129,7 +129,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -145,7 +145,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
