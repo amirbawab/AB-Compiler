@@ -13,7 +13,7 @@ funcDefRpt      -> type #type# funcDefIden #createFunctionEntryAndTable# openPar
 funcDefIden		-> 'T_IDENTIFIER'
 openParen		-> 'T_OPEN_PAREN'
 arraySizeRpt    -> arraySize arraySizeRpt | EPSILON
-arraySize       -> 'T_OPEN_SQUARE' arraySizeInt arraySizeCloSq
+arraySize       -> 'T_OPEN_SQUARE' #moreType# arraySizeInt #moreType# arraySizeCloSq #moreType#
 arraySizeInt	-> 'T_INTEGER'
 arraySizeCloSq	-> 'T_CLOSE_SQUARE'
 type            -> 'T_INT_TYPE' | 'T_FLOAT_TYPE' | 'T_IDENTIFIER'
