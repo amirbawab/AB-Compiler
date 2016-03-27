@@ -493,7 +493,7 @@ public class ABParser {
 		String value = "";
 		for(ABGrammarToken token : stack)
 			if(!token.isAction())
-				value += token.getValue() + " ";
+				value += token.toString() + " ";
 		return value.trim();
 	}
 
