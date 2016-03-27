@@ -80,6 +80,44 @@ class ABSymbolTableEntry {
         this.link = link;
     }
 
+    public String getTypeAsString() {
+
+        switch (kind) {
+            case CLASS:
+            case PROGRAM:
+                return "Not applicable";
+        }
+
+        String typeStr = "";
+        List<ABToken> type = getType();
+        for(ABToken token : type)
+            typeStr += token.getValue();
+        return typeStr;
+    }
+
+    public String getParametersAsString() {
+
+        switch (kind) {
+            case CLASS:
+            case PARAMETER:
+            case PROGRAM:
+            case VARIABLE:
+                return "Not applicable";
+        }
+
+        String paramStr = "";
+        List<List<ABToken>> tokensList = getParameters();
+        for(int i=0; i<tokensList.size(); i++) {
+
+            if(i > 0) paramStr += ", ";
+
+            for(int j=0; j<tokensList.get(i).size(); j++) {
+                paramStr += tokensList.get(i).get(j).getValue();
+            }
+        }
+        return paramStr;
+    }
+
     public List<List<ABToken>> getParameters() {
         List<List<ABToken>> parameters = null;
         if(link != null) {
@@ -93,7 +131,6 @@ class ABSymbolTableEntry {
     }
 
     public String toString() {
-        String parameters = getParameters() == null ? "Not applicable" : getParameters().toString();
-        return String.format("%s || %s || %s:%s", name, kind.getName(), type.toString(), parameters);
+        return String.format("%s || %s || %s:%s", name, kind.getName(), getTypeAsString(), getParametersAsString());
     }
 }

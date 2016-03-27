@@ -264,7 +264,8 @@ public class ABParser {
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
 
-		semantic.printTables();
+		// Log tables
+		l.info(semantic.tablesToString());
 
 		// No errors
 		return true;

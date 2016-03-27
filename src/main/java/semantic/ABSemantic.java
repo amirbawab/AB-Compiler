@@ -157,16 +157,22 @@ public class ABSemantic {
         return allTables;
     }
 
-    public void printTables() {
-        printTables(globalTable);
+    /**
+     * Get symbol tables
+     * @return
+     */
+    public String tablesToString() {
+        return tablesToString(globalTable);
     }
 
-    private void printTables(ABSymbolTable table) {
+    private String tablesToString(ABSymbolTable table) {
+        String tableStr = "";
         if(table != null) {
-            System.out.print(table);
+            tableStr = table.toString();
             for (ABSymbolTableEntry entry : table.getRows()) {
-                printTables(entry.getLink());
+                tableStr += tablesToString(entry.getLink());
             }
         }
+        return tableStr;
     }
 }

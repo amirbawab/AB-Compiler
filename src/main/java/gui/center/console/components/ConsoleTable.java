@@ -9,6 +9,7 @@ public class ConsoleTable extends JTable {
 
 	public ConsoleTable(Object[][] data, Object[] header) {
 		setModel(new ConsoleTableModel(data, header));
+		getTableHeader().setReorderingAllowed(false);
 	}
 	
 	/**

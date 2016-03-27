@@ -44,12 +44,8 @@ public class ABSymbolTable {
 
             String entryName = entry.getName();
             String entryKind = entry.getKind().getName();
-            String entryType = entry.getType().toString();
-
-            String entryParams = "Not applicable";
-            if(entry.getParameters() != null)
-                entryParams = entry.getParameters().toString();
-
+            String entryType = entry.getTypeAsString();
+            String entryParams = entry.getParametersAsString();
             int entryLink = entry.getLink() == null ? -1 : entry.getLink().getId();
 
             tableData[i] = new Object[]{entryName, entryKind, entryType, entryParams, entryLink};
