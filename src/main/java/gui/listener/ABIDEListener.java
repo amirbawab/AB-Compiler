@@ -14,6 +14,7 @@ public interface ABIDEListener {
 	public boolean doesCompile();
 	public Object[][][] getSymbolTables();
 	public String getSymbolTableName(int id);
+	public Object[][] getSemanticErrors();
 	
 	// Menu
 	public Object[][] getStateTable();

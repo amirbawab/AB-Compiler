@@ -267,6 +267,16 @@ public class ABParser {
 		// Log tables
 		l.info(semantic.tablesToString());
 
+		// Errors
+		l.info("Semantic errors:");
+
+		// Load errors
+		if(semantic.getErrors().size() == 0) {
+			l.info("No errors found.");
+		} else {
+			l.info(StringUtils.join(semantic.getErrors(), '\n'));
+		}
+
 		// No errors
 		return true;
 	}
@@ -495,6 +505,14 @@ public class ABParser {
 			if(!token.isAction())
 				value += token.toString() + " ";
 		return value.trim();
+	}
+
+	/**
+	 * Get semantic instance
+	 * @return
+     */
+	public ABSemantic getSemantic() {
+		return semantic;
 	}
 
 	/**

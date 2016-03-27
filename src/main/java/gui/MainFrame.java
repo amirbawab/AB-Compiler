@@ -138,6 +138,14 @@ public class MainFrame extends JFrame {
 								}
 							}
 
+							// Semantic errors
+							Object[][] semanticErrorData = abIDElistener.getSemanticErrors();
+							centerPanel.setTableData(CenterPanel.SEMANTIC_ERROR_TITLE, semanticErrorData);
+
+							// If semantic errors, update compiler message
+							if(semanticErrorData.length > 0)
+								message	+= String.format("Semantic: %d error(s) found! ", semanticErrorData.length);
+
 							// Insert time
 							message += String.format("Total time: %d ms", compilationTime);
 							

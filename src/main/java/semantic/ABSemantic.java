@@ -21,7 +21,7 @@ public class ABSemantic {
     private ABSymbolTable globalTable;
     private List<ABSymbolTable> allTables;
     private Stack<ABSymbolTable> tablesStack;
-    private List<String> errorMessages;
+    private List<ABSemanticError> errors;
 
     // Buffers
     List<ABToken> type_buffer;
@@ -51,7 +51,7 @@ public class ABSemantic {
     public ABSemantic() {
         tablesStack = new Stack<>();
         allTables = new ArrayList<>();
-        errorMessages = new ArrayList<>();
+        errors = new ArrayList<>();
     }
 
     /**
@@ -75,6 +75,11 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+
+            // If exists already
+            if(definedEntry != null)
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(inputToken.getValue(), tablesStack.peek().getName());
@@ -104,16 +109,14 @@ public class ABSemantic {
             ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
 
             // If exists already
-            if(definedEntry != null) {
-                errorMessages.add(String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+            if(definedEntry != null)
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
 
-            } else {
-                // Create variable entry
-                ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(inputToken.getValue());
-                entry.setType(type_buffer);
-                entry.setToken(inputToken);
-                tablesStack.peek().addRow(entry);
-            }
+            // Create variable entry
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(inputToken.getValue());
+            entry.setType(type_buffer);
+            entry.setToken(inputToken);
+            tablesStack.peek().addRow(entry);
 
         } else if(token.getValue().equals(Type.MORE_TYPE.getName())) {
 
@@ -124,6 +127,11 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+
+            // If exists already
+            if(definedEntry != null)
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(inputToken.getValue());
@@ -135,6 +143,11 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+
+            // If exists already
+            if(definedEntry != null)
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(inputToken.getValue(), tablesStack.peek().getName());
@@ -215,8 +228,12 @@ public class ABSemantic {
         return allTables;
     }
 
-    public List<String> getErrorMessages() {
-        return errorMessages;
+    public List<ABSemanticError> getErrors() {
+        return errors;
+    }
+
+    private void addError(ABToken token, String message) {
+        errors.add(new ABSemanticError(message, token));
     }
 
     /**
@@ -236,5 +253,35 @@ public class ABSemantic {
             }
         }
         return tableStr;
+    }
+
+    public class ABSemanticError {
+        private String message;
+        private ABToken token;
+
+        public ABSemanticError(String message, ABToken token) {
+            this.message = message;
+            this.token = token;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public ABToken getToken() {
+            return token;
+        }
+
+        public void setToken(ABToken token) {
+            this.token = token;
+        }
+
+        public String toString() {
+            return message;
+        }
     }
 }

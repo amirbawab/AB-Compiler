@@ -26,13 +26,15 @@ public class CenterPanel extends JPanel {
 	public static final Object[] PARSER_OUTPUT_HEADER = {"Step", "Stack", "Input", "Production", "Derivation"};
 	public static final Object[] PARSER_ERROR_HEADER = {"Step", "Stack", "Input", "Comment"};
 	public static final Object[] SYMBOL_TABLE_HEADER = {"Name", "Kind", "Type", "Parameter", "Link"};
+	public static final Object[] SEMANTIC_ERROR_HEADER= {"Value", "Row", "Col", "Message"};
 
 	// Panel titles
 	public static final String 	SCANNER_OUTPUT_TITLE = "Scanner - Correct",
 								SCANNER_ERROR_TITLE = "Scanner - Error",
 								PARSER_OUTPUT_TITLE = "Parser - All Steps",
 								PARSER_ERROR_TITLE = "Parser - Error",
-								SYMBOL_TABLE_TITLE = "Symbol tables";
+								SYMBOL_TABLE_TITLE = "Symbol tables",
+								SEMANTIC_ERROR_TITLE = "Semantic - Error";
 	
 	
 	public CenterPanel() {
@@ -57,6 +59,7 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel.addTable(PARSER_OUTPUT_TITLE, PARSER_OUTPUT_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_ERROR_TITLE, PARSER_ERROR_HEADER);
 		this.tabbedConsolePanel.addTableNavigation(SYMBOL_TABLE_TITLE);
+		this.tabbedConsolePanel.addTable(SEMANTIC_ERROR_TITLE, SEMANTIC_ERROR_HEADER);
 
 		// Resize
 		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
