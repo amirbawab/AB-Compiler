@@ -59,8 +59,18 @@ public class ABSymbolTable {
      * @return
      */
     public ABSymbolTableEntry getEntry(String name) {
+        return getEntry(name, ABSymbolTableEntry.Kind.ANY);
+    }
+
+    /**
+     * Check if entry exist
+     * @param name
+     * @param kind
+     * @return
+     */
+    public ABSymbolTableEntry getEntry(String name, ABSymbolTableEntry.Kind kind) {
         for(ABSymbolTableEntry entry : rows)
-            if(entry.getName().equals(name))
+            if (entry.getName().equals(name) && (kind == ABSymbolTableEntry.Kind.ANY || entry.getKind() == kind))
                 return entry;
         return null;
     }

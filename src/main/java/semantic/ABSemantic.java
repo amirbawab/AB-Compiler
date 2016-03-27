@@ -35,7 +35,9 @@ public class ABSemantic {
         CREATE_PARAM_ENTRY("createParamEntry"),
         CREATE_FUNCTION_ENTRY_AND_TABLE("createFunctionEntryAndTable"),
         CREATE_PROGRAM_ENTRY_AND_TABLE("createProgramEntryAndTable"),
-        MORE_TYPE("moreType")
+        MORE_TYPE("moreType"),
+        USE_VAR("useVar"),
+        USE_FUNCTION("useFunction")
         ;
 
         private String name;
@@ -175,6 +177,16 @@ public class ABSemantic {
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
 
+        } else if(token.getValue().equals(Type.USE_VAR.getName())) {
+
+            // Input token
+            ABToken inputToken = tokens.get(tokenIndex-1);
+            ABSymbolTableEntry definedVar = searchEntry(inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+            ABSymbolTableEntry definedParam = searchEntry(inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+
+            if(definedVar == null && definedParam == null)
+                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+
         } else {
             l.error("Action token: %s not found!", token.getValue());
         }
@@ -186,7 +198,16 @@ public class ABSemantic {
      * @return
      */
     public ABSymbolTableEntry searchEntryLocally(String name) {
-        return tablesStack.peek().getEntry(name);
+        return searchEntryLocally(name, ABSymbolTableEntry.Kind.ANY);
+    }
+
+    /**
+     * Search for an entry locally
+     * @param name
+     * @return
+     */
+    public ABSymbolTableEntry searchEntryLocally(String name, ABSymbolTableEntry.Kind kind) {
+        return tablesStack.peek().getEntry(name, kind);
     }
 
     /**
@@ -195,6 +216,16 @@ public class ABSemantic {
      * @return
      */
     public ABSymbolTableEntry searchEntry(String name) {
+        return searchEntry(name, ABSymbolTableEntry.Kind.ANY);
+    }
+
+    /**
+     * Search for an entry
+     * @param name
+     * @param kind
+     * @return
+     */
+    public ABSymbolTableEntry searchEntry(String name, ABSymbolTableEntry.Kind kind) {
         Stack<ABSymbolTable> closestTables = new Stack<>();
         ABSymbolTableEntry found = null;
 
@@ -202,7 +233,7 @@ public class ABSemantic {
         while(found == null && !tablesStack.isEmpty()) {
 
             // Entry
-            ABSymbolTableEntry entry = tablesStack.peek().getEntry(name);
+            ABSymbolTableEntry entry = tablesStack.peek().getEntry(name, kind);
 
             // If found
             if(entry != null)

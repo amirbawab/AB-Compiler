@@ -21,7 +21,8 @@ class ABSymbolTableEntry {
         CLASS("class"),
         VARIABLE("variable"),
         PARAMETER("parameter"),
-        PROGRAM("program");
+        PROGRAM("program"),
+        ANY(null);
 
         private String name;
 

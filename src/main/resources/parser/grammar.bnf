@@ -25,7 +25,7 @@ progBody        -> 'T_PROGRAM' #createProgramEntryAndTable# funcBody semicolon #
 funcBody        -> 'T_OPEN_CURLY' varDeclRptSt closeCurly
 varDeclRptSt    -> 'T_INT_TYPE' #type# identifier #createVarEntry# arraySizeRpt semicolon varDeclRptSt
                 | 'T_FLOAT_TYPE' #type# identifier #createVarEntry# arraySizeRpt semicolon varDeclRptSt
-                | 'T_IDENTIFIER' #type# varDeclRptStDis
+                | 'T_IDENTIFIER' varDeclRptStDis
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon statementRpt
                 | 'T_FOR' openParen type identifier assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon statementRpt
                 | 'T_GET' openParen variable closeParen semicolon statementRpt
@@ -35,9 +35,9 @@ varDeclRptSt    -> 'T_INT_TYPE' #type# identifier #createVarEntry# arraySizeRpt 
 then			-> 'T_THEN'
 else			-> 'T_ELSE'
 identifier		-> 'T_IDENTIFIER'               
-varDeclRptStDis -> 'T_IDENTIFIER' #createVarEntry# arraySizeRpt semicolon varDeclRptSt | idnestRptIdDiIn assignOp expr semicolon statementRpt
+varDeclRptStDis -> #type# 'T_IDENTIFIER' #createVarEntry# arraySizeRpt semicolon varDeclRptSt | #useVar# idnestRptIdDiIn assignOp expr semicolon statementRpt
 statementRpt    -> statement statementRpt | EPSILON
-statement       -> 'T_IDENTIFIER' idnestRptIdDiIn assignOp expr semicolon
+statement       -> 'T_IDENTIFIER' #useVar# idnestRptIdDiIn assignOp expr semicolon
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon
                 | 'T_FOR' openParen type identifier assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon
                 | 'T_GET' openParen variable closeParen semicolon
@@ -52,9 +52,9 @@ statBlock       -> 'T_OPEN_CURLY' statementRpt closeCurly | statement | EPSILON
 relOp           -> 'T_GREATER_THAN' | 'T_LESS_THAN' | 'T_LESS_OR_EQUAL' | 'T_GREATER_OR_EQUAL' | 'T_IS_NOT_EQUAL' | 'T_IS_EQUAL'
 assignOp        -> 'T_ASSIGN'
 assignStat      -> variable assignOp expr
-variable        -> 'T_IDENTIFIER' idnestRptIdDiIn
-idnestRptIdDiFa -> indiceRpt idnestRptIdDFD
-                | 'T_OPEN_PAREN' aParams closeParen
+variable        -> 'T_IDENTIFIER' #useVar# idnestRptIdDiIn
+idnestRptIdDiFa -> #useVar# indiceRpt idnestRptIdDFD
+                | #useFunction# 'T_OPEN_PAREN' aParams closeParen
 idnestRptIdDFD  -> 'T_DOT' identifier idnestRptIdDiFa | EPSILON
 idnestRptIdDiIn -> indiceRpt indiceRptDis
 indiceRptDis    -> 'T_DOT' identifier idnestRptIdDiIn | EPSILON
