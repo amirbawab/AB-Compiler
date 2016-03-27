@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import parser.grammar.ABGrammarToken;
 import scanner.ABToken;
+import semantic.helper.ABSemanticMessageHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ABSemantic {
     private ABSymbolTable globalTable;
     private List<ABSymbolTable> allTables;
     private Stack<ABSymbolTable> tablesStack;
+    private List<String> errorMessages;
 
     // Buffers
     List<ABToken> type_buffer;
@@ -49,6 +51,7 @@ public class ABSemantic {
     public ABSemantic() {
         tablesStack = new Stack<>();
         allTables = new ArrayList<>();
+        errorMessages = new ArrayList<>();
     }
 
     /**
@@ -70,8 +73,12 @@ public class ABSemantic {
 
         } else if(token.getValue().equals(Type.CREATE_CLASS_TABLE_AND_ENTRY.getName())) {
 
+            // Input token
+            ABToken inputToken = tokens.get(tokenIndex-1);
+
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(inputToken.getValue(), tablesStack.peek().getName());
+            entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
@@ -92,10 +99,21 @@ public class ABSemantic {
 
         } else if(token.getValue().equals(Type.CREATE_VAR_ENTRY.getName())) {
 
-            // Create variable entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(tokens.get(tokenIndex-1).getValue());
-            entry.setType(type_buffer);
-            tablesStack.peek().addRow(entry);
+            // Check if already defined
+            ABToken inputToken = tokens.get(tokenIndex-1);
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+
+            // If exists already
+            if(definedEntry != null) {
+                errorMessages.add(String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+
+            } else {
+                // Create variable entry
+                ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(inputToken.getValue());
+                entry.setType(type_buffer);
+                entry.setToken(inputToken);
+                tablesStack.peek().addRow(entry);
+            }
 
         } else if(token.getValue().equals(Type.MORE_TYPE.getName())) {
 
@@ -104,16 +122,24 @@ public class ABSemantic {
 
         } else if(token.getValue().equals(Type.CREATE_PARAM_ENTRY.getName())) {
 
+            // Input token
+            ABToken inputToken = tokens.get(tokenIndex-1);
+
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tokens.get(tokenIndex-1).getValue());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(inputToken.getValue());
             entry.setType(type_buffer);
+            entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {
 
+            // Input token
+            ABToken inputToken = tokens.get(tokenIndex-1);
+
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(inputToken.getValue(), tablesStack.peek().getName());
             entry.setType(type_buffer);
+            entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
@@ -123,8 +149,12 @@ public class ABSemantic {
 
         } else if(token.getValue().equals(Type.CREATE_PROGRAM_ENTRY_AND_TABLE.getName())) {
 
+            // Input token
+            ABToken inputToken = tokens.get(tokenIndex-1);
+
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(tokens.get(tokenIndex-1).getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(inputToken.getValue(), tablesStack.peek().getName());
+            entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
             // Push class to stack
@@ -135,6 +165,34 @@ public class ABSemantic {
         } else {
             l.error("Action token: %s not found!", token.getValue());
         }
+    }
+
+    /**
+     * Search for an entry
+     * @param name
+     * @return
+     */
+    public ABSymbolTableEntry searchEntry(String name) {
+        Stack<ABSymbolTable> closestTables = new Stack<>();
+        ABSymbolTableEntry found = null;
+
+        // Search starting from current table
+        while(found == null && !tablesStack.isEmpty()) {
+
+            // Entry
+            ABSymbolTableEntry entry = tablesStack.peek().getEntry(name);
+
+            // If found
+            if(entry != null)
+                found = entry;
+            else
+                closestTables.push(tablesStack.pop());
+        }
+
+        // Put all tables back into stack
+        while(!closestTables.isEmpty())
+            tablesStack.push(closestTables.pop());
+        return found;
     }
 
     public ABSymbolTable getGlobalTable() {
@@ -155,6 +213,10 @@ public class ABSemantic {
 
     public List<ABSymbolTable> getAllTables() {
         return allTables;
+    }
+
+    public List<String> getErrorMessages() {
+        return errorMessages;
     }
 
     /**

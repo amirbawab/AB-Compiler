@@ -11,6 +11,7 @@ class ABSymbolTableEntry {
     private Kind kind;
     private List<ABToken> type;
     private ABSymbolTable link;
+    private ABToken token;
 
     /**
      * Enum Kind
@@ -78,6 +79,14 @@ class ABSymbolTableEntry {
 
     public void setLink(ABSymbolTable link) {
         this.link = link;
+    }
+
+    public ABToken getToken() {
+        return token;
+    }
+
+    public void setToken(ABToken token) {
+        this.token = token;
     }
 
     public String getTypeAsString() {

@@ -54,6 +54,18 @@ public class ABSymbolTable {
     }
 
     /**
+     * Check if entry exist
+     * @param name
+     * @return
+     */
+    public ABSymbolTableEntry getEntry(String name) {
+        for(ABSymbolTableEntry entry : rows)
+            if(entry.getName().equals(name))
+                return entry;
+        return null;
+    }
+
+    /**
      * Print table
      * @return
      */
