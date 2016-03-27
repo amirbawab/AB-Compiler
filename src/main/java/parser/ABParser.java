@@ -260,7 +260,10 @@ public class ABParser {
 
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
-		
+
+		// Run phase two of evaluation
+		semantic.evalPhaseTwo();
+
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
 
@@ -274,7 +277,7 @@ public class ABParser {
 		if(semantic.getErrors().size() == 0) {
 			l.info("No errors found.");
 		} else {
-			l.info(StringUtils.join(semantic.getErrors(), '\n'));
+			l.info("\n" + StringUtils.join(semantic.getErrors(), '\n'));
 		}
 
 		// No errors
