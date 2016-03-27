@@ -32,9 +32,10 @@ public class ConsoleTableNavigation extends JPanel {
 
         // Set layout
         setLayout(new BorderLayout());
+        navigationPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         // Labels
-        JLabel backwardLabel = new JLabel("<html><u>&lt;&lt; Backward</u></html>");
+        JLabel backwardLabel = new JLabel("<html><font color=#005DFF><u>&lt;&lt; Previous tab</u></font></html>");
 
         // Add label listener
         backwardLabel.addMouseListener(new MouseAdapter() {

@@ -134,7 +134,7 @@ public class TabbedConsolePanel extends JTabbedPane {
 		// Adjust the link
 		int link = (int)data[data.length-1];
 		table.addEntryLink(tableTitle, row, link);
-		data[data.length-1] = link >= 0 ? "<html><u>View table</u></html>" : "<html><em>No table</em></html>";
+		data[data.length-1] = link >= 0 ? "<html><font color=#005DFF><u>View table</u></font></html>" : "<html><em>No table</em></html>";
 
 		subTable.addRow(data);
 	}
