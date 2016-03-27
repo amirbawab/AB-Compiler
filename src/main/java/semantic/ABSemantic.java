@@ -75,7 +75,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -106,7 +106,7 @@ public class ABSemantic {
 
             // Check if already defined
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -127,7 +127,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -143,7 +143,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
@@ -178,6 +178,15 @@ public class ABSemantic {
         } else {
             l.error("Action token: %s not found!", token.getValue());
         }
+    }
+
+    /**
+     * Search for an entry locally
+     * @param name
+     * @return
+     */
+    public ABSymbolTableEntry searchEntryLocally(String name) {
+        return tablesStack.peek().getEntry(name);
     }
 
     /**

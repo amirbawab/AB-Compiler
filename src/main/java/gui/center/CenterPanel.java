@@ -86,6 +86,14 @@ public class CenterPanel extends JPanel {
 	}
 
 	/**
+	 * Reset table
+	 * @param panelTitle
+     */
+	public void resetTable(String panelTitle) {
+		this.tabbedConsolePanel.resetTable(panelTitle);
+	}
+
+	/**
 	 * Set table data
 	 * @param table
 	 */

@@ -128,6 +128,9 @@ public class MainFrame extends JFrame {
 							// Clear symbol tables
 							centerPanel.removeTablesInNavigationTable(CenterPanel.SYMBOL_TABLE_TITLE);
 
+							// Clear semantic errors
+							centerPanel.resetTable(CenterPanel.SEMANTIC_ERROR_TITLE);
+
 							// If no parsing errors
 							if(parserErrorData.length == 0){
 								Object[][][] symbolTables = abIDElistener.getSymbolTables();
@@ -136,15 +139,15 @@ public class MainFrame extends JFrame {
 									centerPanel.addTableToNavigationTable(CenterPanel.SYMBOL_TABLE_TITLE, subTableName, CenterPanel.SYMBOL_TABLE_HEADER);
 									centerPanel.setTableOfTableData(CenterPanel.SYMBOL_TABLE_TITLE, subTableName, symbolTables[i]);
 								}
+
+								// Semantic errors
+								Object[][] semanticErrorData = abIDElistener.getSemanticErrors();
+								centerPanel.setTableData(CenterPanel.SEMANTIC_ERROR_TITLE, semanticErrorData);
+
+								// If semantic errors, update compiler message
+								if(semanticErrorData.length > 0)
+									message	+= String.format("Semantic: %d error(s) found! ", semanticErrorData.length);
 							}
-
-							// Semantic errors
-							Object[][] semanticErrorData = abIDElistener.getSemanticErrors();
-							centerPanel.setTableData(CenterPanel.SEMANTIC_ERROR_TITLE, semanticErrorData);
-
-							// If semantic errors, update compiler message
-							if(semanticErrorData.length > 0)
-								message	+= String.format("Semantic: %d error(s) found! ", semanticErrorData.length);
 
 							// Insert time
 							message += String.format("Total time: %d ms", compilationTime);
