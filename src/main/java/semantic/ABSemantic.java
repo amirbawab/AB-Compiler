@@ -106,7 +106,7 @@ public class ABSemantic {
 
             // Check if already defined
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntryLocally(inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntry(inputToken.getValue());
 
             // If exists already
             if(definedEntry != null)
