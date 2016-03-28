@@ -69,7 +69,7 @@ public class ABSemantic {
         if(token.getValue().equals(Type.CREATE_GLOBAL_TABLE.getName())) {
 
             // Create global table
-            globalTable = new ABSymbolTable("Global");
+            globalTable = new ABSymbolTable("Global", "Global", ABSymbolTableEntry.Kind.GLOBAL);
 
             // Push global to stack
             globalTable.setId(allTables.size());

@@ -11,13 +11,17 @@ import java.util.List;
 public class ABSymbolTable {
     private List<ABSymbolTableEntry> rows;
     private String name;
+    private String simpleName;
+    private ABSymbolTableEntry.Kind kind;
     private int id;
 
     /**
      * Constructor
      */
-    public ABSymbolTable(String name) {
+    public ABSymbolTable(String name, String simpleName, ABSymbolTableEntry.Kind kind) {
         this.name = name;
+        this.kind = kind;
+        this.simpleName = simpleName;
         this.rows = new ArrayList<>();
     }
 
@@ -76,6 +80,22 @@ public class ABSymbolTable {
             if (entry.getName().equals(name) && (kind == ABSymbolTableEntry.Kind.ANY || entry.getKind() == kind))
                 return entry;
         return null;
+    }
+
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    public void setSimpleName(String simpleName) {
+        this.simpleName = simpleName;
+    }
+
+    public ABSymbolTableEntry.Kind getKind() {
+        return kind;
+    }
+
+    public void setKind(ABSymbolTableEntry.Kind kind) {
+        this.kind = kind;
     }
 
     /**
