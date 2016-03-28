@@ -250,6 +250,57 @@ public class ABSemantic {
             if(result == null)
                 addError(functionCall.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_FUNCTION, functionCall.getToken().getValue(), functionCall.getToken().getRow(), functionCall.getToken().getCol()));
         }
+
+        // Detect recursive declarations
+        Set<ABSymbolTableEntry> visitedVariables = new HashSet<>();
+        for(ABSymbolTableEntry entry : globalTable.getRows()) {
+            detectCycle(entry.getLink(), new HashSet<ABSymbolTable>(), visitedVariables);
+        }
+    }
+
+    /**
+     * Detect if a recursive declaration is found
+     * @param table
+     * @param visitedClasses
+     */
+    public void detectCycle(ABSymbolTable table, Set<ABSymbolTable> visitedClasses, Set<ABSymbolTableEntry> visitedVariables) {
+
+        // Add table
+        visitedClasses.add(table);
+
+        // Loop on all rows
+        for(ABSymbolTableEntry entry : table.getRows()) {
+
+            // Cache type
+            ABToken type = entry.getType().get(0);
+
+            // If it's a variable and of non primitive type
+            if(entry.getKind() == ABSymbolTableEntry.Kind.VARIABLE && type.getToken().equals(ABTokenHelper.T_IDENTIFIER) && !visitedVariables.contains(entry)) {
+
+                // Get the class symbol table for this
+                ABSymbolTableEntry newTableEntry = searchEntryInTable(globalTable, type.getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                // If class found
+                if(newTableEntry != null) {
+
+                    // Cache table
+                    ABSymbolTable newTable = newTableEntry.getLink();
+
+                    // If new table is already visited
+                    if(visitedClasses.contains(newTable)) {
+                        addError(entry.getToken(), String.format(ABSemanticMessageHelper.RECURSIVE_DECLARATION, entry.getToken().getValue(), entry.getToken().getRow(), entry.getToken().getCol()));
+                        visitedVariables.add(entry);
+
+                    // If not visited before
+                    } else {
+                        detectCycle(newTable, visitedClasses, visitedVariables);
+                    }
+                }
+            }
+        }
+
+        // Remove table
+        visitedClasses.remove(table);
     }
 
     /**
