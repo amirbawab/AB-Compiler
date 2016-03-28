@@ -37,18 +37,21 @@ public class ABSymbolTable {
     }
 
     public Object[][] getTableData() {
-        Object[][] tableData = new Object[rows.size()][5];
+        Object[][] tableData = new Object[rows.size()][7];
 
         for(int i=0; i < tableData.length; i++) {
             ABSymbolTableEntry entry = rows.get(i);
 
             String entryName = entry.getName();
-            String entryKind = entry.getKind().getName();
+            String entryKind = entry.getKindAsString();
+            String entryStructure = entry.getStructure();
             String entryType = entry.getTypeAsString();
             String entryParams = entry.getParametersAsString();
+            int entryAddress = entry.getAddress();
+            String entryProperlyDefined = entry.isProperlyDefined() ? "Yes" : "No";
             int entryLink = entry.getLink() == null ? -1 : entry.getLink().getId();
 
-            tableData[i] = new Object[]{entryName, entryKind, entryType, entryParams, entryLink};
+            tableData[i] = new Object[]{entryName, entryKind, entryStructure, entryType, entryParams, entryProperlyDefined,entryAddress, entryLink};
         }
         return tableData;
     }

@@ -2,6 +2,7 @@ package semantic;
 
 import parser.grammar.ABGrammarToken;
 import scanner.ABToken;
+import scanner.helper.ABTokenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ class ABSymbolTableEntry {
     private List<ABToken> type;
     private ABSymbolTable link;
     private ABToken token;
+    private boolean properlyDefined = true;
 
     /**
      * Enum Kind
@@ -90,6 +92,33 @@ class ABSymbolTableEntry {
         this.token = token;
     }
 
+    public int getAddress() { return token.hashCode(); }
+
+    public int getArrayDimension() { return (type.size()-1)/3; }
+
+    public boolean isProperlyDefined() {
+        return properlyDefined;
+    }
+
+    public void setProperlyDefined(boolean properlyDefined) {
+        this.properlyDefined = properlyDefined;
+    }
+
+    public String getStructure() {
+        switch (kind) {
+            case CLASS:
+            case PROGRAM:
+                return "Not applicable";
+        }
+
+        if(type.size() == 1) {
+            return type.get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER) ? "Class" : "Simple";
+
+        } else {
+            return "Array of type '" + type.get(0).getValue() + "' of dimension " + getArrayDimension();
+        }
+    }
+
     public String getTypeAsString() {
 
         switch (kind) {
@@ -103,6 +132,14 @@ class ABSymbolTableEntry {
         for(ABToken token : type)
             typeStr += token.getValue();
         return typeStr;
+    }
+
+    public String getKindAsString() {
+        if(kind == Kind.FUNCTION) {
+            return kind.getName() + " with " + getParameters().size() + " parameter(s)";
+        } else {
+            return kind.getName();
+        }
     }
 
     public String getParametersAsString() {

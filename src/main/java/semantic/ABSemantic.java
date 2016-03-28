@@ -233,8 +233,10 @@ public class ABSemantic {
             ABSymbolTableEntry result = searchEntryInTable(globalTable, type.getValue(), ABSymbolTableEntry.Kind.CLASS);
 
             // If not found
-            if(result == null)
+            if(result == null) {
+                entry.setProperlyDefined(false);
                 addError(entry.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_TYPE, type.getValue(), type.getRow(), type.getCol()));
+            }
         }
 
         // Process functions calls
