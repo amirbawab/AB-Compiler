@@ -197,7 +197,7 @@ public class ABSemantic {
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
             ABSymbolTableEntry definedVar = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-            ABSymbolTableEntry definedParam = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+            ABSymbolTableEntry definedParam = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
 
             if(definedVar == null && definedParam == null)
                 addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
