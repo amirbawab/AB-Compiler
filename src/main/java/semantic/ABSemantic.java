@@ -287,6 +287,7 @@ public class ABSemantic {
             // If no previous entry
             if(dataMember.getPreviousEntry() == null) {
                 addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                lastType = null;
                 continue;
             }
 
@@ -294,6 +295,12 @@ public class ABSemantic {
             if(lastGroupId != dataMember.getGroupId()) {
                 lastType = dataMember.getPreviousEntry().getType().get(0);
                 lastGroupId = dataMember.getGroupId();
+            }
+
+            // If last type not found
+            if(lastType == null) {
+                addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                continue;
             }
 
             // If previous token doesn't have a primitive type
@@ -314,6 +321,7 @@ public class ABSemantic {
                         // If not found
                         if(variableEntry == null) {
                             addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, dataMember.getToken().getValue(), lastType.getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                            lastType = null;
 
                         // If found, update last type
                         } else {
