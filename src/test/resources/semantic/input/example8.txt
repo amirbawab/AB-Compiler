@@ -1,15 +1,13 @@
 class T {
 	int x;
-	int fn(int x){
-		int x;
+	int fn(){
 		for (int x = 1; x< 10; x = x+1){
-			// Test
+			// Comment goes here
 		};
 	};
 };
 
 program {
-	int x;
 	for (int x = 1; x< 10; x = x+1){
 		x =2;
 	};

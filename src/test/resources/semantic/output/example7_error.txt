@@ -1,2 +1,1 @@
-mc1v1	11	9	Multiple declaration found for identifier 'mc1v1' at line 2 column 7 and at line 11 column 9
 m2	19	12	Recursive declaration found 'm2' at line 19 column 12

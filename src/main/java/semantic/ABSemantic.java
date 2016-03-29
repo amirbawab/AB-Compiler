@@ -88,14 +88,16 @@ public class ABSemantic {
             ABToken inputToken = tokens.get(tokenIndex-1);
             ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
 
-            // If exists already
-            if(definedEntry != null)
-                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
-
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(inputToken.getValue(), tablesStack.peek().getName());
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
+
+            // If exists already
+            if(definedEntry != null) {
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+                entry.setProperlyDefined(false);
+            }
 
             // Push class to stack
             entry.getLink().setId(allTables.size());
@@ -117,17 +119,19 @@ public class ABSemantic {
 
             // Check if already defined
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
-
-            // If exists already
-            if(definedEntry != null)
-                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+            ABSymbolTableEntry definedEntry = searchEntryInTable(tablesStack.peek(), inputToken.getValue());
 
             // Create variable entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(inputToken.getValue());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
+
+            // If exists already
+            if(definedEntry != null) {
+                entry.setProperlyDefined(false);
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+            }
 
             // Push for phase 2 verification if the type is not primitive
             if(entry.getType().get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER))
@@ -142,17 +146,19 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
-
-            // If exists already
-            if(definedEntry != null)
-                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+            ABSymbolTableEntry definedEntry = searchEntryInTable(tablesStack.peek(), inputToken.getValue());
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(inputToken.getValue());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
+
+            // If exists already
+            if(definedEntry != null) {
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+                entry.setProperlyDefined(false);
+            }
 
             // Push for phase 2 verification if the type is not primitive
             if(entry.getType().get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER))
@@ -164,15 +170,17 @@ public class ABSemantic {
             ABToken inputToken = tokens.get(tokenIndex-1);
             ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
 
-            // If exists already
-            if(definedEntry != null)
-                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
-
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(inputToken.getValue(), tablesStack.peek().getName());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
+
+            // If exists already
+            if(definedEntry != null) {
+                entry.setProperlyDefined(false);
+                addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
+            }
 
             // Push class to stack
             entry.getLink().setId(allTables.size());
@@ -412,6 +420,16 @@ public class ABSemantic {
      */
     public ABSymbolTableEntry searchEntryInTable(ABSymbolTable table, String name, ABSymbolTableEntry.Kind kind) {
         return table.getEntry(name, kind);
+    }
+
+    /**
+     * Search in specific table
+     * @param table
+     * @param name
+     * @return
+     */
+    public ABSymbolTableEntry searchEntryInTable(ABSymbolTable table, String name) {
+        return table.getEntry(name);
     }
 
     /**

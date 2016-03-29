@@ -8,18 +8,15 @@ program || program || Not applicable:Not applicable
 ======================
 Symbol table: Global > Class T
 x || variable || int:Not applicable
-fn || function || int:int
+fn || function || int:
 ====================
 
 ======================
 Symbol table: Global > Class T > Function fn
-x || parameter || int:Not applicable
-x || variable || int:Not applicable
 x || variable || int:Not applicable
 ====================
 
 ======================
 Symbol table: Global > program
-x || variable || int:Not applicable
 x || variable || int:Not applicable
 ====================
