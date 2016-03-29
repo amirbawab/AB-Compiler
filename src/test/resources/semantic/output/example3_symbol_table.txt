@@ -1,0 +1,27 @@
+
+======================
+Symbol table: Global
+T1 || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+====================
+
+======================
+Symbol table: Global > Class T1
+f1 || function || int:
+f2 || function || int:
+====================
+
+======================
+Symbol table: Global > Class T1 > Function f1
+x || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Class T1 > Function f2
+x || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > program
+x || variable || int:Not applicable
+====================

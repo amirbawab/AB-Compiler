@@ -1,0 +1,9 @@
+class T {
+	int x;
+	float x() {};
+};
+
+program {
+	int x;
+	x = 4;
+};

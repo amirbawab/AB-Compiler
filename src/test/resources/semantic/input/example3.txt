@@ -1,0 +1,15 @@
+class T1 {
+	int f1() {
+		int x;
+		x = f2();
+	};
+
+	int f2() {
+		int x;
+		x = f1();
+	};
+};
+
+program{
+	int x;
+};

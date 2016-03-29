@@ -1,0 +1,47 @@
+
+======================
+Symbol table: Global
+Utility || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+randomize || function || float:
+====================
+
+======================
+Symbol table: Global > Class Utility
+var1 || variable || int[4][5][7][8][9][1][0]:Not applicable
+var2 || variable || float:Not applicable
+findMax || function || int:int[100]
+findMin || function || int:int[100]
+====================
+
+======================
+Symbol table: Global > Class Utility > Function findMax
+array || parameter || int[100]:Not applicable
+maxValue || variable || int:Not applicable
+idx || variable || int:Not applicable
+idx || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Class Utility > Function findMin
+array || parameter || int[100]:Not applicable
+minValue || variable || int:Not applicable
+idx || variable || int:Not applicable
+idx || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > program
+sample || variable || int[100]:Not applicable
+idx || variable || int:Not applicable
+maxValue || variable || int:Not applicable
+minValue || variable || int:Not applicable
+utility || variable || Utility:Not applicable
+arrayUtility || variable || Utility[2][3][6][7]:Not applicable
+t || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Function randomize
+value || variable || float:Not applicable
+====================

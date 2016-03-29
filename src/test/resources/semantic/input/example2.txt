@@ -1,0 +1,11 @@
+class T1 {
+	T2 t;
+};
+
+class T2 {
+	T1 t;
+};
+
+program {
+	int a;
+};

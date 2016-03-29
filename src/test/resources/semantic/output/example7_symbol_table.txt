@@ -1,0 +1,57 @@
+
+======================
+Symbol table: Global
+MyClass1 || class || Not applicable:Not applicable
+MyClass2 || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+f1 || function || float:int[2][2], float
+f2 || function || int:
+====================
+
+======================
+Symbol table: Global > Class MyClass1
+mc1v1 || variable || int[2][4]:Not applicable
+mc1v2 || variable || float:Not applicable
+mc1v3 || variable || MyClass2[3]:Not applicable
+mc1f1 || function || int:int, MyClass2[3]
+f2 || function || int:MyClass1[3]
+====================
+
+======================
+Symbol table: Global > Class MyClass1 > Function mc1f1
+p1 || parameter || int:Not applicable
+p2 || parameter || MyClass2[3]:Not applicable
+fv1 || variable || MyClass2[3]:Not applicable
+====================
+
+======================
+Symbol table: Global > Class MyClass1 > Function f2
+f2p1 || parameter || MyClass1[3]:Not applicable
+mc1v1 || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Class MyClass2
+mc1v1 || variable || int[2][4]:Not applicable
+fp1 || variable || float:Not applicable
+m2 || variable || MyClass2[3]:Not applicable
+====================
+
+======================
+Symbol table: Global > program
+m1 || variable || int:Not applicable
+m2 || variable || float[3][2]:Not applicable
+m3 || variable || MyClass2[2]:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f1
+fp1 || parameter || int[2][2]:Not applicable
+fp2 || parameter || float:Not applicable
+fv1 || variable || MyClass1[3]:Not applicable
+fv2 || variable || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f2
+====================

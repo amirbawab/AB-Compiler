@@ -1,0 +1,8 @@
+y	6	3	Undefined variable 'y' at line 6 column 3
+z	6	7	Undefined variable 'z' at line 6 column 7
+hello	24	6	Undefined variable 'hello' at line 24 column 6
+not_found	3	4	Undefined identifier type 'N' at line 3 column 2
+f_not_found	6	11	Call to undefined function 'f_not_found' at line 6 column 11
+k	21	8	Undefined data member 'k' of the class 'T' at line 21 column 8
+f2	22	12	Undefined data member 'f2' of the class 'V' at line 22 column 12
+t	15	4	Recursive declaration found 't' at line 15 column 4

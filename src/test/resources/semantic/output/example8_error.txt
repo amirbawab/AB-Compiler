@@ -1,0 +1,4 @@
+x	3	13	Multiple declaration found for identifier 'x' at line 2 column 6 and at line 3 column 13
+x	4	7	Multiple declaration found for identifier 'x' at line 3 column 13 and at line 4 column 7
+x	5	12	Multiple declaration found for identifier 'x' at line 3 column 13 and at line 5 column 12
+x	13	11	Multiple declaration found for identifier 'x' at line 12 column 6 and at line 13 column 11

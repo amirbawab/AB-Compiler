@@ -1,0 +1,21 @@
+
+======================
+Symbol table: Global
+T || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+====================
+
+======================
+Symbol table: Global > Class T
+x || variable || int:Not applicable
+x || function || float:
+====================
+
+======================
+Symbol table: Global > Class T > Function x
+====================
+
+======================
+Symbol table: Global > program
+x || variable || int:Not applicable
+====================

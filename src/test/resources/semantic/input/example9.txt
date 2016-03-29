@@ -1,0 +1,25 @@
+class T {
+	int x;
+	N not_found;
+	U u;
+	int t () {
+		y = z + f_not_found();
+	};
+};
+
+class U {
+	V v;
+};
+
+class V {
+	T t;
+	int f1() {};
+};
+
+program {
+	T t;
+	t = t.k;
+	t = t.u.v.f2();
+	t = t.u.v.f1();
+	t = hello;
+};

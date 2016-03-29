@@ -1,0 +1,11 @@
+program {};
+
+int f1(){
+	int x;
+	x = f2();
+};
+
+int f2(){
+	int x;
+	x = f1();
+};

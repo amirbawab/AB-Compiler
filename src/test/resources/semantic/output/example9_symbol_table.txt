@@ -1,0 +1,40 @@
+
+======================
+Symbol table: Global
+T || class || Not applicable:Not applicable
+U || class || Not applicable:Not applicable
+V || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+====================
+
+======================
+Symbol table: Global > Class T
+x || variable || int:Not applicable
+not_found || variable || N:Not applicable
+u || variable || U:Not applicable
+t || function || int:
+====================
+
+======================
+Symbol table: Global > Class T > Function t
+====================
+
+======================
+Symbol table: Global > Class U
+v || variable || V:Not applicable
+====================
+
+======================
+Symbol table: Global > Class V
+t || variable || T:Not applicable
+f1 || function || int:
+====================
+
+======================
+Symbol table: Global > Class V > Function f1
+====================
+
+======================
+Symbol table: Global > program
+t || variable || T:Not applicable
+====================

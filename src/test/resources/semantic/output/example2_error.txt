@@ -1,0 +1,1 @@
+t	6	5	Recursive declaration found 't' at line 6 column 5
