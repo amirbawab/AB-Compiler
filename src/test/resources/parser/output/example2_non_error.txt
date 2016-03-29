@@ -1,9 +1,9 @@
 1	$ prog	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 		prog
 2	$ prog	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r60: prog->classDeclRpt progBody	=> classDeclRpt progBody
-3	$ progBody classDeclRpt	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r106: classDeclRpt->EPSILON	=> progBody
+3	$ progBody classDeclRpt	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r108: classDeclRpt->EPSILON	=> progBody
 4	$ progBody	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r28: progBody->'T_PROGRAM' funcBody semicolon funcDefRpt	=> 'T_PROGRAM' funcBody semicolon funcDefRpt
 5	$ funcDefRpt semicolon funcBody 'T_PROGRAM'	T_PROGRAM T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 		
-6	$ funcDefRpt semicolon funcBody	T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r103: funcBody->'T_OPEN_CURLY' varDeclRptSt closeCurly	=> 'T_PROGRAM' 'T_OPEN_CURLY' varDeclRptSt closeCurly semicolon funcDefRpt
+6	$ funcDefRpt semicolon funcBody	T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 	r105: funcBody->'T_OPEN_CURLY' varDeclRptSt closeCurly	=> 'T_PROGRAM' 'T_OPEN_CURLY' varDeclRptSt closeCurly semicolon funcDefRpt
 7	$ funcDefRpt semicolon closeCurly varDeclRptSt 'T_OPEN_CURLY'	T_OPEN_CURLY T_CLOSE_CURLY T_SEMICOLON $ 		
 8	$ funcDefRpt semicolon closeCurly varDeclRptSt	T_CLOSE_CURLY T_SEMICOLON $ 	r84: varDeclRptSt->EPSILON	=> 'T_PROGRAM' 'T_OPEN_CURLY' closeCurly semicolon funcDefRpt
 9	$ funcDefRpt semicolon closeCurly	T_CLOSE_CURLY T_SEMICOLON $ 	r54: closeCurly->'T_CLOSE_CURLY'	=> 'T_PROGRAM' 'T_OPEN_CURLY' 'T_CLOSE_CURLY' semicolon funcDefRpt
