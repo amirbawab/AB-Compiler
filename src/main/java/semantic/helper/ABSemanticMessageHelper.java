@@ -11,4 +11,6 @@ public class ABSemanticMessageHelper {
     public final static String UNDEFINED_TYPE = "Undefined identifier type '%s' at line %d column %d";
     public final static String UNDEFINED_FUNCTION = "Call to undefined function '%s' at line %d column %d";
     public final static String RECURSIVE_DECLARATION = "Recursive declaration found '%s' at line %d column %d";
+    public final static String UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR = "Undefined data member '%s' of a primitive type or undefined variable at line %d column %d";
+    public final static String UNDEFINED_MEMBER_OF_CLASS = "Undefined data member '%s' of the class '%s' at line %d column %d";
 }
