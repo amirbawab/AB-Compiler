@@ -86,7 +86,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryInTable(globalTable, inputToken.getValue());
 
             // Create class entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(inputToken.getValue(), tablesStack.peek().getName());
@@ -168,9 +168,9 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntry(tablesStack, inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryInTableStack(tablesStack, inputToken.getValue());
 
-            // Create class entry
+            // Create function entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(inputToken.getValue(), tablesStack.peek().getName());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
@@ -182,7 +182,7 @@ public class ABSemantic {
                 addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
             }
 
-            // Push class to stack
+            // Push function to stack
             entry.getLink().setId(allTables.size());
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
@@ -196,12 +196,12 @@ public class ABSemantic {
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
 
-            // Create class entry
+            // Create program entry
             ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(inputToken.getValue(), tablesStack.peek().getName());
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
-            // Push class to stack
+            // Push program to stack
             entry.getLink().setId(allTables.size());
             allTables.add(entry.getLink());
             tablesStack.push(entry.getLink());
@@ -210,17 +210,19 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedVar = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-            ABSymbolTableEntry definedParam = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
+            ABSymbolTableEntry definedVar = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+            ABSymbolTableEntry definedParam = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
 
-            if(definedVar == null && definedParam == null)
+            if(definedVar == null && definedParam == null) {
                 addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+                lastUsedVar = null;
 
-            else if(definedVar != null)
+            } else if(definedVar != null) {
                 lastUsedVar = definedVar;
 
-            else
+            } else{
                 lastUsedVar = definedParam;
+            }
 
             // Increment data member id
             dataMemberGroupId++;
@@ -229,7 +231,7 @@ public class ABSemantic {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry result = searchEntry(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+            ABSymbolTableEntry result = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
 
             // If function not found, then push for phase 2 verification
             if(result == null)
@@ -279,7 +281,7 @@ public class ABSemantic {
             ABSemanticFunctionCall functionCall = phaseTwoFunctions.poll();
 
             // Search for the type
-            ABSymbolTableEntry result = searchEntry(functionCall.getTableStack(), functionCall.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+            ABSymbolTableEntry result = searchEntryInTableStack(functionCall.getTableStack(), functionCall.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
 
             // If not found
             if(result == null)
@@ -296,65 +298,67 @@ public class ABSemantic {
             if(dataMember.getPreviousEntry() == null) {
                 addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
                 lastType = null;
-                continue;
-            }
 
-            // New sequence
-            if(lastGroupId != dataMember.getGroupId()) {
-                lastType = dataMember.getPreviousEntry().getType().get(0);
-                lastGroupId = dataMember.getGroupId();
-            }
-
-            // If last type not found
-            if(lastType == null) {
+            // If same sequence and an error was detected before
+            } else if(lastGroupId == dataMember.getGroupId() && lastType == null) {
                 addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
-                continue;
-            }
 
-            // If previous token doesn't have a primitive type
-            if(lastType.getToken().equals(ABTokenHelper.T_IDENTIFIER)) {
+            } else {
 
-                // Search for class table
-                ABSymbolTableEntry classTableEntry = searchEntryInTable(globalTable, lastType.getValue(), ABSymbolTableEntry.Kind.CLASS);
-
-                // Check if table was found
-                if(classTableEntry != null) {
-
-                    // If data member is a variable
-                    if(dataMember.getKind() == ABSymbolTableEntry.Kind.VARIABLE) {
-
-                        // Search for data member
-                        ABSymbolTableEntry variableEntry = searchEntryInTable(classTableEntry.getLink(), dataMember.getToken().getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-
-                        // If not found
-                        if(variableEntry == null) {
-                            addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, dataMember.getToken().getValue(), lastType.getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
-                            lastType = null;
-
-                        // If found, update last type
-                        } else {
-                            lastType = variableEntry.getType().get(0);
-                        }
-
-                    // If data member is a function
-                    } else if(dataMember.getKind() == ABSymbolTableEntry.Kind.FUNCTION) {
-
-                        // Search for data member
-                        ABSymbolTableEntry functionEntry = searchEntryInTable(classTableEntry.getLink(), dataMember.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
-
-                        // If not found
-                        if(functionEntry == null) {
-                            addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, dataMember.getToken().getValue(), lastType.getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
-                        }
-                    }
-                // If table was not found
-                } else {
-                    addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                // Update last type if new sequence
+                if(lastGroupId != dataMember.getGroupId()) {
+                    lastType = dataMember.getPreviousEntry().getType().get(0);
+                    lastGroupId = dataMember.getGroupId();
                 }
 
-            // If primitive type
-            } else {
-                addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                // If previous token doesn't have a primitive type
+                if(lastType.getToken().equals(ABTokenHelper.T_IDENTIFIER)) {
+
+                    // Search for class table
+                    ABSymbolTableEntry classTableEntry = searchEntryInTable(globalTable, lastType.getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                    // Check if table was found
+                    if(classTableEntry != null) {
+
+                        // If data member is a variable
+                        if(dataMember.getKind() == ABSymbolTableEntry.Kind.VARIABLE) {
+
+                            // Search for data member
+                            ABSymbolTableEntry variableEntry = searchEntryInTable(classTableEntry.getLink(), dataMember.getToken().getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+
+                            // If not found
+                            if(variableEntry == null) {
+                                addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, dataMember.getToken().getValue(), lastType.getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                                lastType = null;
+
+                            // If found, update last type
+                            } else {
+                                lastType = variableEntry.getType().get(0);
+                            }
+
+                            // If data member is a function
+                        } else if(dataMember.getKind() == ABSymbolTableEntry.Kind.FUNCTION) {
+
+                            // Search for data member
+                            ABSymbolTableEntry functionEntry = searchEntryInTable(classTableEntry.getLink(), dataMember.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+
+                            // If not found
+                            if(functionEntry == null) {
+                                addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, dataMember.getToken().getValue(), lastType.getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                                lastType = null;
+                            }
+                        }
+                        // If table was not found
+                    } else {
+                        addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                        lastType = null;
+                    }
+
+                    // If primitive type
+                } else {
+                    addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
+                    lastType = null;
+                }
             }
         }
 
@@ -437,8 +441,8 @@ public class ABSemantic {
      * @param name
      * @return
      */
-    public ABSymbolTableEntry searchEntry(Stack<ABSymbolTable> tablesStack, String name) {
-        return searchEntry(tablesStack, name, ABSymbolTableEntry.Kind.ANY);
+    public ABSymbolTableEntry searchEntryInTableStack(Stack<ABSymbolTable> tablesStack, String name) {
+        return searchEntryInTableStack(tablesStack, name, ABSymbolTableEntry.Kind.ANY);
     }
 
     /**
@@ -447,7 +451,7 @@ public class ABSemantic {
      * @param kind
      * @return
      */
-    public ABSymbolTableEntry searchEntry(Stack<ABSymbolTable> tablesStack, String name, ABSymbolTableEntry.Kind kind) {
+    public ABSymbolTableEntry searchEntryInTableStack(Stack<ABSymbolTable> tablesStack, String name, ABSymbolTableEntry.Kind kind) {
         Stack<ABSymbolTable> closestTables = new Stack<>();
         ABSymbolTableEntry found = null;
 
