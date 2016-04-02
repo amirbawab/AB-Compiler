@@ -137,7 +137,7 @@ class ABSymbolTableEntry {
 
     public String getKindAsString() {
         if(kind == Kind.FUNCTION) {
-            return kind.getName() + " with " + getParameters().size() + " parameter(s)";
+            return kind.getName() + " with " + getNumberOfParameters() + " parameter(s)";
         } else {
             return kind.getName();
         }
@@ -176,6 +176,10 @@ class ABSymbolTableEntry {
             }
         }
         return parameters;
+    }
+
+    public int getNumberOfParameters() {
+        return getParameters().size();
     }
 
     public String toString() {
