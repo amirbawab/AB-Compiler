@@ -5,31 +5,31 @@ package semantic;
  */
 public class ABSymbolTableEntryFactory {
 
-    public static ABSymbolTableEntry createFunctionEntry(String name, String parent) {
-        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.FUNCTION);
-        entry.setLink(new ABSymbolTable(parent + " > Function " + name, name, ABSymbolTableEntry.Kind.FUNCTION));
+    public static ABSymbolTableEntry createFunctionEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.FUNCTION);
+        entry.setLink(new ABSymbolTable(table.getName() + " > Function " + name, name, ABSymbolTableEntry.Kind.FUNCTION));
         return entry;
     }
 
-    public static ABSymbolTableEntry createClassEntry(String name, String parent) {
-        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.CLASS);
-        entry.setLink(new ABSymbolTable(parent + " > Class " + name, name, ABSymbolTableEntry.Kind.CLASS));
+    public static ABSymbolTableEntry createClassEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.CLASS);
+        entry.setLink(new ABSymbolTable(table.getName() + " > Class " + name, name, ABSymbolTableEntry.Kind.CLASS));
         return entry;
     }
 
-    public static ABSymbolTableEntry createParameterEntry(String name) {
-        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.PARAMETER);
+    public static ABSymbolTableEntry createParameterEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.PARAMETER);
         return entry;
     }
 
-    public static ABSymbolTableEntry createVariableEntry(String name) {
-        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.VARIABLE);
+    public static ABSymbolTableEntry createVariableEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.VARIABLE);
         return entry;
     }
 
-    public static ABSymbolTableEntry createProgramEntry(String name, String parent) {
-        ABSymbolTableEntry entry = new ABSymbolTableEntry(name, ABSymbolTableEntry.Kind.PROGRAM);
-        entry.setLink(new ABSymbolTable(parent + " > " + name, name, ABSymbolTableEntry.Kind.PROGRAM));
+    public static ABSymbolTableEntry createProgramEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.PROGRAM);
+        entry.setLink(new ABSymbolTable(table.getName() + " > " + name, name, ABSymbolTableEntry.Kind.PROGRAM));
         return entry;
     }
 }

@@ -21,11 +21,12 @@ public class ABSemantic {
     private List<ABSymbolTable> allTables;
     private Stack<ABSymbolTable> tablesStack;
     private List<ABSemanticError> errors;
-    private Queue<ABSymbolTableEntry> phaseTwoEntry;
+    private Queue<ABSymbolTableEntry> phaseTwoEntryType;
     private Queue<ABSemanticFunctionCall> phaseTwoFunctions;
-    private LinkedList<ABSemanticDataMember> phaseTwoDataMembers;
-    private int dataMemberGroupId = 0;
+    private Queue<ABSemanticDataMember> phaseTwoDataMembers;
+    private Queue<ABSymbolTableEntry> phaseTwoFunctionOverload;
     private ABSymbolTableEntry lastUsedVar = null;
+    private int dataMemberGroupId = 0;
 
     // Buffers
     List<ABToken> type_buffer;
@@ -61,9 +62,10 @@ public class ABSemantic {
         tablesStack = new Stack<>();
         allTables = new ArrayList<>();
         errors = new ArrayList<>();
-        phaseTwoEntry = new LinkedList<>();
+        phaseTwoEntryType = new LinkedList<>();
         phaseTwoFunctions = new LinkedList<>();
         phaseTwoDataMembers = new LinkedList<>();
+        phaseTwoFunctionOverload = new LinkedList<>();
     }
 
     /**
@@ -90,7 +92,7 @@ public class ABSemantic {
             ABSymbolTableEntry definedEntry = searchEntryInTable(globalTable, inputToken.getValue());
 
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(inputToken.getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createClassEntry(tablesStack.peek(), inputToken.getValue());
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
@@ -123,7 +125,7 @@ public class ABSemantic {
             ABSymbolTableEntry definedEntry = searchEntryInTable(tablesStack.peek(), inputToken.getValue());
 
             // Create variable entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(inputToken.getValue());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(tablesStack.peek(), inputToken.getValue());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
@@ -136,7 +138,7 @@ public class ABSemantic {
 
             // Push for phase 2 verification if the type is not primitive
             if(entry.getType().get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER))
-                phaseTwoEntry.offer(entry);
+                phaseTwoEntryType.offer(entry);
 
         } else if(token.getValue().equals(Type.MORE_TYPE.getName())) {
 
@@ -150,7 +152,7 @@ public class ABSemantic {
             ABSymbolTableEntry definedEntry = searchEntryInTable(tablesStack.peek(), inputToken.getValue());
 
             // Create class entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(inputToken.getValue());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tablesStack.peek(), inputToken.getValue());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
@@ -163,22 +165,22 @@ public class ABSemantic {
 
             // Push for phase 2 verification if the type is not primitive
             if(entry.getType().get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER))
-                phaseTwoEntry.offer(entry);
+                phaseTwoEntryType.offer(entry);
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {
 
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
-            ABSymbolTableEntry definedEntry = searchEntryInTableStack(tablesStack, inputToken.getValue());
+            ABSymbolTableEntry definedEntry = searchEntryInTable(tablesStack.peek(), inputToken.getValue());
 
             // Create function entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(inputToken.getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tablesStack.peek(), inputToken.getValue());
             entry.setType(type_buffer);
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
-            // If exists already
-            if(definedEntry != null) {
+            // If exists already and not a function
+            if(definedEntry != null && definedEntry.getKind() != ABSymbolTableEntry.Kind.FUNCTION) {
                 entry.setProperlyDefined(false);
                 addError(inputToken, String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, inputToken.getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), inputToken.getRow(), inputToken.getCol()));
             }
@@ -190,7 +192,10 @@ public class ABSemantic {
 
             // Push for phase 2 verification if the type is not primitive
             if(entry.getType().get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER))
-                phaseTwoEntry.offer(entry);
+                phaseTwoEntryType.offer(entry);
+
+            // Push for phase 2 to verify if overloaded
+            phaseTwoFunctionOverload.offer(entry);
 
         } else if(token.getValue().equals(Type.CREATE_PROGRAM_ENTRY_AND_TABLE.getName())) {
 
@@ -198,7 +203,7 @@ public class ABSemantic {
             ABToken inputToken = tokens.get(tokenIndex-1);
 
             // Create program entry
-            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(inputToken.getValue(), tablesStack.peek().getName());
+            ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createProgramEntry(tablesStack.peek(), inputToken.getValue());
             entry.setToken(inputToken);
             tablesStack.peek().addRow(entry);
 
@@ -261,8 +266,8 @@ public class ABSemantic {
     public void evalPhaseTwo() {
 
         // Process variable and function types
-        while(!phaseTwoEntry.isEmpty()) {
-            ABSymbolTableEntry entry = phaseTwoEntry.poll();
+        while(!phaseTwoEntryType.isEmpty()) {
+            ABSymbolTableEntry entry = phaseTwoEntryType.poll();
 
             // Type
             ABToken type = entry.getType().get(0);
@@ -359,6 +364,26 @@ public class ABSemantic {
                 } else {
                     addError(dataMember.getToken(), String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_OR_UNDEFINED_VAR, dataMember.getToken().getValue(), dataMember.getToken().getRow(), dataMember.getToken().getCol()));
                     lastType = null;
+                }
+            }
+        }
+
+        // Check for function overload
+        Set<ABSymbolTableEntry> sameSignature = new HashSet<>();
+        while(!phaseTwoFunctionOverload.isEmpty()) {
+            ABSymbolTableEntry entry = phaseTwoFunctionOverload.poll();
+
+            // If entry was not checked by a previous entry
+            if(!sameSignature.contains(entry)) {
+
+                // Get all function entries
+                List<ABSymbolTableEntry> entries = searchEntriesInTable(entry.getTable(), entry.getName(), ABSymbolTableEntry.Kind.FUNCTION);
+                for (ABSymbolTableEntry tableEntry : entries) {
+                    if (entry != tableEntry && entry.equals(tableEntry)) {
+                        addError(entry.getToken(), String.format(ABSemanticMessageHelper.SAME_SIGNATURE_FUNCTION, entry.getToken().getValue(), entry.getToken().getRow(), entry.getToken().getCol(), tableEntry.getToken().getRow(), tableEntry.getToken().getCol()));
+                        tableEntry.setProperlyDefined(false);
+                        sameSignature.add(tableEntry);
+                    }
                 }
             }
         }

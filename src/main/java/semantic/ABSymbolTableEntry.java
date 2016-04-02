@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ABSymbolTableEntry {
+    private ABSymbolTable table;
     private String name;
     private Kind kind;
     private List<ABToken> type;
@@ -43,7 +44,8 @@ class ABSymbolTableEntry {
      * @param name
      * @param kind
      */
-    public ABSymbolTableEntry(String name, Kind kind) {
+    public ABSymbolTableEntry(ABSymbolTable table, String name, Kind kind) {
+        this.table = table;
         this.name = name;
         this.kind = kind;
         this.type = new ArrayList<>();
@@ -103,6 +105,14 @@ class ABSymbolTableEntry {
 
     public void setProperlyDefined(boolean properlyDefined) {
         this.properlyDefined = properlyDefined;
+    }
+
+    public ABSymbolTable getTable() {
+        return table;
+    }
+
+    public void setTable(ABSymbolTable table) {
+        this.table = table;
     }
 
     public String getStructure() {
@@ -184,5 +194,31 @@ class ABSymbolTableEntry {
 
     public String toString() {
         return String.format("%s || %s || %s:%s", name, kind.getName(), getTypeAsString(), getParametersAsString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        ABSymbolTableEntry entry = (ABSymbolTableEntry) obj;
+
+        // Function name
+        if(!entry.getName().equals(getName())) return false;
+
+        // Number of arguments
+        List<List<ABToken>> parameters = getParameters();
+        List<List<ABToken>> entryParameters = entry.getParameters();
+        if(entryParameters.size() != parameters.size()) return false;
+
+        // Arguments order and type
+        for(int i=0; i < parameters.size(); i++) {
+
+            // Number of tokens
+            if(parameters.get(i).size() != entryParameters.get(i).size()) return false;
+
+            // Compare tokens
+            for(int j=0; j < parameters.get(i).size(); j++)
+                if(!parameters.get(i).get(j).getValue().equals(entryParameters.get(i).get(j).getValue())) return false;
+        }
+
+        return true;
     }
 }
