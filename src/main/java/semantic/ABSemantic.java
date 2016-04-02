@@ -44,8 +44,7 @@ public class ABSemantic {
         USE_VAR("useVar"),
         USE_FUNCTION("useFunction"),
         USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),
-        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),
-        CHECK_OVERLOAD("checkOverload")
+        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar")
         ;
 
         private String name;
