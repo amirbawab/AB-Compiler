@@ -1,12 +1,16 @@
 package gui.center.editor.flavor;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.*;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 
 /**
  *  This class will display line numbers for a related text component. The text
@@ -82,6 +86,46 @@ public class TextLineNumber extends JPanel
 		component.getDocument().addDocumentListener(this);
 		component.addCaretListener( this );
 		component.addPropertyChangeListener("font", this);
+
+		// UNDO / REDO
+
+		final UndoManager undo = new UndoManager();
+		Document doc = component.getDocument();
+
+		// Listen for undo and redo events
+		doc.addUndoableEditListener(new UndoableEditListener() {
+			public void undoableEditHappened(UndoableEditEvent evt) {
+				undo.addEdit(evt.getEdit());
+			}
+		});
+
+		// Create an undo action and add it to the text component
+		component.getActionMap().put("Undo", new AbstractAction("Undo") {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					if (undo.canUndo()) {
+						undo.undo();
+					}
+				} catch (CannotUndoException e) {}
+			}
+		});
+
+		// Bind the undo action to ctl-Z
+		component.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
+
+		// Create a redo action and add it to the text component
+		component.getActionMap().put("Redo", new AbstractAction("Redo") {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					if (undo.canRedo()) {
+						undo.redo();
+					}
+				} catch (CannotRedoException e) { }
+			}
+		});
+
+		// Bind the redo action to ctl-Y
+		component.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
 	}
 
 	/**
