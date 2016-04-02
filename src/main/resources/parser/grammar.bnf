@@ -7,9 +7,9 @@ closeCurly      -> 'T_CLOSE_CURLY'
 semicolon       -> 'T_SEMICOLON'
 varDeclRptFunc  -> type #type# varFuncIden varFuncDisamb | EPSILON
 varFuncIden		-> 'T_IDENTIFIER'
-varFuncDisamb   -> #createVarEntry# arraySizeRpt semicolon varDeclRptFunc | #createFunctionEntryAndTable# 'T_OPEN_PAREN' fParams closeParen funcBody semicolon #parent# funcDefRpt
+varFuncDisamb   -> #createVarEntry# arraySizeRpt semicolon varDeclRptFunc | #createFunctionEntryAndTable# 'T_OPEN_PAREN' fParams closeParen #checkOverload# funcBody semicolon #parent# funcDefRpt
 closeParen		-> 'T_CLOSE_PAREN'
-funcDefRpt      -> type #type# funcDefIden #createFunctionEntryAndTable# openParen fParams closeParen funcBody semicolon #parent# funcDefRpt | EPSILON
+funcDefRpt      -> type #type# funcDefIden #createFunctionEntryAndTable# openParen fParams closeParen #checkOverload# funcBody semicolon #parent# funcDefRpt | EPSILON
 funcDefIden		-> 'T_IDENTIFIER'
 openParen		-> 'T_OPEN_PAREN'
 arraySizeRpt    -> arraySize arraySizeRpt | EPSILON

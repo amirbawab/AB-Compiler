@@ -43,7 +43,8 @@ public class ABSemantic {
         USE_VAR("useVar"),
         USE_FUNCTION("useFunction"),
         USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),
-        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar")
+        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),
+        CHECK_OVERLOAD("checkOverload")
         ;
 
         private String name;
@@ -434,6 +435,27 @@ public class ABSemantic {
      */
     public ABSymbolTableEntry searchEntryInTable(ABSymbolTable table, String name) {
         return table.getEntry(name);
+    }
+
+    /**
+     * Search entries in specific table
+     * @param table
+     * @param name
+     * @return
+     */
+    public List<ABSymbolTableEntry> searchEntriesInTable(ABSymbolTable table, String name) {
+        return table.getEntries(name);
+    }
+
+    /**
+     * Search entries in specific table
+     * @param table
+     * @param name
+     * @param kind
+     * @return
+     */
+    public List<ABSymbolTableEntry> searchEntriesInTable(ABSymbolTable table, String name, ABSymbolTableEntry.Kind kind) {
+        return table.getEntries(name, kind);
     }
 
     /**

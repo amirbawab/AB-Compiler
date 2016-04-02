@@ -82,6 +82,29 @@ public class ABSymbolTable {
         return null;
     }
 
+    /**
+     * Get all entries with specific name and type
+     * @param name
+     * @return
+     */
+    public List<ABSymbolTableEntry> getEntries(String name) {
+        return getEntries(name, ABSymbolTableEntry.Kind.ANY);
+    }
+
+    /**
+     * Get all entries with specific name and type
+     * @param name
+     * @param kind
+     * @return
+     */
+    public List<ABSymbolTableEntry> getEntries(String name, ABSymbolTableEntry.Kind kind) {
+        List<ABSymbolTableEntry> entries = new ArrayList<>();
+        for(ABSymbolTableEntry entry : rows)
+            if (entry.getName().equals(name) && (kind == ABSymbolTableEntry.Kind.ANY || entry.getKind() == kind))
+                entries.add(entry);
+        return entries;
+    }
+
     public String getSimpleName() {
         return simpleName;
     }
