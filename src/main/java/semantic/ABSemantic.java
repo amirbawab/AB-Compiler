@@ -17,19 +17,25 @@ public class ABSemantic {
     // Logger
     private Logger l = LogManager.getFormatterLogger(getClass());
 
+    // Tables
     private ABSymbolTable globalTable;
     private List<ABSymbolTable> allTables;
     private Stack<ABSymbolTable> tablesStack;
+
+    // Error
     private List<ABSemanticError> errors;
+
+    // Phase two
     private Queue<ABSymbolTableEntry> phaseTwoEntryType;
     private Queue<ABSemanticFunctionCall> phaseTwoFunctions;
     private Queue<ABSemanticDataMember> phaseTwoDataMembers;
     private Queue<ABSymbolTableEntry> phaseTwoFunctionOverload;
-    private ABSymbolTableEntry lastUsedVar = null;
-    private int dataMemberGroupId = 0;
 
-    // Buffers
-    List<ABToken> type_buffer;
+    // Helper
+    private ABSymbolTableEntry lastUsedVar = null;
+    private Stack<ABSymbolTableEntry> lastUsedFunc;
+    private int dataMemberGroupId = 0;
+    private List<ABToken> type_buffer;
 
     public enum Type {
         CREATE_GLOBAL_TABLE("createGlobalTable"),
@@ -65,6 +71,7 @@ public class ABSemantic {
         phaseTwoFunctions = new LinkedList<>();
         phaseTwoDataMembers = new LinkedList<>();
         phaseTwoFunctionOverload = new LinkedList<>();
+        lastUsedFunc = new Stack<>();
     }
 
     /**
