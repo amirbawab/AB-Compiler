@@ -567,6 +567,41 @@ public class ABSemantic {
         return tableStr;
     }
 
+    /********************************
+     *  AB SEMANTIC FUNCTION ARGUMENT
+     ********************************/
+
+    public class ABSemanticFunctionArgument {
+
+        List<ABToken> argumentTokens;
+        List<ABToken> typeTokens;
+
+        public ABSemanticFunctionArgument() {
+            argumentTokens = new ArrayList<>();
+            typeTokens = new ArrayList<>();
+        }
+
+        public List<ABToken> getArgumentTokens() {
+            return argumentTokens;
+        }
+
+        public void setArgumentTokens(List<ABToken> argumentTokens) {
+            this.argumentTokens = argumentTokens;
+        }
+
+        public List<ABToken> getTypeTokens() {
+            return typeTokens;
+        }
+
+        public void setTypeTokens(List<ABToken> typeTokens) {
+            this.typeTokens = typeTokens;
+        }
+    }
+
+    /*****************************
+     *  AB SEMANTIC DATA MEMBER
+     *****************************/
+
     public class ABSemanticDataMember {
         private ABSymbolTableEntry previousEntry;
         private ABSymbolTableEntry.Kind kind;
@@ -613,6 +648,10 @@ public class ABSemantic {
         }
     }
 
+    /*****************************
+     *  AB SEMANTIC FUNCTION CALL
+     *****************************/
+
     public class ABSemanticFunctionCall {
         private ABToken token;
         private Stack<ABSymbolTable> tableStack;
@@ -638,6 +677,10 @@ public class ABSemantic {
             this.tableStack = tableStack;
         }
     }
+
+    /*****************************
+     *  AB SEMANTIC ERROR
+     *****************************/
 
     public class ABSemanticError {
         private String message;
