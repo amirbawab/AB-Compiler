@@ -27,7 +27,7 @@ public class ABSemantic {
 
     // Phase two
     private Queue<ABSymbolTableEntry> phaseTwoEntryType;
-    private Queue<ABSemanticFunctionCall> phaseTwoFunctions;
+    private Queue<ABSemanticFunctionCall> phaseTwoFunctionDeclaration;
     private Queue<ABSemanticDataMember> phaseTwoDataMembers;
     private Queue<ABSymbolTableEntry> phaseTwoFunctionOverload;
 
@@ -68,7 +68,7 @@ public class ABSemantic {
         allTables = new ArrayList<>();
         errors = new ArrayList<>();
         phaseTwoEntryType = new LinkedList<>();
-        phaseTwoFunctions = new LinkedList<>();
+        phaseTwoFunctionDeclaration = new LinkedList<>();
         phaseTwoDataMembers = new LinkedList<>();
         phaseTwoFunctionOverload = new LinkedList<>();
         lastUsedFunc = new Stack<>();
@@ -247,7 +247,7 @@ public class ABSemantic {
 
             // If function not found, then push for phase 2 verification
             if(result == null)
-                phaseTwoFunctions.offer(new ABSemanticFunctionCall(inputToken, tablesStack));
+                phaseTwoFunctionDeclaration.offer(new ABSemanticFunctionCall(inputToken, tablesStack));
 
         } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR.getName())) {
 
@@ -289,8 +289,8 @@ public class ABSemantic {
         }
 
         // Process functions calls
-        while(!phaseTwoFunctions.isEmpty()) {
-            ABSemanticFunctionCall functionCall = phaseTwoFunctions.poll();
+        while(!phaseTwoFunctionDeclaration.isEmpty()) {
+            ABSemanticFunctionCall functionCall = phaseTwoFunctionDeclaration.poll();
 
             // Search for the type
             ABSymbolTableEntry result = searchEntryInTableStack(functionCall.getTableStack(), functionCall.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
