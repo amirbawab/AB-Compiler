@@ -27,7 +27,7 @@ public class ABSemantic {
 
     // Phase two
     private Queue<ABSymbolTableEntry> phaseTwoEntryType;
-    private Queue<ABSemanticFunctionCall> phaseTwoFunctionDeclaration;
+    private Queue<ABSemanticFunctionDeclaration> phaseTwoFunctionDeclaration;
     private Queue<ABSemanticDataMember> phaseTwoDataMembers;
     private Queue<ABSymbolTableEntry> phaseTwoFunctionOverload;
 
@@ -247,7 +247,7 @@ public class ABSemantic {
 
             // If function not found, then push for phase 2 verification
             if(result == null)
-                phaseTwoFunctionDeclaration.offer(new ABSemanticFunctionCall(inputToken, tablesStack));
+                phaseTwoFunctionDeclaration.offer(new ABSemanticFunctionDeclaration(inputToken, tablesStack));
 
         } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR.getName())) {
 
@@ -290,7 +290,7 @@ public class ABSemantic {
 
         // Process functions calls
         while(!phaseTwoFunctionDeclaration.isEmpty()) {
-            ABSemanticFunctionCall functionCall = phaseTwoFunctionDeclaration.poll();
+            ABSemanticFunctionDeclaration functionCall = phaseTwoFunctionDeclaration.poll();
 
             // Search for the type
             ABSymbolTableEntry result = searchEntryInTableStack(functionCall.getTableStack(), functionCall.getToken().getValue(), ABSymbolTableEntry.Kind.FUNCTION);
@@ -655,15 +655,15 @@ public class ABSemantic {
         }
     }
 
-    /*****************************
-     *  AB SEMANTIC FUNCTION CALL
-     *****************************/
+    /***********************************
+     *  AB SEMANTIC FUNCTION DECLARATION
+     ***********************************/
 
-    public class ABSemanticFunctionCall {
+    public class ABSemanticFunctionDeclaration {
         private ABToken token;
         private Stack<ABSymbolTable> tableStack;
 
-        public ABSemanticFunctionCall(ABToken token, Stack<ABSymbolTable> tableStack) {
+        public ABSemanticFunctionDeclaration(ABToken token, Stack<ABSymbolTable> tableStack) {
             this.token = token;
             this.tableStack = (Stack<ABSymbolTable>) tableStack.clone();
         }
