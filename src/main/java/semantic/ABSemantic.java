@@ -50,7 +50,8 @@ public class ABSemantic {
         USE_VAR("useVar"),
         USE_FUNCTION("useFunction"),
         USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),
-        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar")
+        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),
+        CREATE_FOR_TABLE("createForTable")
         ;
 
         private String name;
@@ -260,6 +261,9 @@ public class ABSemantic {
             // Input token
             ABToken inputToken = tokens.get(tokenIndex-1);
             phaseTwoDataMembers.offer(new ABSemanticDataMember(dataMemberGroupId, lastUsedVar, ABSymbolTableEntry.Kind.FUNCTION, inputToken));
+
+        } else if(token.getValue().equals(Type.CREATE_FOR_TABLE.getName())) {
+            tablesStack.push(new ABSymbolTable("For", "For", ABSymbolTableEntry.Kind.FOR));
 
         } else {
             l.error("Action token: %s not found!", token.getValue());
