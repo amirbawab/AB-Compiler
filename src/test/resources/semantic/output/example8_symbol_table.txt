@@ -13,10 +13,8 @@ fn || function || int:
 
 ======================
 Symbol table: Global > Class T > Function fn
-x || variable || int:Not applicable
 ====================
 
 ======================
 Symbol table: Global > program
-x || variable || int:Not applicable
 ====================

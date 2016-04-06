@@ -191,7 +191,7 @@ public class ABParser {
 					List<ABGrammarToken> production = cell.getProduction();
 
 					// Adjust the derivation
-					derive(grammarToken, production, derivation);
+					derive(grammarToken, productionWithAction, derivation);
 					
 					// Take snapshot
 					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), cell.getId() +": "+ grammarToken.getValue()+"->"+StringUtils.join(production, " "), "=> "+ StringUtils.join(derivation, " "), false));
@@ -484,7 +484,7 @@ public class ABParser {
 	 * @param derivation
 	 */
 	private void derive(ABGrammarToken nonTerminal, List<ABGrammarToken> production, List<ABGrammarToken> derivation) {
-		
+
 		// Loop on tokens
 		for(int i=0; i<derivation.size(); i++) {
 			
@@ -499,7 +499,7 @@ public class ABParser {
 				
 				// Add the new production
 				for(int j=production.size()-1; j>=0; j--)
-					if(!production.get(j).isEpsilon())
+					if(!production.get(j).isEpsilon() && !production.get(j).isAction())
 						derivation.add(i, production.get(j));
 					
 				// Break when found

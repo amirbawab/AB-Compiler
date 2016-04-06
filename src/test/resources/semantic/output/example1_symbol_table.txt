@@ -19,14 +19,12 @@ Symbol table: Global > Class Utility > Function findMax
 array || parameter || int[100]:Not applicable
 maxValue || variable || int:Not applicable
 idx || variable || int:Not applicable
-idx || variable || int:Not applicable
 ====================
 
 ======================
 Symbol table: Global > Class Utility > Function findMin
 array || parameter || int[100]:Not applicable
 minValue || variable || int:Not applicable
-idx || variable || int:Not applicable
 idx || variable || int:Not applicable
 ====================
 
@@ -38,7 +36,6 @@ maxValue || variable || int:Not applicable
 minValue || variable || int:Not applicable
 utility || variable || Utility:Not applicable
 arrayUtility || variable || Utility[2][3][6][7]:Not applicable
-t || variable || int:Not applicable
 ====================
 
 ======================

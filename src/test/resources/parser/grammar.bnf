@@ -27,7 +27,7 @@ varDeclRptSt    -> 'T_INT_TYPE' #type# identifier #createVarEntry# arraySizeRpt 
                 | 'T_FLOAT_TYPE' #type# identifier #createVarEntry# arraySizeRpt semicolon varDeclRptSt
                 | 'T_IDENTIFIER' varDeclRptStDis
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon statementRpt
-                | 'T_FOR' openParen type #type# identifier #createVarEntry# assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon statementRpt
+                | 'T_FOR' #createForTable# openParen type #type# identifier #createVarEntry# assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon #parent# statementRpt
                 | 'T_GET' openParen variable closeParen semicolon statementRpt
                 | 'T_PUT' openParen expr closeParen semicolon statementRpt
                 | 'T_RETURN' openParen expr closeParen semicolon statementRpt
@@ -39,7 +39,7 @@ varDeclRptStDis -> #type# 'T_IDENTIFIER' #createVarEntry# arraySizeRpt semicolon
 statementRpt    -> statement statementRpt | EPSILON
 statement       -> 'T_IDENTIFIER' #useVar# idnestRptIdDiIn assignOp expr semicolon
                 | 'T_IF' openParen expr closeParen then statBlock else statBlock semicolon
-                | 'T_FOR' openParen type #type# identifier #createVarEntry# assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon
+                | 'T_FOR' #createForTable# openParen type #type# identifier #createVarEntry# assignOp expr semicolon relExpr semicolon assignStat closeParen statBlock semicolon #parent#
                 | 'T_GET' openParen variable closeParen semicolon
                 | 'T_PUT' openParen expr closeParen semicolon
                 | 'T_RETURN' openParen expr closeParen semicolon
