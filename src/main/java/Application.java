@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.*;
 import java.util.List;
 
@@ -222,8 +225,31 @@ public class Application {
 					graph.getModel().endUpdate();
 				}
 
-				mxGraphComponent graphComponent = new mxGraphComponent(graph);
+				final mxGraphComponent graphComponent = new mxGraphComponent(graph);
 				graphComponent.setEnabled(false);
+
+				// Add wheel listener
+				graphComponent.addMouseWheelListener(new MouseWheelListener() {
+					final int MAX_ZOOM = 10;
+					final int MIN_ZOOM = -10;
+					int zoomValue = 0;
+
+					@Override
+					public void mouseWheelMoved(MouseWheelEvent e) {
+						if((e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
+							if (e.getWheelRotation() < 0 && zoomValue < MAX_ZOOM) {
+								graphComponent.zoomIn();
+								zoomValue++;
+
+							} else if(e.getWheelRotation() > 0 && zoomValue > MIN_ZOOM) {
+								graphComponent.zoomOut();
+								zoomValue--;
+							}
+						}
+					}
+				});
+
+				// Add component
 				panel.add(graphComponent, BorderLayout.CENTER);
 				return panel;
 			}
