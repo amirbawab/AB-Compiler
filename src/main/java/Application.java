@@ -1,14 +1,22 @@
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.util.mxConstants;
 import parser.ABParser;
 import gui.MainFrame;
 import gui.listener.ABIDEListener;
+import parser.grammar.ABGrammarToken;
 import scanner.ABScanner;
 import scanner.ABToken;
 import scanner.helper.ErrorHelper;
 import semantic.ABSemantic;
 import semantic.ABSymbolTable;
-import semantic.helper.ABSemanticMessageHelper;
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.view.mxGraph;
+
+import javax.swing.*;
 
 public class Application {
 	public static void main(String[] args) {
@@ -144,6 +152,80 @@ public class Application {
 				}
 				doesCompile &= data.length == 0;
 				return data;
+			}
+
+			@Override
+			public JPanel getParserTree() {
+				JPanel panel = new JPanel();
+				panel.setLayout(new BorderLayout());
+
+				mxGraph graph = new mxGraph();
+				Object parent = graph.getDefaultParent();
+
+				// Configure graph
+				graph.setAutoSizeCells(true);
+
+				// Start drawing
+				graph.getModel().beginUpdate();
+
+				// Create nodes
+				Queue<ABGrammarToken> tokensQueue = new LinkedList<>();
+				Map<ABGrammarToken, Object> vertexMap = new HashMap<>();
+
+				// Add root
+				tokensQueue.offer(abParser.getTreeRoot());
+				Object vRoot = graph.insertVertex(parent, null, tokensQueue.peek().getValue(), 20, 20, 80,30);
+				vertexMap.put(tokensQueue.peek(), vRoot);
+				try
+				{
+					while(!tokensQueue.isEmpty()) {
+
+						// Peek
+						ABGrammarToken currentToken = tokensQueue.poll();
+
+						// Create node
+						Object v1 = vertexMap.get(currentToken);
+						graph.updateCellSize(v1);
+
+						if(currentToken.isNonTerminal()) {
+							for (int i=currentToken.getChildren().size()-1; i >= 0; i--) {
+
+								// Get token
+								ABGrammarToken token = currentToken.getChildren().get(i);
+
+								// Add child
+								Object v2 = graph.insertVertex(parent, null, token.getDetailedValue(), 240, 150, 80, 30);
+								vertexMap.put(token, v2);
+								tokensQueue.offer(token);
+
+								graph.insertEdge(parent, null, null, v1, v2);
+							}
+
+						} else if(currentToken.isTerminal()) {
+							graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "green", new Object[]{v1});
+							graph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "white", new Object[]{v1});
+
+						} else if(currentToken.isEpsilon()) {
+							graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "brown", new Object[]{v1});
+							graph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "white", new Object[]{v1});
+
+						} else if(currentToken.isAction()) {
+							graph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "red", new Object[]{v1});
+						}
+					}
+
+					mxHierarchicalLayout layout = new mxHierarchicalLayout(graph, SwingConstants.NORTH);
+					layout.execute(parent);
+				}
+				finally
+				{
+					graph.getModel().endUpdate();
+				}
+
+				mxGraphComponent graphComponent = new mxGraphComponent(graph);
+				graphComponent.setEnabled(false);
+				panel.add(graphComponent, BorderLayout.CENTER);
+				return panel;
 			}
 
 			/**

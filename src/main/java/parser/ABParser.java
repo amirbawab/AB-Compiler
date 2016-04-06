@@ -12,6 +12,7 @@ import parser.ABParserTable.ABParserTableRule;
 import parser.grammar.ABGrammar;
 import parser.grammar.ABGrammarToken;
 import static parser.helper.ABParserMessageHelper.*;
+
 import scanner.ABScanner;
 import scanner.ABToken;
 import semantic.ABSemantic;
@@ -25,7 +26,7 @@ public class ABParser {
 	// Variables
 	private ABParserTable abParseTable;
 	private ABGrammar abGrammar;
-	
+
 	// Long scan process time
 	private long parserProcessTime;
 	
@@ -34,6 +35,9 @@ public class ABParser {
 
 	// Semantic
 	private ABSemantic semantic;
+
+	// Tree root
+	private ABGrammarToken treeRoot;
 	
 	/**
 	 * Constructor
@@ -96,8 +100,9 @@ public class ABParser {
 		stack.push(new ABGrammarToken(ABGrammarToken.END_OF_STACK));
 		
 		// S
-		stack.push(new ABGrammarToken(abGrammar.getStart()));
-		
+		treeRoot = new ABGrammarToken(abGrammar.getStart());
+		stack.push(treeRoot);
+
 		// Add S to derivation
 		derivation.add(stack.peek());
 		
@@ -143,7 +148,10 @@ public class ABParser {
 					
 					// Take snapshot
 					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", "", false));
-					
+
+					// Set terminal value
+					grammarToken.setTerminalValue(inputToken);
+
 					// Pop terminal from stack
 					stack.pop();
 					
@@ -179,7 +187,7 @@ public class ABParser {
 				if(!cell.isError()) {
 					
 					// Store production
-					List<ABGrammarToken> productionWithAction = cell.getProductionWithAction();
+					List<ABGrammarToken> productionWithAction = cell.getCopyOfProductionWithAction();
 					List<ABGrammarToken> production = cell.getProduction();
 
 					// Adjust the derivation
@@ -195,6 +203,9 @@ public class ABParser {
 					for(int pTokenId = productionWithAction.size()-1; pTokenId >= 0; --pTokenId) {
 						if(!productionWithAction.get(pTokenId).isEpsilon())
 							stack.push(productionWithAction.get(pTokenId));
+
+						// Add children
+						grammarToken.addChild(productionWithAction.get(pTokenId));
 					}
 					
 				// If error
@@ -283,7 +294,15 @@ public class ABParser {
 		// No errors
 		return true;
 	}
-	
+
+	/**
+	 * Get tree root
+	 * @return
+     */
+	public ABGrammarToken getTreeRoot() {
+		return treeRoot;
+	}
+
 	/**
 	 * Get parser process time
 	 * @return process time

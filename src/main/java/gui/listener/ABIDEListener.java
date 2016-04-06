@@ -1,5 +1,7 @@
 package gui.listener;
 
+import javax.swing.*;
+
 public interface ABIDEListener {
 	
 	// Console
@@ -15,6 +17,7 @@ public interface ABIDEListener {
 	public Object[][][] getSymbolTables();
 	public String getSymbolTableName(int id);
 	public Object[][] getSemanticErrors();
+	public JPanel getParserTree();
 	
 	// Menu
 	public Object[][] getStateTable();

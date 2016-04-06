@@ -125,6 +125,9 @@ public class MainFrame extends JFrame {
 							if(parserErrorData.length > 0)
 								message += String.format("Parser: %d error(s) found! ", parserErrorData.length);
 
+							// Get tree
+							centerPanel.setPanel(CenterPanel.PARSER_TREE_TITLE, abIDElistener.getParserTree());
+
 							// Clear symbol tables
 							centerPanel.removeTablesInNavigationTable(CenterPanel.SYMBOL_TABLE_TITLE);
 

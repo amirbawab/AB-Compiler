@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.border.Border;
 
 public class TabbedConsolePanel extends JTabbedPane {
 	
@@ -75,6 +76,27 @@ public class TabbedConsolePanel extends JTabbedPane {
 		
 		// Store it in the map
 		this.tabPanelsMap.put(title, table);
+	}
+
+	/**
+	 * Add custom panel
+	 * @param title
+	 * @param panel
+     */
+	public void addPanel(String title, JPanel panel) {
+
+		// Create panel
+		JPanel panelWrapper = new JPanel();
+		panelWrapper.setLayout(new BorderLayout());
+
+		// Add panel
+		panelWrapper.add(panel, BorderLayout.CENTER);
+
+		// Add the tab
+		addTab(title, null, panelWrapper);
+
+		// Store it in the map
+		this.tabPanelsMap.put(title, panel);
 	}
 
 	/**
@@ -156,6 +178,18 @@ public class TabbedConsolePanel extends JTabbedPane {
 	public void resetTable(String panelTitle) {
 		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
 		table.clearAll();
+	}
+
+	/**
+	 * Set panel
+	 * @param panelTitle
+	 * @param panel
+     */
+	public void setPanel(String panelTitle, JPanel panel) {
+		JPanel loadedPanel = (JPanel) getBoard(panelTitle);
+		loadedPanel.removeAll();
+		loadedPanel.setLayout(new BorderLayout());
+		loadedPanel.add(panel, BorderLayout.CENTER);
 	}
 
 	/**

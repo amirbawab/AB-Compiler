@@ -33,6 +33,7 @@ public class CenterPanel extends JPanel {
 								SCANNER_ERROR_TITLE = "Scanner - Error",
 								PARSER_OUTPUT_TITLE = "Parser - All Steps",
 								PARSER_ERROR_TITLE = "Parser - Error",
+								PARSER_TREE_TITLE = "Parser - Tree",
 								SYMBOL_TABLE_TITLE = "Symbol tables",
 								SEMANTIC_ERROR_TITLE = "Semantic - Error";
 	
@@ -58,6 +59,7 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel.addTable(SCANNER_ERROR_TITLE, SCANNER_ERROR_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_OUTPUT_TITLE, PARSER_OUTPUT_HEADER);
 		this.tabbedConsolePanel.addTable(PARSER_ERROR_TITLE, PARSER_ERROR_HEADER);
+		this.tabbedConsolePanel.addPanel(PARSER_TREE_TITLE, new JPanel());
 		this.tabbedConsolePanel.addTableNavigation(SYMBOL_TABLE_TITLE);
 		this.tabbedConsolePanel.addTable(SEMANTIC_ERROR_TITLE, SEMANTIC_ERROR_HEADER);
 
@@ -83,6 +85,16 @@ public class CenterPanel extends JPanel {
 		if(table != null)
 			for(int row=0; row<table.length; row++) 
 				this.tabbedConsolePanel.addRowToTable(panelTitle, table[row]);
+	}
+
+	/**
+	 * Set custom panel
+	 * @param panelTitle
+	 * @param panel
+     */
+	public void setPanel(String panelTitle, JPanel panel) {
+		panel = panel == null ? new JPanel() : panel;
+		this.tabbedConsolePanel.setPanel(PARSER_TREE_TITLE, panel);
 	}
 
 	/**

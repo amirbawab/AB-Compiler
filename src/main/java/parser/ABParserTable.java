@@ -442,9 +442,20 @@ public class ABParserTable {
 		/**
 		 * Get production with the action token
 		 * @return production including action tokens
-         */
+		 */
 		public List<ABGrammarToken> getProductionWithAction() {
 			return productionWithAction;
+		}
+
+		/**
+		 * Get a ccpy of production with the action token
+		 * @return production including action tokens
+		 */
+		public List<ABGrammarToken> getCopyOfProductionWithAction() {
+			List<ABGrammarToken> tokens = new ArrayList<>();
+			for(ABGrammarToken token : productionWithAction)
+				tokens.add(token.makeCopy());
+			return tokens;
 		}
 
 		/**

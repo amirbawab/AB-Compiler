@@ -1,5 +1,10 @@
 package parser.grammar;
 
+import scanner.ABToken;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ABGrammarToken {
 	
 	// Enum types
@@ -16,15 +21,22 @@ public class ABGrammarToken {
 	public static final String END_OF_STACK = "$";
 	
 	// Variables
+	private String originalValue;
 	private String value;
 	private Type type;
+	private ABGrammarToken parent;
+	private List<ABGrammarToken> children;
+	private ABToken terminalValue;
 	
 	/**
 	 * Create grammar token
 	 * @param value
 	 */
 	public ABGrammarToken(String value) {
-		
+
+		// Store original value
+		this.originalValue = value;
+
 		// Decide the type
 		if(value.equals(EPSILON)){
 			this.value = value;
@@ -45,9 +57,10 @@ public class ABGrammarToken {
 		} else {
 			this.value = value;
 			this.type = Type.NON_TERMINAL;
+			this.children = new ArrayList<>();
 		}
 	}
-	
+
 	/**
 	 * Check if is terminal
 	 * @return true if terminal
@@ -93,7 +106,33 @@ public class ABGrammarToken {
 	public String getValue() {
 		return this.value;
 	}
-	
+
+	/**
+	 * Get detailed value
+	 * @return
+     */
+	public String getDetailedValue() {
+		if(isTerminal())
+			return value + "\n" + terminalValue.getValue();
+		return getValue();
+	}
+
+	/**
+	 * Get terminal value
+	 * @return
+     */
+	public ABToken getTerminalValue() {
+		return terminalValue;
+	}
+
+	/**
+	 * Set terminal value
+	 * @param terminalValue
+     */
+	public void setTerminalValue(ABToken terminalValue) {
+		this.terminalValue = terminalValue;
+	}
+
 	/**
 	 * To String
 	 * @return String to String
@@ -112,5 +151,30 @@ public class ABGrammarToken {
 		default:
 			return value;
 		}
+	}
+
+	/**
+	 * Add child
+	 * @param token
+     */
+	public void addChild(ABGrammarToken token) {
+		token.parent = this;
+		children.add(token);
+	}
+
+	/**
+	 * Get children
+	 * @return
+     */
+	public List<ABGrammarToken> getChildren() {
+		return children;
+	}
+
+	/**
+	 * Create a copy of the current token
+	 * @return a copy
+	 */
+	public ABGrammarToken makeCopy() {
+		return new ABGrammarToken(originalValue);
 	}
 }
