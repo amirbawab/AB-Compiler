@@ -32,4 +32,10 @@ public class ABSymbolTableEntryFactory {
         entry.setLink(new ABSymbolTable(table.getName() + " > " + name, name, ABSymbolTableEntry.Kind.PROGRAM));
         return entry;
     }
+
+    public static ABSymbolTableEntry createForEntry(ABSymbolTable table, String name) {
+        ABSymbolTableEntry entry = new ABSymbolTableEntry(table, name, ABSymbolTableEntry.Kind.FOR);
+        entry.setLink(new ABSymbolTable(table.getName() + " > " + name, name, ABSymbolTableEntry.Kind.FOR));
+        return entry;
+    }
 }

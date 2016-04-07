@@ -83,7 +83,10 @@ public class ABParser {
 		} else {
 			tokens.add(new ABToken(ABGrammarToken.END_OF_STACK, ABGrammarToken.END_OF_STACK, 0, 0));
 		}
-		
+
+		// Log
+		l.info("Start parsing input ...");
+
 		// Prepare derivation list
 		List<ABGrammarToken> derivation = new ArrayList<>();
 		
@@ -95,154 +98,177 @@ public class ABParser {
 		
 		// Reset the snapshot list
 		snapshots = new ArrayList<>();
-		
+
+		// Error
+		boolean error = false;
+
+		// Counter
+		int inputTokenIndex = 0;
+
+		// Step
+		int step = 0;
+
 		// $
 		stack.push(new ABGrammarToken(ABGrammarToken.END_OF_STACK));
 		
-		// S
+		// Create S
 		treeRoot = new ABGrammarToken(abGrammar.getStart());
-		stack.push(treeRoot);
 
 		// Add S to derivation
-		derivation.add(stack.peek());
-		
-		// Error
-		boolean error = false;
-		
-		// Counter
-		int inputTokenIndex = 0;
-		
-		// Step
-		int step = 0;
-		
+		derivation.add(treeRoot);
+
 		// Get next token
 		ABToken inputToken = tokens.get(inputTokenIndex);
-		
-		// Log
-		l.info("Start parsing input ...");
-				
+
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
-		
-		// While top is not $
-		while(!stack.peek().isEndOfStack()) {
-			
-			// Store top
-			ABGrammarToken grammarToken = stack.peek();
 
-			// If action
-			if(grammarToken.isAction()) {
+		// Set tokens
+		semantic.setInputTokens(tokens);
 
-				// Pop for now
-				ABGrammarToken token = stack.pop();
+		// Run multiple times
+		for(int phase = 1; phase <= 2; phase++) {
 
-				// If no  errors
-				if(!error)
-					semantic.eval(token, tokens, inputTokenIndex);
+			// Push S
+			stack.push(treeRoot);
 
-			// If is terminal
-			} else if(grammarToken.isTerminal()) {
-				
-				// If match
-				if(grammarToken.getValue().equals(inputToken.getToken())) {
-					
-					// Take snapshot
-					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", "", false));
+			// Reset input token index
+			inputTokenIndex = 0;
 
-					// Set terminal value
-					grammarToken.setTerminalValue(inputToken);
+			// Reset input token
+			inputToken = tokens.get(inputTokenIndex);
 
-					// Pop terminal from stack
-					stack.pop();
-					
-					// Update inputToken
-					inputToken = tokens.get(++inputTokenIndex);
-					
-				// If no match
-				} else {
+			// While top is not $
+			while(!stack.peek().isEndOfStack()) {
 
-					// Prepare message
-					String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
-					
-					// Add snapshot
-					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
+				// Store top
+				ABGrammarToken grammarToken = stack.peek();
 
-					// TODO This part has to be avoided
-					l.error("This statement should never execute. Step log: %s", snapshots.get(snapshots.size()-1));
+				// If action
+				if(grammarToken.isAction()) {
 
-					// Pop
-					stack.pop();
-					
-					// Error found
-					error = true;
-				}
-			
-			// If is non terminal
-			} else {
-				
-				// Get cell
-				ABParserTable.ABParserTableCell cell = abParseTable.getTableAt(grammarToken.getValue(), inputToken.getToken());
-				
-				// If not an error
-				if(!cell.isError()) {
-					
-					// Store production
-					List<ABGrammarToken> productionWithAction = cell.getCopyOfProductionWithAction();
-					List<ABGrammarToken> production = cell.getProduction();
+					// Read
+					ABGrammarToken token = stack.pop();
 
-					// Adjust the derivation
-					derive(grammarToken, productionWithAction, derivation);
-					
-					// Take snapshot
-					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), cell.getId() +": "+ grammarToken.getValue()+"->"+StringUtils.join(production, " "), "=> "+ StringUtils.join(derivation, " "), false));
+					// If no  errors
+					if(!error)
+						semantic.eval(token, inputTokenIndex, phase);
 
-					// Pop
-					stack.pop();
-					
-					// Inverse RHS multiple push. Don't push EPSILON
-					for(int pTokenId = productionWithAction.size()-1; pTokenId >= 0; --pTokenId) {
-						if(!productionWithAction.get(pTokenId).isEpsilon())
-							stack.push(productionWithAction.get(pTokenId));
+					// If is terminal
+				} else if(grammarToken.isTerminal()) {
 
-						// Add children
-						grammarToken.addChild(productionWithAction.get(pTokenId));
-					}
-					
-				// If error
-				} else {
-					
-					// Input value
-					String inputValue = inputToken.getValue();
-					
-					// Adjust value if $
-					if(inputValue.equals(ABGrammarToken.END_OF_STACK))
-						inputValue = EOF;
-					
-					// Prepare message
-					String errorMessage =  String.format(cell.getErrorMessage(), inputValue, inputToken.getRow(), inputToken.getCol());
-					
-					// Add snapshot
-					snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
-					
-					// If pop
-					if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
-						
-						// Pop the stack
+					// If match
+					if(grammarToken.getValue().equals(inputToken.getToken())) {
+
+						if(phase == 1) {
+							// Take snapshot
+							snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", "", false));
+
+							// Set terminal value
+							grammarToken.setTerminalValue(inputToken);
+						}
+
+						// Pop terminal from stack
 						stack.pop();
-						
-					// If scan
-					} else if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.SCAN)) {
-						
-						// Scan next input token
+
+						// Update inputToken
 						inputToken = tokens.get(++inputTokenIndex);
-					
-					// If undefined
+
+						// If no match
 					} else {
-						l.error("Undefined behavior for the error cell: non-terminal: %s, terminal: %s", grammarToken.getValue(), inputToken.getToken());
+
+						if(phase == 1) {
+							// Prepare message
+							String errorMessage = inputToken.getToken().equals(ABGrammarToken.END_OF_STACK) ? "Unexpected end of file" : String.format(GENERIC_UNEXPECTED_TOKEN_3, inputToken.getValue(), inputToken.getRow(), inputToken.getCol());
+
+							// Add snapshot
+							snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
+
+							// TODO This part has to be avoided
+							l.error("This statement should never execute. Step log: %s", snapshots.get(snapshots.size() - 1));
+						}
+
+						// Pop
+						stack.pop();
+
+						// Error found
+						error = true;
 					}
-					
-					// Mark error
-					error = true;
+
+					// If is non terminal
+				} else {
+
+					// Get cell
+					ABParserTable.ABParserTableCell cell = abParseTable.getTableAt(grammarToken.getValue(), inputToken.getToken());
+
+					// If not an error
+					if(!cell.isError()) {
+
+						// Store production
+						List<ABGrammarToken> productionWithAction = cell.getCopyOfProductionWithAction();
+
+						if(phase == 1) {
+							List<ABGrammarToken> production = cell.getProduction();
+
+							// Adjust the derivation
+							derive(grammarToken, productionWithAction, derivation);
+
+							// Take snapshot
+							snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), cell.getId() + ": " + grammarToken.getValue() + "->" + StringUtils.join(production, " "), "=> " + StringUtils.join(derivation, " "), false));
+						}
+
+						// Pop
+						stack.pop();
+
+						// Inverse RHS multiple push. Don't push EPSILON
+						for(int pTokenId = productionWithAction.size()-1; pTokenId >= 0; --pTokenId) {
+							if(!productionWithAction.get(pTokenId).isEpsilon())
+								stack.push(productionWithAction.get(pTokenId));
+
+							if(phase == 1) {
+								// Add children
+								grammarToken.addChild(productionWithAction.get(pTokenId));
+							}
+						}
+
+						// If error
+					} else {
+
+						if(phase == 1) {
+							// Input value
+							String inputValue = inputToken.getValue();
+
+							// Adjust value if $
+							if (inputValue.equals(ABGrammarToken.END_OF_STACK))
+								inputValue = EOF;
+
+							// Prepare message
+							String errorMessage = String.format(cell.getErrorMessage(), inputValue, inputToken.getRow(), inputToken.getCol());
+
+							// Add snapshot
+							snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
+						}
+
+						// If pop
+						if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.POP)) {
+
+							// Pop the stack
+							stack.pop();
+
+							// If scan
+						} else if(cell.getErrorDecision().equals(ABParserTable.ABParserTableCell.SCAN)) {
+
+							// Scan next input token
+							inputToken = tokens.get(++inputTokenIndex);
+
+							// If undefined
+						} else {
+							l.error("Undefined behavior for the error cell: non-terminal: %s, terminal: %s", grammarToken.getValue(), inputToken.getToken());
+						}
+
+						// Mark error
+						error = true;
+					}
 				}
 			}
 		}
@@ -271,9 +297,6 @@ public class ABParser {
 
 		// Take snapshot
 		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", SUCCESS, false));
-
-		// Run phase two of evaluation
-		semantic.evalPhaseTwo();
 
 		// Update time
 		parserProcessTime = System.currentTimeMillis() - parserProcessTime;
