@@ -46,7 +46,9 @@ public class ABSemantic {
         USE_FUNCTION("useFunction"),
         USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),
         USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),
-        CREATE_FOR_TABLE("createForTable")
+        CREATE_FOR_TABLE("createForTable"),
+        POP_GROUP_STACK_1("popGroupStack1"),
+        POP_GROUP_STACK_2("popGroupStack2")
         ;
 
         private String name;
@@ -415,57 +417,24 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR.getName())) {
 
             if(phase == 2) {
-                // Input token
-                ABToken inputToken = inputTokens.get(tokenIndex - 1);
-
-                // Get group
-                ABSemanticTokenGroup group = tokenGroupsStack.peek();
-
-                // Get the last token sub group
-                ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
-
-                // Get last token table entry
-                ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(subGroup.getTokens().get(0));
-
-                // If not found
-                if(baseTableEntry == null) {
-                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                } else {
-
-                    // If primitive type
-                    if(baseTableEntry.isPrimitiveType()) {
-                        addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                    } else {
-
-                        // Check if the type is defined
-                        ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
-
-                        // If not found
-                        if(classEntry == null) {
-                            addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                        } else {
-                            // Search for data member
-                            ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-
-                            // If not found
-                            if(entry == null) {
-                                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, inputToken.getValue(), classEntry.getName(), inputToken.getRow(), inputToken.getCol()));
-                            } else {
-                                tokenEntryMap.put(inputToken, entry);
-                            }
-                        }
-                    }
-                }
-
-                // Add to token group stack
-                group.addSubGroupToken(inputToken);
+                appendSubGroupVariable(tokenIndex);
             }
         } else if(token.getValue().equals(Type.USE_FUNCTION_BASED_ON_LAST_VAR.getName())) {
 
             if(phase == 2) {
-                // Input token
-                ABToken inputToken = inputTokens.get(tokenIndex - 1);
-                // TODO Check data member if found: Variable
+                appendSubGroupFunction(tokenIndex);
+            }
+        } else if(token.getValue().equals(Type.POP_GROUP_STACK_1.getName())) {
+
+            if(phase == 1) {
+                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
+                tokenGroupsStack.pop();
+            }
+        } else if(token.getValue().equals(Type.POP_GROUP_STACK_2.getName())) {
+
+            if(phase == 2) {
+                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
+                tokenGroupsStack.pop();
             }
         } else {
             l.error("Action token: %s not found!", token.getValue());
@@ -477,6 +446,102 @@ public class ABSemantic {
      *                  PHASES I AND II METHODS
      *
      *****************************************************/
+
+    public void appendSubGroupVariable(int tokenIndex) {
+
+        // Input token
+        ABToken inputToken = inputTokens.get(tokenIndex - 1);
+
+        // Get group
+        ABSemanticTokenGroup group = tokenGroupsStack.peek();
+
+        // Get the last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup = group.getLastTokenSubGroup();
+
+        // Get last token table entry
+        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(subGroup.getTokens().get(0));
+
+        // If not found
+        if(baseTableEntry == null) {
+            addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+        } else {
+
+            // If primitive type
+            if(baseTableEntry.isPrimitiveType()) {
+                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+            } else {
+
+                // Check if the type is defined
+                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                // If not found
+                if(classEntry == null) {
+                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+                } else {
+                    // Search for data member
+                    ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+
+                    // If not found
+                    if(entry == null) {
+                        addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, inputToken.getValue(), classEntry.getName(), inputToken.getRow(), inputToken.getCol()));
+                    } else {
+                        tokenEntryMap.put(inputToken, entry);
+                    }
+                }
+            }
+        }
+
+        // Add to token group stack
+        group.addSubGroupToken(inputToken);
+    }
+
+    public void appendSubGroupFunction(int tokenIndex) {
+
+        // Input token
+        ABToken inputToken = inputTokens.get(tokenIndex - 1);
+
+        // Get group
+        ABSemanticTokenGroup group = tokenGroupsStack.peek();
+
+        // Get the last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup = group.getLastTokenSubGroup();
+
+        // Get last token table entry
+        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(subGroup.getTokens().get(0));
+
+        // If not found
+        if(baseTableEntry == null) {
+            addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+        } else {
+
+            // If primitive type
+            if(baseTableEntry.isPrimitiveType()) {
+                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+            } else {
+
+                // Check if the type is defined
+                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                // If not found
+                if(classEntry == null) {
+                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
+                } else {
+                    // Search for data member
+                    ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), inputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+
+                    // If not found
+                    if(entry == null) {
+                        addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, inputToken.getValue(), classEntry.getName(), inputToken.getRow(), inputToken.getCol()));
+                    } else {
+                        tokenEntryMap.put(inputToken, entry);
+                    }
+                }
+            }
+        }
+
+        // Add to token group stack
+        group.addSubGroupToken(inputToken);
+    }
 
     /**
      * Check if multiple declaration was found for an identifier of any type
@@ -772,11 +837,9 @@ public class ABSemantic {
     public class ABSemanticTokenGroup {
 
         private List<ABSemanticTokenSubGroup> tokens;
-        private List<ABToken> type;
 
         public ABSemanticTokenGroup() {
             tokens = new ArrayList<>();
-            type = new ArrayList<>();
         }
 
         public void addSubGroupToken(ABToken newToken) {
@@ -787,10 +850,6 @@ public class ABSemantic {
 
         public ABSemanticTokenSubGroup getLastTokenSubGroup() {
             return tokens.get(tokens.size()-1);
-        }
-
-        public List<ABToken> getType() {
-            return type;
         }
 
         /**
@@ -804,6 +863,11 @@ public class ABSemantic {
                 for(ABToken subGroupToken : subGroup.getTokens())
                     allTokens.add(subGroupToken);
             return allTokens;
+        }
+
+        @Override
+        public String toString() {
+            return tokens.toString();
         }
 
         /*****************************
@@ -833,7 +897,12 @@ public class ABSemantic {
                 return tokensList.size() > 1;
             }
 
-            public int getArrayDimension() { return (tokensList.size()-1)/3; }
+            public int getArrayDimension() { return (tokensList.size()-1)/2; }
+
+            @Override
+            public String toString() {
+                return tokensList.toString();
+            }
         }
     }
 
