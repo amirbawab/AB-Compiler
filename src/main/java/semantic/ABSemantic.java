@@ -26,8 +26,8 @@ public class ABSemantic {
     private List<ABSemanticError> errors;
 
     // Helper
-    private List<ABToken> type_buffer;
     private Map<ABToken, ABSymbolTableEntry> tokenEntryMap;
+    private Stack<ABSemanticTokenGroup> tokenGroupsStack;
 
     // Tokens list
     private List<ABToken> inputTokens;
@@ -64,6 +64,7 @@ public class ABSemantic {
         allTables = new ArrayList<>();
         errors = new ArrayList<>();
         tokenEntryMap = new HashMap<>();
+        tokenGroupsStack = new Stack<>();
     }
 
     /**
@@ -157,8 +158,9 @@ public class ABSemantic {
              */
             if(phase == 1) {
                 // Put token
-                type_buffer = new ArrayList<>();
-                type_buffer.add(inputTokens.get(tokenIndex - 1));
+                ABSemanticTokenGroup tokenGroup = new ABSemanticTokenGroup();
+                tokenGroupsStack.push(tokenGroup);
+                tokenGroup.addToken(inputTokens.get(tokenIndex - 1));
             }
 
         } else if(token.getValue().equals(Type.CREATE_VAR_ENTRY.getName())) {
@@ -172,7 +174,7 @@ public class ABSemantic {
 
                 // Create variable entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(type_buffer);
+                entry.setType(tokenGroupsStack.peek().getTokens());
                 entry.setToken(inputToken);
 
                 // If exists already
@@ -203,7 +205,7 @@ public class ABSemantic {
              * Add more types
              */
             if(phase == 1) {
-                type_buffer.add(inputTokens.get(tokenIndex - 1));
+                tokenGroupsStack.peek().addToken(inputTokens.get(tokenIndex - 1));
             }
 
         } else if(token.getValue().equals(Type.CREATE_PARAM_ENTRY.getName())) {
@@ -219,7 +221,7 @@ public class ABSemantic {
 
                 // Create parameter entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(type_buffer);
+                entry.setType(tokenGroupsStack.peek().getTokens());
                 entry.setToken(inputToken);
 
                 // Check if exists
@@ -257,7 +259,7 @@ public class ABSemantic {
 
                 // Create function entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(type_buffer);
+                entry.setType(tokenGroupsStack.peek().getTokens());
                 entry.setToken(inputToken);
 
                 // If exists already and not a function
@@ -731,12 +733,16 @@ public class ABSemantic {
 
     public class ABSemanticTokenGroup {
 
-        private List<ABSemanticTokenGroup> tokens;
+        private List<ABToken> tokens;
         private List<ABToken> type;
 
         public ABSemanticTokenGroup() {
             tokens = new ArrayList<>();
             type = new ArrayList<>();
+        }
+
+        public void addToken(ABToken token) {
+            tokens.add(token);
         }
 
         public List<ABToken> getType() {
@@ -747,11 +753,11 @@ public class ABSemantic {
             this.type = type;
         }
 
-        public List<ABSemanticTokenGroup> getTokens() {
+        public List<ABToken> getTokens() {
             return tokens;
         }
 
-        public void setTokens(List<ABSemanticTokenGroup> tokens) {
+        public void setTokens(List<ABToken> tokens) {
             this.tokens = tokens;
         }
     }
