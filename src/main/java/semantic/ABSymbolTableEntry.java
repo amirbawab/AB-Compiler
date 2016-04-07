@@ -100,6 +100,8 @@ class ABSymbolTableEntry {
 
     public int getArrayDimension() { return (type.size()-1)/3; }
 
+    public boolean isArray() { return type.size() > 1; }
+
     public boolean isProperlyDefined() {
         return properlyDefined;
     }
@@ -116,6 +118,10 @@ class ABSymbolTableEntry {
         this.table = table;
     }
 
+    public boolean isPrimitiveType() {
+        return !type.get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER);
+    }
+
     public String getStructure() {
         switch (kind) {
             case CLASS:
@@ -123,7 +129,7 @@ class ABSymbolTableEntry {
                 return "Not applicable";
         }
 
-        if(type.size() == 1) {
+        if( !isArray()) {
             return type.get(0).getToken().equals(ABTokenHelper.T_IDENTIFIER) ? "Class" : "Simple";
 
         } else {
