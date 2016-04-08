@@ -447,6 +447,10 @@ public class ABSemantic {
      *
      *****************************************************/
 
+    /**
+     * Append sub group for variable
+     * @param tokenIndex
+     */
     public void appendSubGroupVariable(int tokenIndex) {
 
         // Input token
@@ -495,6 +499,10 @@ public class ABSemantic {
         group.addSubGroupToken(inputToken);
     }
 
+    /**
+     * Append sub group for function
+     * @param tokenIndex
+     */
     public void appendSubGroupFunction(int tokenIndex) {
 
         // Input token
