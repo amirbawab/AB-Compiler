@@ -15,4 +15,7 @@ public class ABSemanticMessageHelper {
     public final static String UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE = "Undefined data member '%s' of an undefined variable at line %d column %d";
     public final static String UNDEFINED_MEMBER_OF_CLASS = "Undefined data member '%s' of the class '%s' at line %d column %d";
     public final static String SAME_SIGNATURE_FUNCTION = "Cannot overload function '%s' with same signature at line %d column %d and at line %d column %d";
+    public final static String VARIABLE_NOT_ARRAY = "Variable '%s' is not an array at line %d column %d";
+    public final static String VARIABLE_IS_ARRAY = "Variable '%s' is an array at line %d column %d";
+    public final static String ARRAYS_UNMATCH_DIMENSION = "Variable '%s' must be an array of %d instead of %d dimension at line %d column %d";
 }

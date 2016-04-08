@@ -33,22 +33,27 @@ public class ABSemantic {
     private List<ABToken> inputTokens;
 
     public enum Type {
-        CREATE_GLOBAL_TABLE("createGlobalTable"),
-        CREATE_CLASS_TABLE_AND_ENTRY("createClassTableAndEntry"),
-        PARENT("parent"),
-        TYPE("type"),
-        CREATE_VAR_ENTRY("createVarEntry"),
-        CREATE_PARAM_ENTRY("createParamEntry"),
-        CREATE_FUNCTION_ENTRY_AND_TABLE("createFunctionEntryAndTable"),
-        CREATE_PROGRAM_ENTRY_AND_TABLE("createProgramEntryAndTable"),
-        MORE_TYPE("moreType"),
-        USE_VAR("useVar"),
-        USE_FUNCTION("useFunction"),
-        USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),
-        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),
-        CREATE_FOR_TABLE("createForTable"),
-        POP_GROUP_STACK_1("popGroupStack1"),
-        POP_GROUP_STACK_2("popGroupStack2")
+        CREATE_GLOBAL_TABLE("createGlobalTable"),                                               // Create global table
+        CREATE_CLASS_TABLE_AND_ENTRY("createClassTableAndEntry"),                               // Create class table and entry
+        PARENT("parent"),                                                                       // Pop table stack
+        TYPE("type"),                                                                           // Buffer type in tokens group stack
+        CREATE_VAR_ENTRY("createVarEntry"),                                                     // Create a variable entry
+        CREATE_PARAM_ENTRY("createParamEntry"),                                                 // Create a parameter entry
+        CREATE_FUNCTION_ENTRY_AND_TABLE("createFunctionEntryAndTable"),                         // Create a function table and entry
+        CREATE_PROGRAM_ENTRY_AND_TABLE("createProgramEntryAndTable"),                           // Create a program table and entry
+        MORE_TYPE("moreType"),                                                                  // Add more type to buffer
+        USE_VAR("useVar"),                                                                      // Buffer a variable in token group stack
+        USE_VAR_CHECK("useVarCheck"),                                                           // Check that the only sub group variable is defined correctly
+        USE_FUNCTION("useFunction"),                                                            // Buffer a function in token group stack
+        USE_FUNCTION_CHECK("useFunctionCheck"),                                                 // Check that the only sub group function is defined correctly
+        USE_VAR_BASED_ON_LAST_VAR("useVarBasedOnLastVar"),                                      // Buffer a data member in token group stack
+        USE_VAR_BASED_ON_LAST_VAR_CHECK("useVarBasedOnLastVarCheck"),                           // Check that the last sub group variable is defined correctly
+        USE_FUNCTION_BASED_ON_LAST_VAR("useFunctionBasedOnLastVar"),                            // Buffer a data function in token group stack
+        USE_FUNCTION_BASED_ON_LAST_VAR_CHECK("useFunctionBasedOnLastVarCheck"),                 // Check that the last sub group function is defined correctly
+        CREATE_FOR_TABLE("createForTable"),                                                     // Create a for loop table [no entry]
+        POP_GROUP_STACK_1("popGroupStack1"),                                                    // Pop token group stack in phase 1
+        POP_GROUP_STACK_2("popGroupStack2"),                                                    // Pop token group stack in phase 2
+        INCREMENT_DIMENSION("incrementDimension")                                               // Increment array dimension
         ;
 
         private String name;
@@ -198,7 +203,7 @@ public class ABSemantic {
                 ABSymbolTableEntry entry = tokenEntryMap.get(inputToken);
 
                 // Check type
-                checkType(entry);
+                checkTypeExists(entry);
             }
 
         } else if(token.getValue().equals(Type.MORE_TYPE.getName())) {
@@ -245,7 +250,7 @@ public class ABSemantic {
                 ABSymbolTableEntry entry = tokenEntryMap.get(inputToken);
 
                 // If identifier
-                checkType(entry);
+                checkTypeExists(entry);
             }
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {
@@ -292,7 +297,7 @@ public class ABSemantic {
                 ABSymbolTableEntry entry = tokenEntryMap.get(inputToken);
 
                 // Check if function type exists
-                checkType(entry);
+                checkTypeExists(entry);
 
                 // Check for function overload
                 checkOverload(entry);
@@ -369,26 +374,39 @@ public class ABSemantic {
 
         } else if(token.getValue().equals(Type.USE_VAR.getName())) {
 
-            // Input token
-            ABToken inputToken = inputTokens.get(tokenIndex-1);
-
             /**
              * + Check if variable is defined
              */
             if(phase == 2) {
-                ABSymbolTableEntry definedVarEntry = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-                ABSymbolTableEntry definedParamEntry = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
 
-                // If undefined
-                if (definedVarEntry == null && definedParamEntry == null) {
-                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                } else {
-                    tokenEntryMap.put(inputToken, definedVarEntry != null ? definedVarEntry : definedParamEntry);
-                }
+                // Input token
+                ABToken inputToken = inputTokens.get(tokenIndex-1);
 
                 // Add to token group stack
                 tokenGroupsStack.push(new ABSemanticTokenGroup());
                 tokenGroupsStack.peek().addSubGroupToken(inputToken);
+            }
+
+        } else if(token.getValue().equals(Type.USE_VAR_CHECK.getName())) {
+
+            if(phase == 2) {
+                checkVariableUse();
+            }
+
+        } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR.getName())) {
+
+            if(phase == 2) {
+
+                // Input token
+                ABToken inputToken = inputTokens.get(tokenIndex - 1);
+
+                // Add to token group stack
+                tokenGroupsStack.peek().addSubGroupToken(inputToken);
+            }
+        } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR_CHECK.getName())) {
+
+            if(phase == 2) {
+                checkVariableDataMember();
             }
 
         } else if(token.getValue().equals(Type.USE_FUNCTION.getName())) {
@@ -400,30 +418,34 @@ public class ABSemantic {
 
                 // Input token
                 ABToken inputToken = inputTokens.get(tokenIndex - 1);
-                ABSymbolTableEntry result = searchEntryInTableStack(tablesStack, inputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
-
-                // If not found
-                if(result == null) {
-                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_FUNCTION, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                } else {
-                    tokenEntryMap.put(inputToken, result);
-                }
 
                 // Add to token group stack
                 tokenGroupsStack.push(new ABSemanticTokenGroup());
                 tokenGroupsStack.peek().addSubGroupToken(inputToken);
             }
 
-        } else if(token.getValue().equals(Type.USE_VAR_BASED_ON_LAST_VAR.getName())) {
+        } else if(token.getValue().equals(Type.USE_FUNCTION_CHECK.getName())) {
 
             if(phase == 2) {
-                appendSubGroupVariable(tokenIndex);
+                checkFunctionUse();
             }
+
         } else if(token.getValue().equals(Type.USE_FUNCTION_BASED_ON_LAST_VAR.getName())) {
 
             if(phase == 2) {
-                appendSubGroupFunction(tokenIndex);
+                // Input token
+                ABToken inputToken = inputTokens.get(tokenIndex - 1);
+
+                // Add to token group stack
+                tokenGroupsStack.peek().addSubGroupToken(inputToken);
             }
+
+        } else if(token.getValue().equals(Type.USE_FUNCTION_BASED_ON_LAST_VAR_CHECK.getName())) {
+
+            if(phase == 2) {
+                checkFunctionDataMember();
+            }
+
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_1.getName())) {
 
             if(phase == 1) {
@@ -436,6 +458,13 @@ public class ABSemantic {
                 System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
                 tokenGroupsStack.pop();
             }
+
+        } else if(token.getValue().equals(Type.INCREMENT_DIMENSION.getName())) {
+
+            if(phase == 2) {
+                tokenGroupsStack.peek().getLastTokenSubGroup().incrementCounter();
+            }
+
         } else {
             l.error("Action token: %s not found!", token.getValue());
         }
@@ -443,113 +472,9 @@ public class ABSemantic {
 
     /*****************************************************
      *
-     *                  PHASES I AND II METHODS
+     *                  PHASES I METHODS
      *
      *****************************************************/
-
-    /**
-     * Append sub group for variable
-     * @param tokenIndex
-     */
-    public void appendSubGroupVariable(int tokenIndex) {
-
-        // Input token
-        ABToken inputToken = inputTokens.get(tokenIndex - 1);
-
-        // Get group
-        ABSemanticTokenGroup group = tokenGroupsStack.peek();
-
-        // Get the last token sub group
-        ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup = group.getLastTokenSubGroup();
-
-        // Get last token table entry
-        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(subGroup.getTokens().get(0));
-
-        // If not found
-        if(baseTableEntry == null) {
-            addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-        } else {
-
-            // If primitive type
-            if(baseTableEntry.isPrimitiveType()) {
-                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-            } else {
-
-                // Check if the type is defined
-                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
-
-                // If not found
-                if(classEntry == null) {
-                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                } else {
-                    // Search for data member
-                    ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), inputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
-
-                    // If not found
-                    if(entry == null) {
-                        addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, inputToken.getValue(), classEntry.getName(), inputToken.getRow(), inputToken.getCol()));
-                    } else {
-                        tokenEntryMap.put(inputToken, entry);
-                    }
-                }
-            }
-        }
-
-        // Add to token group stack
-        group.addSubGroupToken(inputToken);
-    }
-
-    /**
-     * Append sub group for function
-     * @param tokenIndex
-     */
-    public void appendSubGroupFunction(int tokenIndex) {
-
-        // Input token
-        ABToken inputToken = inputTokens.get(tokenIndex - 1);
-
-        // Get group
-        ABSemanticTokenGroup group = tokenGroupsStack.peek();
-
-        // Get the last token sub group
-        ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup = group.getLastTokenSubGroup();
-
-        // Get last token table entry
-        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(subGroup.getTokens().get(0));
-
-        // If not found
-        if(baseTableEntry == null) {
-            addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-        } else {
-
-            // If primitive type
-            if(baseTableEntry.isPrimitiveType()) {
-                addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-            } else {
-
-                // Check if the type is defined
-                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
-
-                // If not found
-                if(classEntry == null) {
-                    addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, inputToken.getValue(), inputToken.getRow(), inputToken.getCol()));
-                } else {
-                    // Search for data member
-                    ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), inputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
-
-                    // If not found
-                    if(entry == null) {
-                        addError(inputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, inputToken.getValue(), classEntry.getName(), inputToken.getRow(), inputToken.getCol()));
-                    } else {
-                        tokenEntryMap.put(inputToken, entry);
-                    }
-                }
-            }
-        }
-
-        // Add to token group stack
-        group.addSubGroupToken(inputToken);
-    }
 
     /**
      * Check if multiple declaration was found for an identifier of any type
@@ -561,6 +486,240 @@ public class ABSemantic {
         if (definedEntry != null) {
             addError(entry.getToken(), String.format(ABSemanticMessageHelper.MUTLIPLE_DECLARATION, entry.getToken().getValue(), definedEntry.getToken().getRow(), definedEntry.getToken().getCol(), entry.getToken().getRow(), entry.getToken().getCol()));
             entry.setProperlyDefined(false);
+        }
+    }
+
+
+    /*****************************************************
+     *
+     *                  PHASES II METHODS
+     *
+     *****************************************************/
+
+    /**
+     * Check, if array, the structure if used correctly
+     * @param entry
+     * @param subGroup
+     * @return true if successful, false otherwise
+     */
+    public boolean checkArray(ABSymbolTableEntry entry, ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup) {
+
+        // Get the type
+        ABToken usedVarToken = subGroup.getToken(0);
+
+        // If used as an array but is not
+        if(subGroup.getCounter() > 0 && !entry.isArray()) {
+            addError(usedVarToken, String.format(ABSemanticMessageHelper.VARIABLE_NOT_ARRAY, usedVarToken.getValue(), usedVarToken.getRow(), usedVarToken.getCol()));
+
+            // If used as a variable but is not
+        } else if(subGroup.getCounter() == 0 && entry.isArray()) {
+            addError(usedVarToken, String.format(ABSemanticMessageHelper.VARIABLE_IS_ARRAY, usedVarToken.getValue(), usedVarToken.getRow(), usedVarToken.getCol()));
+
+            // If both are arrays but have different dimensions
+        } else if(subGroup.getCounter() !=  entry.getArrayDimension()) {
+            addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAYS_UNMATCH_DIMENSION, usedVarToken.getValue(), entry.getArrayDimension(), subGroup.getCounter(), usedVarToken.getRow(), usedVarToken.getCol()));
+
+            // All good
+        } else {
+
+            // TODO Check that it's of type integer
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if functions and sub group have the same parameters
+     * @param entry
+     * @param subGroup
+     * @return true if match, false otherwise
+     */
+    public boolean checkFunctionParameters(ABSymbolTableEntry entry, ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup) {
+
+        // If match number of parameters
+        List<List<ABToken>> entryParameters = entry.getParameters();
+        // TODO Check function parameters type and number
+        // Don't put error messages because it's trying to match for a correct entry
+        return true;
+    }
+
+    /**
+     * Check if the variable was used correctly
+     */
+    public void checkVariableUse() {
+        // Load last entered sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup usedVarTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
+
+        // Get the type
+        ABToken usedVarToken = usedVarTokenSubGroup.getToken(0);
+
+        ABSymbolTableEntry definedVarEntry = searchEntryInTableStack(tablesStack, usedVarToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+        ABSymbolTableEntry definedParamEntry = searchEntryInTableStack(tablesStack, usedVarToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
+
+        // If undefined
+        if (definedVarEntry == null && definedParamEntry == null) {
+            addError(usedVarToken, String.format(ABSemanticMessageHelper.UNDEFINED_VARIABLE, usedVarToken.getValue(), usedVarToken.getRow(), usedVarToken.getCol()));
+        } else {
+
+            // Get the defined entry
+            ABSymbolTableEntry definedEntry = definedVarEntry != null ? definedVarEntry : definedParamEntry;
+
+            // Check Array has no errors
+            if(checkArray(definedEntry, usedVarTokenSubGroup)) {
+                tokenEntryMap.put(usedVarToken, definedEntry);
+            }
+        }
+    }
+
+    /**
+     * Check variable data member
+     */
+    public void checkVariableDataMember() {
+
+        ABSemanticTokenGroup group = tokenGroupsStack.peek();
+
+        // Get the second to last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup baseSubGroup = group.getSecondToLastTokenSubGroup();
+
+        // Get the last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup memberSubGroup = group.getLastTokenSubGroup();
+
+        // Input token
+        ABToken baseInputToken = baseSubGroup.getToken(0);
+        ABToken memberInputToken = memberSubGroup.getToken(0);
+
+        // Get base token table entry
+        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
+
+        // If not found
+        if(baseTableEntry == null) {
+            addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+        } else {
+
+            // If primitive type
+            if(baseTableEntry.isPrimitiveType()) {
+                addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+            } else {
+
+                // Check if the type is defined
+                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                // If not found
+                if(classEntry == null) {
+                    addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+                } else {
+                    // Search for data member
+                    ABSymbolTableEntry entry = searchEntryInTable(classEntry.getLink(), memberInputToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
+
+                    // If not found
+                    if(entry == null) {
+                        addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, memberInputToken.getValue(), classEntry.getName(), memberInputToken.getRow(), memberInputToken.getCol()));
+                    } else {
+
+                        // Check array
+                        if(checkArray(entry, memberSubGroup)) {
+                            tokenEntryMap.put(memberInputToken, entry);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if the function was used correctly
+     */
+    public void checkFunctionUse() {
+
+        // Load last entered sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup usedFunctionTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
+
+        // Get the function name
+        ABToken usedFunctionToken = usedFunctionTokenSubGroup.getToken(0);
+
+        // Input token
+        List<ABSymbolTableEntry> entries = searchEntriesInTableStack(tablesStack, usedFunctionToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+
+        // Found
+        boolean found = false;
+
+        // Check if there's any match
+        for(ABSymbolTableEntry entry : entries) {
+
+            if(checkFunctionParameters(entry, usedFunctionTokenSubGroup)) {
+                tokenEntryMap.put(usedFunctionToken, entry);
+                found = true;
+                break;
+            }
+        }
+
+        // If not found
+        if(!found) {
+            addError(usedFunctionToken, String.format(ABSemanticMessageHelper.UNDEFINED_FUNCTION, usedFunctionToken.getValue(), usedFunctionToken.getRow(), usedFunctionToken.getCol()));
+        }
+    }
+
+    /**
+     * Check function data member
+     */
+    public void checkFunctionDataMember() {
+
+        ABSemanticTokenGroup group = tokenGroupsStack.peek();
+
+        // Get the second to last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup baseSubGroup = group.getSecondToLastTokenSubGroup();
+
+        // Get the last token sub group
+        ABSemanticTokenGroup.ABSemanticTokenSubGroup memberSubGroup = group.getLastTokenSubGroup();
+
+        // Input token
+        ABToken baseInputToken = baseSubGroup.getToken(0);
+        ABToken memberInputToken = memberSubGroup.getToken(0);
+
+        // Get last token table entry
+        ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
+
+        // If not found
+        if(baseTableEntry == null) {
+            addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+        } else {
+
+            // If primitive type
+            if(baseTableEntry.isPrimitiveType()) {
+                addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+            } else {
+
+                // Check if the type is defined
+                ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                // If not found
+                if(classEntry == null) {
+                    addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
+                } else {
+                    // Search for data member
+                    List<ABSymbolTableEntry> entries = searchEntriesInTable(classEntry.getLink(), memberInputToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
+
+                    // Found
+                    boolean found = false;
+
+                    // Search in functions
+                    for(ABSymbolTableEntry entry : entries) {
+
+                        // If function match
+                        if(checkFunctionParameters(entry, memberSubGroup)) {
+                            tokenEntryMap.put(memberInputToken, entry);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // If not found
+                    if(!found) {
+                        addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, memberInputToken.getValue(), classEntry.getName(), memberInputToken.getRow(), memberInputToken.getCol()));
+                    }
+                }
+            }
         }
     }
 
@@ -651,7 +810,7 @@ public class ABSemantic {
      * Checks if type exists
      * @param entry
      */
-    public ABSymbolTableEntry checkType(ABSymbolTableEntry entry) {
+    public ABSymbolTableEntry checkTypeExists(ABSymbolTableEntry entry) {
 
         // Cache type
         ABToken type = entry.getType().get(0);
@@ -758,6 +917,50 @@ public class ABSemantic {
         return found;
     }
 
+    /**
+     * Search all entries in table stack
+     * @param tablesStack
+     * @param name
+     * @return
+     */
+    public List<ABSymbolTableEntry> searchEntriesInTableStack(Stack<ABSymbolTable> tablesStack, String name) {
+        return searchEntriesInTableStack(tablesStack, name, ABSymbolTableEntry.Kind.ANY);
+    }
+
+
+    /**
+     * Search all entries in table stack
+     * @param tablesStack
+     * @param name
+     * @param kind
+     * @return
+     */
+    public List<ABSymbolTableEntry> searchEntriesInTableStack(Stack<ABSymbolTable> tablesStack, String name, ABSymbolTableEntry.Kind kind) {
+        Stack<ABSymbolTable> closestTables = new Stack<>();
+        List<ABSymbolTableEntry> results = new ArrayList<>();
+
+        // Search starting from current table
+        while(!tablesStack.isEmpty()) {
+
+            // Entry
+            List<ABSymbolTableEntry> entries = tablesStack.peek().getEntries(name, kind);
+
+            // Add all entries found
+            for(ABSymbolTableEntry entry : entries) {
+                results.add(entry);
+            }
+
+            // Push in tmp stack
+            closestTables.push(tablesStack.pop());
+        }
+
+        // Put all tables back into stack
+        while(!closestTables.isEmpty())
+            tablesStack.push(closestTables.pop());
+
+        return results;
+    }
+
     /*****************************************************
      *
      *          GETTERS AND SETTERS
@@ -844,20 +1047,32 @@ public class ABSemantic {
 
     public class ABSemanticTokenGroup {
 
-        private List<ABSemanticTokenSubGroup> tokens;
+        private List<ABSemanticTokenSubGroup> tokensSubGroups;
 
         public ABSemanticTokenGroup() {
-            tokens = new ArrayList<>();
+            tokensSubGroups = new ArrayList<>();
         }
 
         public void addSubGroupToken(ABToken newToken) {
             ABSemanticTokenSubGroup tokenGroup = new ABSemanticTokenSubGroup();
             tokenGroup.addToken(newToken);
-            tokens.add(tokenGroup);
+            tokensSubGroups.add(tokenGroup);
         }
 
         public ABSemanticTokenSubGroup getLastTokenSubGroup() {
-            return tokens.get(tokens.size()-1);
+            return getTokenSubGroup(tokensSubGroups.size()-1);
+        }
+
+        public ABSemanticTokenSubGroup getSecondToLastTokenSubGroup() {
+            return getTokenSubGroup(tokensSubGroups.size()-2);
+        }
+
+        public ABSemanticTokenSubGroup getTokenSubGroup(int index) {
+            return tokensSubGroups.get(index);
+        }
+
+        public List<ABSemanticTokenSubGroup> getTokensSubGroups() {
+            return tokensSubGroups;
         }
 
         /**
@@ -867,7 +1082,7 @@ public class ABSemantic {
          */
         public List<ABToken> getAllTokens() {
             List<ABToken> allTokens = new ArrayList<>();
-            for(ABSemanticTokenSubGroup subGroup : tokens)
+            for(ABSemanticTokenSubGroup subGroup : tokensSubGroups)
                 for(ABToken subGroupToken : subGroup.getTokens())
                     allTokens.add(subGroupToken);
             return allTokens;
@@ -875,15 +1090,16 @@ public class ABSemantic {
 
         @Override
         public String toString() {
-            return tokens.toString();
+            return tokensSubGroups.toString();
         }
 
         /*****************************
          *  AB SEMANTIC TOKEN SUB-GROUP
          *****************************/
 
-        private class ABSemanticTokenSubGroup {
+        public class ABSemanticTokenSubGroup {
             private List<ABToken> tokensList;
+            private int counter;
 
             public ABSemanticTokenSubGroup() {
                 tokensList = new ArrayList<>();
@@ -897,15 +1113,21 @@ public class ABSemantic {
                 return tokensList;
             }
 
+            public ABToken getToken(int index) { return tokensList.get(0); }
+
             public void setTokens(List<ABToken> tokens) {
                 this.tokensList = tokens;
             }
 
-            public boolean isArray() {
-                return tokensList.size() > 1;
+            public void incrementCounter() { counter++; }
+
+            public int getCounter() {
+                return counter;
             }
 
-            public int getArrayDimension() { return (tokensList.size()-1)/2; }
+            public void setCounter(int counter) {
+                this.counter = counter;
+            }
 
             @Override
             public String toString() {

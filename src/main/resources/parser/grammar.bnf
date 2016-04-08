@@ -53,14 +53,14 @@ relOp           -> 'T_GREATER_THAN' | 'T_LESS_THAN' | 'T_LESS_OR_EQUAL' | 'T_GRE
 assignOp        -> 'T_ASSIGN'
 assignStat      -> variable assignOp expr
 variable        -> 'T_IDENTIFIER' #useVar# idnestRptIdDiIn #popGroupStack2#
-idnestRptIdDiFa -> #useVar# indiceRpt idnestRptIdDFD #popGroupStack2#
-                | #useFunction# 'T_OPEN_PAREN' aParams closeParen #popGroupStack2#
+idnestRptIdDiFa -> #useVar# indiceRpt #useVarCheck# idnestRptIdDFD #popGroupStack2#
+                | #useFunction# 'T_OPEN_PAREN' aParams closeParen #useFunctionCheck# #popGroupStack2#
 idnestRptIdDFD  -> 'T_DOT' identifier idnestRptIdDiFaU | EPSILON
-idnestRptIdDiFaU -> #useVarBasedOnLastVar# indiceRpt idnestRptIdDFD
-                | #useFunctionBasedOnLastVar# 'T_OPEN_PAREN' aParams closeParen
-idnestRptIdDiIn -> indiceRpt indiceRptDis
-indiceRptDis    -> 'T_DOT' identifier #useVarBasedOnLastVar# idnestRptIdDiIn | EPSILON
-indiceRpt       -> 'T_OPEN_SQUARE' #moreSubGroup# arithExpr closeSquare #moreSubGroup# indiceRpt | EPSILON
+idnestRptIdDiFaU -> #useVarBasedOnLastVar# indiceRpt #useVarBasedOnLastVarCheck# idnestRptIdDFD
+                | #useFunctionBasedOnLastVar# 'T_OPEN_PAREN' aParams closeParen #useFunctionBasedOnLastVarCheck#
+idnestRptIdDiIn -> indiceRpt #useVarCheck# indiceRptDis
+indiceRptDis    -> 'T_DOT' identifier #useVarBasedOnLastVar# indiceRpt #useVarBasedOnLastVarCheck# indiceRptDis | EPSILON
+indiceRpt       -> #incrementDimension# 'T_OPEN_SQUARE' #moreSubGroup# arithExpr closeSquare #moreSubGroup# indiceRpt | EPSILON
 closeSquare		-> 'T_CLOSE_SQUARE'
 sign            -> 'T_PLUS' | 'T_MINUS'
 term            -> factor termRpt
