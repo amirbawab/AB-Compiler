@@ -485,7 +485,11 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.USE_NOT.getName())) {
 
             if(phase == 2) {
-                // TODO Implement pop then push result
+
+                // Peek data without popping it
+                ABSemanticTokenGroup dataGroup = tokenGroupsStack.peek();
+
+                // TODO Generate code for inverse
             }
 
         } else if(token.getValue().equals(Type.USE_ADD_OP.getName())) {
@@ -757,15 +761,41 @@ public class ABSemantic {
     /**
      * Check if functions and sub group have the same parameters
      * @param entry
-     * @param subGroup
+     * @param group
      * @return true if match, false otherwise
      */
-    public boolean checkFunctionParameters(ABSymbolTableEntry entry, ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup) {
+    public boolean checkFunctionParameters(ABSymbolTableEntry entry, ABSemanticTokenGroup group) {
 
         // If match number of parameters
         List<List<ABToken>> entryParameters = entry.getParameters();
-        // TODO Check function parameters type and number
-        // Don't put error messages because it's trying to match for a correct entry
+
+        // Check parameter size
+        if(entryParameters.size() != group.getLastTokenSubGroup().getArgumentsSize())
+            return false;
+
+        // Compare parameters
+        for(int i=0; i < entryParameters.size(); i++) {
+
+            List<ABToken> entryParam = entryParameters.get(i);
+            List<ABToken> groupParam = group.getLastTokenSubGroup().getArgumentList(i);
+
+            // Parameter is undefined as a result of wrong expression
+            if(groupParam == null)
+                return false;
+
+            // Compare size
+            if(entryParam.size() != groupParam.size())
+                return false;
+
+            // Compare each token
+            for(int j=0; j < entryParam.size(); j++) {
+
+                // If a token does not match
+                if(!entryParam.get(j).getValue().equals(groupParam.get(j).getValue()))
+                    return false;
+            }
+        }
+
         return true;
     }
 
@@ -865,11 +895,11 @@ public class ABSemantic {
      */
     public void checkFunctionUse() {
 
-        // Load last entered sub group
-        ABSemanticTokenGroup.ABSemanticTokenSubGroup usedFunctionTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
+        // Load last entered group
+        ABSemanticTokenGroup usedFunctionTokenGroup = tokenGroupsStack.peek();
 
         // Get the function name
-        ABToken usedFunctionToken = usedFunctionTokenSubGroup.getUsedToken();
+        ABToken usedFunctionToken = usedFunctionTokenGroup.getLastTokenSubGroup().getUsedToken();
 
         // Input token
         List<ABSymbolTableEntry> entries = searchEntriesInTableStack(tablesStack, usedFunctionToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
@@ -880,11 +910,11 @@ public class ABSemantic {
         // Check if there's any match
         for(ABSymbolTableEntry entry : entries) {
 
-            if(checkFunctionParameters(entry, usedFunctionTokenSubGroup)) {
+            if(checkFunctionParameters(entry, usedFunctionTokenGroup)) {
                 tokenEntryMap.put(usedFunctionToken, entry);
 
                 // Generate return type
-                usedFunctionTokenSubGroup.generateReturnType(entry);
+                usedFunctionTokenGroup.getLastTokenSubGroup().generateReturnType(entry);
 
                 found = true;
                 break;
@@ -944,7 +974,7 @@ public class ABSemantic {
                     for (ABSymbolTableEntry entry : entries) {
 
                         // If function match
-                        if (checkFunctionParameters(entry, memberSubGroup)) {
+                        if (checkFunctionParameters(entry, group)) {
                             tokenEntryMap.put(memberInputToken, entry);
 
                             // Generate return type
