@@ -313,6 +313,7 @@ public class ABParser {
 		} else {
 			l.info("\n" + StringUtils.join(semantic.getErrors(), '\n'));
 		}
+		semantic.checkStructureErrors();
 
 		// No errors
 		return true;

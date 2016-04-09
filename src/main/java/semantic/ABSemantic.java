@@ -30,6 +30,7 @@ public class ABSemantic {
     // Helper
     private Map<ABToken, ABSymbolTableEntry> tokenEntryMap;
     private Stack<ABSemanticTokenGroup> tokenGroupsStack;
+    private Stack<ABToken> arithOpStack;
 
     // Tokens list
     private List<ABToken> inputTokens;
@@ -55,16 +56,15 @@ public class ABSemantic {
         CREATE_FOR_TABLE("createForTable"),                                                     // Create a for loop table [no entry]
         POP_GROUP_STACK_1("popGroupStack1"),                                                    // Pop token group stack in phase 1
         POP_GROUP_STACK_2("popGroupStack2"),                                                    // Pop token group stack in phase 2
-        INCREMENT_DIMENSION("incrementDimension"),                                              // Increment array dimension
-        USE_NOT("useNot"),
-        USE_ADD_OP("useAddOp"),
-        USE_MULT_OP("useMultOp"),
-        USE_PRIMITIVE("usePrimitive"),
-        MATH_ADD_OP("mathAddOp"),
-        MATH_MULT_OP("mathMultOp")
-        // FIXME Change subgroup to have a list<list<token>> types for array and function parameters types concluded
-        // Also we don't need the list of ABTokens for the a[[[, one for the `a` is enough
-        ;
+        USE_NOT("useNot"),                                                                      // ????
+        USE_ADD_OP("useAddOp"),                                                                 // Store operator in symbol stack
+        USE_MULT_OP("useMultOp"),                                                               // Store operator in symbol stack
+        USE_PRIMITIVE("usePrimitive"),                                                          // Buffer an integer or float
+        MATH_ADD_OP("mathAddOp"),                                                               // Check type for two last sub groups
+        MATH_MULT_OP("mathMultOp"),                                                             // Check type for two last sub groups
+        MATH_ASSIGN_OP("mathAssignOp"),                                                         // Check the type of assignment
+        VAR_INDEX("varIndex"),                                                                  // Check if the type is correct
+        FUNCTION_PARAM("functionParam");                                                        // Check if the index is correct
 
         private String name;
         Type(String name) {
@@ -82,6 +82,7 @@ public class ABSemantic {
         errors = new ArrayList<>();
         tokenEntryMap = new HashMap<>();
         tokenGroupsStack = new Stack<>();
+        arithOpStack = new Stack<>();
     }
 
     /**
@@ -472,10 +473,104 @@ public class ABSemantic {
                 tokenGroupsStack.pop();
             }
 
-        } else if(token.getValue().equals(Type.INCREMENT_DIMENSION.getName())) {
+        } else if(token.getValue().equals(Type.USE_NOT.getName())) {
 
             if(phase == 2) {
-                tokenGroupsStack.peek().getLastTokenSubGroup().incrementCounter();
+                // TODO Implement pop then push result
+            }
+
+        } else if(token.getValue().equals(Type.USE_ADD_OP.getName())) {
+
+            if(phase == 2) {
+                arithOpStack.push(inputTokens.get(tokenIndex - 1));
+            }
+
+        } else if(token.getValue().equals(Type.USE_MULT_OP.getName())) {
+
+            if(phase == 2) {
+                arithOpStack.push(inputTokens.get(tokenIndex - 1));
+            }
+
+        } else if(token.getValue().equals(Type.USE_PRIMITIVE.getName())) {
+
+            if(phase == 2) {
+                // Input token
+                ABToken inputToken = inputTokens.get(tokenIndex - 1);
+                tokenGroupsStack.push(new ABSemanticTokenGroup());
+                tokenGroupsStack.peek().addSubGroupToken(inputToken);
+                List<ABToken> type = new ArrayList<>(1);
+                type.add(inputToken);
+                tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(type);
+            }
+
+        } else if(token.getValue().equals(Type.MATH_ADD_OP.getName())) {
+
+            if(phase == 2) {
+                // Pop data
+                ABToken arithOp = arithOpStack.pop();
+                ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
+                ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
+
+                // Get type - DUMMY FOR NOW
+                tokenGroupsStack.push(new ABSemanticTokenGroup());
+                tokenGroupsStack.peek().addSubGroupToken(LHS.getLastTokenSubGroup().getUsedToken());
+
+                // Print
+                System.out.println(arithOp);
+                System.out.println(LHS);
+                System.out.println(RHS);
+            }
+
+        } else if(token.getValue().equals(Type.MATH_MULT_OP.getName())) {
+
+            if(phase == 2) {
+                // Pop data
+                ABToken arithOp = arithOpStack.pop();
+                ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
+                ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
+
+                // Get type - DUMMY FOR NOW
+                tokenGroupsStack.push(new ABSemanticTokenGroup());
+                tokenGroupsStack.peek().addSubGroupToken(LHS.getLastTokenSubGroup().getUsedToken());
+
+                // Print
+                System.out.println(arithOp);
+                System.out.println(LHS);
+                System.out.println(RHS);
+            }
+
+        } else if(token.getValue().equals(Type.MATH_ASSIGN_OP.getName())) {
+
+            if(phase == 2) {
+                // Pop data
+                ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
+                ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
+
+                // Print
+                System.out.println(LHS);
+                System.out.println(RHS);
+            }
+
+        } else if(token.getValue().equals(Type.VAR_INDEX.getName())) {
+
+            if(phase == 2) {
+
+                // Pop data
+                ABSemanticTokenGroup index = tokenGroupsStack.pop();
+
+                // Print
+                System.out.println(index);
+            }
+
+        } else if(token.getValue().equals(Type.FUNCTION_PARAM.getName())) {
+
+            if(phase == 2) {
+
+                // Pop data
+                ABSemanticTokenGroup param = tokenGroupsStack.pop();
+
+                // Print
+                System.out.println(param);
             }
 
         } else {
@@ -521,16 +616,16 @@ public class ABSemantic {
         ABToken usedVarToken = subGroup.getUsedToken();
 
         // If used as an array but is not
-        if(subGroup.getCounter() > 0 && !entry.isArray()) {
+        if(subGroup.getArgumentsSize() > 0 && !entry.isArray()) {
             addError(usedVarToken, String.format(ABSemanticMessageHelper.VARIABLE_NOT_ARRAY, usedVarToken.getValue(), usedVarToken.getRow(), usedVarToken.getCol()));
 
             // If used as a variable but is not
-        } else if(subGroup.getCounter() == 0 && entry.isArray()) {
+        } else if(subGroup.getArgumentsSize() == 0 && entry.isArray()) {
             addError(usedVarToken, String.format(ABSemanticMessageHelper.VARIABLE_IS_ARRAY, usedVarToken.getValue(), usedVarToken.getRow(), usedVarToken.getCol()));
 
             // If both are arrays but have different dimensions
-        } else if(subGroup.getCounter() !=  entry.getArrayDimension()) {
-            addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAYS_UNMATCH_DIMENSION, usedVarToken.getValue(), entry.getArrayDimension(), subGroup.getCounter(), usedVarToken.getRow(), usedVarToken.getCol()));
+        } else if(subGroup.getArgumentsSize() !=  entry.getArrayDimension()) {
+            addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAYS_UNMATCH_DIMENSION, usedVarToken.getValue(), entry.getArrayDimension(), subGroup.getArgumentsSize(), usedVarToken.getRow(), usedVarToken.getCol()));
 
             // All good
         } else {
@@ -1100,7 +1195,6 @@ public class ABSemantic {
         public class ABSemanticTokenSubGroup {
             private ABToken usedToken;
             private List<List<ABToken>> argumentsTypes;
-            private int counter;
 
             public ABSemanticTokenSubGroup() {
                 argumentsTypes = new ArrayList<>();
@@ -1110,17 +1204,13 @@ public class ABSemantic {
 
             public List<ABToken> getArgumentList(int index) { return argumentsTypes.get(index); }
 
+            public int getArgumentsSize() { return argumentsTypes.size(); }
+
             public void setUsedToken(ABToken usedToken) {
             this.usedToken = usedToken;}
 
             public ABToken getUsedToken() {
                 return usedToken;
-            }
-
-            public void incrementCounter() { counter++; }
-
-            public int getCounter() {
-                return counter;
             }
 
             @Override
@@ -1162,5 +1252,36 @@ public class ABSemantic {
         public String toString() {
             return message;
         }
+    }
+
+    /*****************************************************
+     *
+     *                   DEBUG METHODS
+     *
+     *****************************************************/
+
+    /**
+     * Check if the grammar handles the stack correctly
+     */
+    public void checkStructureErrors() {
+        boolean error = false;
+
+        if(tokenGroupsStack.size() > 0) {
+            l.error("Token group stack is not empty: " + tokenGroupsStack.toString());
+            error = true;
+        }
+
+        if(arithOpStack.size() > 0) {
+            l.error("Symbol stack is not empty: " + arithOpStack.toString());
+            error = true;
+        }
+
+        if(tablesStack.size() > 0) {
+            l.error("Table stack is not empty: " + tablesStack.toString());
+            error = true;
+        }
+
+        if(!error)
+            l.debug("No structure error detected");
     }
 }
