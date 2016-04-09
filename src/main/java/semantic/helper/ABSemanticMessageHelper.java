@@ -22,7 +22,7 @@ public class ABSemanticMessageHelper {
     public final static String ARRAY_INDEX_NON_INTEGER = "Array '%s' does not have an integer at dimension %d at line %d column %d";
     public final static String ARITHMETIC_TYPE = "Cannot perform '%s' on the types %s and %s at line %d column %d";
     public final static String ARITHMETIC_ONE_UNDEFINED = "Cannot perform '%s' on the %s and an undefined type at line %d column %d";
-    public final static String ARITHMETIC_TWO_UNDEFINED = "Cannot perform '%s' two undefined types at line %d column %d";
+    public final static String ARITHMETIC_TWO_UNDEFINED = "Cannot perform '%s' on two undefined types at line %d column %d";
     public final static String ASSIGNMENT_TWO_UNDEFINED = "Invalid equation because of two undefined types at line %d column %d";
     public final static String ASSIGNMENT_LHS_UNDEFINED = "Cannot assign type '%s' to an undefined variable '%s' at line %d column %d";
     public final static String ASSIGNMENT_RHS_UNDEFINED = "Cannot assign an undefined type to a variable of type '%s' at line %d column %d";
