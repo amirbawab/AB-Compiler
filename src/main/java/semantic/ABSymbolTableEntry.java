@@ -98,7 +98,7 @@ class ABSymbolTableEntry {
 
     public int getAddress() { return token.hashCode(); }
 
-    public int getArrayDimension() { return (type.size()-1)/3; }
+    public int getArrayDimension() { return type.size()-1; }
 
     public boolean isArray() { return type.size() > 1; }
 
@@ -145,10 +145,9 @@ class ABSymbolTableEntry {
                 return "Not applicable";
         }
 
-        String typeStr = "";
-        List<ABToken> type = getType();
-        for(ABToken token : type)
-            typeStr += token.getValue();
+        String typeStr = type.get(0).getValue();
+        for(int i=1; i<type.size(); i++)
+            typeStr += "[" + type.get(i).getValue() + "]";
         return typeStr;
     }
 

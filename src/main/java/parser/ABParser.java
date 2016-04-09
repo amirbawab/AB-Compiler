@@ -184,7 +184,7 @@ public class ABParser {
 							// Add snapshot
 							snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", errorMessage, true));
 
-							// TODO This part has to be avoided
+							// This part has to be avoided
 							l.error("This statement should never execute. Step log: %s", snapshots.get(snapshots.size() - 1));
 						}
 

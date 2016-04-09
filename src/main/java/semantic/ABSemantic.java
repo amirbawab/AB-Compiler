@@ -1,14 +1,13 @@
 package semantic;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import parser.grammar.ABGrammarToken;
 import scanner.ABToken;
 import scanner.helper.ABTokenHelper;
+import scanner.helper.IdentifierHelper;
 import semantic.helper.ABSemanticMessageHelper;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -59,13 +58,18 @@ public class ABSemantic {
         USE_NOT("useNot"),                                                                      // ????
         USE_ADD_OP("useAddOp"),                                                                 // Store operator in symbol stack
         USE_MULT_OP("useMultOp"),                                                               // Store operator in symbol stack
-        USE_PRIMITIVE("usePrimitive"),                                                          // Buffer an integer or float
+        USE_COMPARE_OP("useCompareOp"),                                                         // Store operator in symbol stack
+        USE_ASSIGN_OP("useAssignOp"),                                                           // Store operator in symbol stack
+        USE_INT("useInt"),                                                                      // Buffer an integer
+        USE_FLOAT("useFloat"),                                                                  // Buffer a float
         MATH_ADD_OP("mathAddOp"),                                                               // Check type for two last sub groups
         MATH_MULT_OP("mathMultOp"),                                                             // Check type for two last sub groups
         MATH_ASSIGN_OP("mathAssignOp"),                                                         // Check the type of assignment
+        MATH_COMPARE_OP("mathCompareOp"),                                                       // Check type for two last sub groups
         VAR_INDEX("varIndex"),                                                                  // Check if the type is correct
-        FUNCTION_PARAM("functionParam");                                                        // Check if the index is correct
-
+        FUNCTION_PARAM("functionParam"),                                                        // Check if the index is correct
+        FUNCTION_RETURN("functionReturn"),                                                      // Store return into function
+        POP_GROUP_STACK_FUNCTION("popGroupStackFunction");                                      // Pop function from stack
         private String name;
         Type(String name) {
             this.name = name;
@@ -316,6 +320,11 @@ public class ABSemantic {
                 // Check for function overload
                 checkOverload(entry);
 
+                // Push to group stack to check for later return statement
+                ABSemanticTokenGroup functionGroup = new ABSemanticTokenGroup();
+                functionGroup.addSubGroupToken(inputToken);
+                tokenGroupsStack.push(functionGroup);
+
                 // Push to table stack
                 tablesStack.push(entry.getLink());
             }
@@ -491,29 +500,62 @@ public class ABSemantic {
                 arithOpStack.push(inputTokens.get(tokenIndex - 1));
             }
 
-        } else if(token.getValue().equals(Type.USE_PRIMITIVE.getName())) {
+        } else if(token.getValue().equals(Type.USE_ASSIGN_OP.getName())) {
+
+            if(phase == 2) {
+                arithOpStack.push(inputTokens.get(tokenIndex - 1));
+            }
+
+        } else if(token.getValue().equals(Type.USE_COMPARE_OP.getName())) {
+
+            if(phase == 2) {
+                arithOpStack.push(inputTokens.get(tokenIndex - 1));
+            }
+
+        } else if(token.getValue().equals(Type.USE_INT.getName())) {
 
             if(phase == 2) {
                 // Input token
                 ABToken inputToken = inputTokens.get(tokenIndex - 1);
                 tokenGroupsStack.push(new ABSemanticTokenGroup());
                 tokenGroupsStack.peek().addSubGroupToken(inputToken);
-                List<ABToken> type = new ArrayList<>(1);
-                type.add(inputToken);
-                tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(type);
+
+                // Generate return list
+                List<ABToken> intTokenType = new ArrayList<>(1);
+                intTokenType.add(new ABToken(IdentifierHelper.ReservedWords.INT.getToken(), IdentifierHelper.ReservedWords.INT.getMatch(),inputToken.getRow(),inputToken.getCol()));
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(intTokenType);
+            }
+
+        } else if(token.getValue().equals(Type.USE_FLOAT.getName())) {
+
+            if(phase == 2) {
+                // Input token
+                ABToken inputToken = inputTokens.get(tokenIndex - 1);
+                tokenGroupsStack.push(new ABSemanticTokenGroup());
+                tokenGroupsStack.peek().addSubGroupToken(inputToken);
+
+                // Generate return list
+                List<ABToken> floatTokenType = new ArrayList<>(1);
+                floatTokenType.add(new ABToken(IdentifierHelper.ReservedWords.FLOAT.getToken(), IdentifierHelper.ReservedWords.FLOAT.getMatch(),inputToken.getRow(),inputToken.getCol()));
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(floatTokenType);
             }
 
         } else if(token.getValue().equals(Type.MATH_ADD_OP.getName())) {
 
             if(phase == 2) {
+
                 // Pop data
                 ABToken arithOp = arithOpStack.pop();
                 ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
                 ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
 
-                // Get type - DUMMY FOR NOW
+                // Create new group amd push to stack
                 tokenGroupsStack.push(new ABSemanticTokenGroup());
-                tokenGroupsStack.peek().addSubGroupToken(LHS.getLastTokenSubGroup().getUsedToken());
+                tokenGroupsStack.peek().addSubGroupToken(null);
+
+                // Check if sum has a correct type
+                List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
 
                 // Print
                 System.out.println(arithOp);
@@ -524,14 +566,42 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.MATH_MULT_OP.getName())) {
 
             if(phase == 2) {
+
                 // Pop data
                 ABToken arithOp = arithOpStack.pop();
                 ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
                 ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
 
-                // Get type - DUMMY FOR NOW
+                // Create new group amd push to stack
                 tokenGroupsStack.push(new ABSemanticTokenGroup());
-                tokenGroupsStack.peek().addSubGroupToken(LHS.getLastTokenSubGroup().getUsedToken());
+                tokenGroupsStack.peek().addSubGroupToken(null);
+
+                // Check if multiplication has a correct type
+                List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
+
+                // Print
+                System.out.println(arithOp);
+                System.out.println(LHS);
+                System.out.println(RHS);
+            }
+
+        } else if(token.getValue().equals(Type.MATH_COMPARE_OP.getName())) {
+
+            if(phase == 2) {
+
+                // Pop data
+                ABToken arithOp = arithOpStack.pop();
+                ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
+                ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
+
+                // Create new group amd push to stack
+                tokenGroupsStack.push(new ABSemanticTokenGroup());
+                tokenGroupsStack.peek().addSubGroupToken(null);
+
+                // Check if multiplication has a correct type
+                List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
 
                 // Print
                 System.out.println(arithOp);
@@ -542,11 +612,17 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.MATH_ASSIGN_OP.getName())) {
 
             if(phase == 2) {
+
                 // Pop data
+                ABToken arithOp = arithOpStack.pop();
                 ABSemanticTokenGroup RHS = tokenGroupsStack.pop();
                 ABSemanticTokenGroup LHS = tokenGroupsStack.pop();
 
+                // Type should math
+                checkAssignment(LHS, RHS, arithOp);
+
                 // Print
+                System.out.println(arithOp);
                 System.out.println(LHS);
                 System.out.println(RHS);
             }
@@ -558,8 +634,8 @@ public class ABSemantic {
                 // Pop data
                 ABSemanticTokenGroup index = tokenGroupsStack.pop();
 
-                // Print
-                System.out.println(index);
+                // Add type to array
+                tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(index.getLastTokenSubGroup().getReturnTypeList());
             }
 
         } else if(token.getValue().equals(Type.FUNCTION_PARAM.getName())) {
@@ -569,8 +645,52 @@ public class ABSemantic {
                 // Pop data
                 ABSemanticTokenGroup param = tokenGroupsStack.pop();
 
-                // Print
-                System.out.println(param);
+                // Add type to function
+                tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(param.getLastTokenSubGroup().getReturnTypeList());
+            }
+
+        } else if(token.getValue().equals(Type.FUNCTION_RETURN.getName())) {
+
+            if(phase == 2) {
+                // Pop data
+                ABSemanticTokenGroup returnGroup = tokenGroupsStack.pop();
+
+                // Add type to function
+                tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnGroup.getLastTokenSubGroup().getReturnTypeList());
+            }
+
+        } else if(token.getValue().equals(Type.POP_GROUP_STACK_FUNCTION.getName())) {
+
+            if(phase == 2) {
+                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
+                ABSemanticTokenGroup functionGroup = tokenGroupsStack.pop();
+
+                // Input token
+                ABToken usedToken = functionGroup.getLastTokenSubGroup().getUsedToken();
+
+                // Check if return type was not set or is undefined
+                if(functionGroup.getLastReturnType() == null) {
+                    addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
+
+                // If defined
+                } else {
+
+                    // Get function entry
+                    ABSymbolTableEntry entry = tokenEntryMap.get(usedToken);
+
+                    // If entry found
+                    if(entry != null) {
+
+                        // If type does not match
+                        if(!entry.getType().get(0).getValue().equals(functionGroup.getLastReturnType().get(0).getValue())) {
+                            addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
+                        }
+
+                        // If entry was not found
+                    } else {
+                        addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
+                    }
+                }
             }
 
         } else {
@@ -605,7 +725,7 @@ public class ABSemantic {
      *****************************************************/
 
     /**
-     * Check, if array, the structure if used correctly
+     * Check if array dimension is correct
      * @param entry
      * @param subGroup
      * @return true if successful, false otherwise
@@ -629,9 +749,6 @@ public class ABSemantic {
 
             // All good
         } else {
-
-            // TODO Check that it's of type integer
-
             return true;
         }
         return false;
@@ -659,7 +776,7 @@ public class ABSemantic {
         // Load last entered sub group
         ABSemanticTokenGroup.ABSemanticTokenSubGroup usedVarTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
 
-        // Get the type
+        // Get used token
         ABToken usedVarToken = usedVarTokenSubGroup.getUsedToken();
 
         ABSymbolTableEntry definedVarEntry = searchEntryInTableStack(tablesStack, usedVarToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
@@ -673,9 +790,16 @@ public class ABSemantic {
             // Get the defined entry
             ABSymbolTableEntry definedEntry = definedVarEntry != null ? definedVarEntry : definedParamEntry;
 
-            // Check Array has no errors
-            if(checkArray(definedEntry, usedVarTokenSubGroup)) {
+            // If array dimension is larger than the original dimension
+            if(usedVarTokenSubGroup.getArgumentsSize() > definedEntry.getArrayDimension()) {
+                addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAY_LARGER_DIMENSION, usedVarToken.getValue(), usedVarTokenSubGroup.getArgumentsSize(), usedVarToken.getRow(), usedVarToken.getCol()));
+
+            } else {
+                // Store in map
                 tokenEntryMap.put(usedVarToken, definedEntry);
+
+                // Set return type
+                usedVarTokenSubGroup.generateReturnType(definedEntry);
             }
         }
     }
@@ -700,8 +824,8 @@ public class ABSemantic {
         // Get base token table entry
         ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
 
-        // If not found
-        if(baseTableEntry == null) {
+        // If not found or previous variable doesn't have a complete type
+        if(baseTableEntry == null || !checkArray(baseTableEntry, baseSubGroup)) {
             addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
         } else {
 
@@ -725,10 +849,11 @@ public class ABSemantic {
                         addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, memberInputToken.getValue(), classEntry.getName(), memberInputToken.getRow(), memberInputToken.getCol()));
                     } else {
 
-                        // Check array
-                        if(checkArray(entry, memberSubGroup)) {
-                            tokenEntryMap.put(memberInputToken, entry);
-                        }
+                        // Store in map
+                        tokenEntryMap.put(memberInputToken, entry);
+
+                        // Set return type
+                        memberSubGroup.generateReturnType(entry);
                     }
                 }
             }
@@ -757,6 +882,10 @@ public class ABSemantic {
 
             if(checkFunctionParameters(entry, usedFunctionTokenSubGroup)) {
                 tokenEntryMap.put(usedFunctionToken, entry);
+
+                // Generate return type
+                usedFunctionTokenSubGroup.generateReturnType(entry);
+
                 found = true;
                 break;
             }
@@ -788,13 +917,13 @@ public class ABSemantic {
         // Get last token table entry
         ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
 
-        // If not found
-        if(baseTableEntry == null) {
+        // If not found or previous variable doesn't have a complete type
+        if(baseTableEntry == null || !checkArray(baseTableEntry, baseSubGroup)) {
             addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
         } else {
 
             // If primitive type
-            if(baseTableEntry.isPrimitiveType()) {
+            if (baseTableEntry.isPrimitiveType()) {
                 addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_PRIMITIVE_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
             } else {
 
@@ -802,7 +931,7 @@ public class ABSemantic {
                 ABSymbolTableEntry classEntry = searchEntryInTable(globalTable, baseTableEntry.getType().get(0).getValue(), ABSymbolTableEntry.Kind.CLASS);
 
                 // If not found
-                if(classEntry == null) {
+                if (classEntry == null) {
                     addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_UNDEFINED_VARIABLE, memberInputToken.getValue(), memberInputToken.getRow(), memberInputToken.getCol()));
                 } else {
                     // Search for data member
@@ -812,18 +941,22 @@ public class ABSemantic {
                     boolean found = false;
 
                     // Search in functions
-                    for(ABSymbolTableEntry entry : entries) {
+                    for (ABSymbolTableEntry entry : entries) {
 
                         // If function match
-                        if(checkFunctionParameters(entry, memberSubGroup)) {
+                        if (checkFunctionParameters(entry, memberSubGroup)) {
                             tokenEntryMap.put(memberInputToken, entry);
+
+                            // Generate return type
+                            memberSubGroup.generateReturnType(entry);
+
                             found = true;
                             break;
                         }
                     }
 
                     // If not found
-                    if(!found) {
+                    if (!found) {
                         addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, memberInputToken.getValue(), classEntry.getName(), memberInputToken.getRow(), memberInputToken.getCol()));
                     }
                 }
@@ -937,6 +1070,102 @@ public class ABSemantic {
             return result;
         }
         return null;
+    }
+
+    /**
+     * Compare two token groups types to perform an arithmetic operation
+     * @param LHS
+     * @param RHS
+     * @param arithOp
+     * @return
+     */
+    public List<ABToken> checkArithmeticType(ABSemanticTokenGroup LHS, ABSemanticTokenGroup RHS, ABToken arithOp) {
+        List<ABToken> LHSType = LHS.getLastReturnType();
+        List<ABToken> RHSType = RHS.getLastReturnType();
+        String LHSTypeString = LHS.getLastTokenSubGroup().getReturnTypeAsString();
+        String RHSTypeString = RHS.getLastTokenSubGroup().getReturnTypeAsString();
+
+        // If both are not defined
+        if(LHSType == null && RHSType == null) {
+            addError(arithOp, String.format(ABSemanticMessageHelper.ARITHMETIC_TWO_UNDEFINED, arithOp.getValue(), arithOp.getRow(), arithOp.getCol()));
+
+        // If LHS is undefined
+        } else if(LHSType == null) {
+            addError(arithOp, String.format(ABSemanticMessageHelper.ARITHMETIC_ONE_UNDEFINED, arithOp.getValue(), RHSTypeString, arithOp.getRow(), arithOp.getCol()));
+
+        // If RHS is undefined
+        } else if(RHSType == null) {
+            addError(arithOp, String.format(ABSemanticMessageHelper.ARITHMETIC_ONE_UNDEFINED, arithOp.getValue(), LHSTypeString, arithOp.getRow(), arithOp.getCol()));
+
+        // If type size is different or they are both not of size 1
+        } else if(LHSType.size() != RHSType.size() || LHSType.size() != 1) {
+            addError(arithOp, String.format(ABSemanticMessageHelper.ARITHMETIC_TYPE, arithOp.getValue(), LHSTypeString, RHSTypeString, arithOp.getRow(), arithOp.getCol()));
+
+        } else {
+
+            // Get left and right tokens
+            String leftTypeToken = LHSType.get(0).getToken();
+            String rightTypeToken = RHSType.get(0).getToken();
+
+            // Get primitive types tokens
+            String intTypeToken = IdentifierHelper.ReservedWords.INT.getToken();
+            String floatTypeToken = IdentifierHelper.ReservedWords.FLOAT.getToken();
+
+            // If both are integer, arbitrary choice because only the token type is important and not the value
+            if(leftTypeToken.equals(intTypeToken) && rightTypeToken.equals(intTypeToken)) {
+                return LHSType;
+
+            // If both are float, arbitrary choice because only the token type is important and not the value
+            } else if(leftTypeToken.equals(floatTypeToken) && rightTypeToken.equals(floatTypeToken)) {
+                return LHSType;
+
+            // Else we can't conclude a return value
+            } else {
+                addError(arithOp, String.format(ABSemanticMessageHelper.ARITHMETIC_TYPE, arithOp.getValue(), LHSTypeString, RHSTypeString, arithOp.getRow(), arithOp.getCol()));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check assignment types if match
+     * @param LHS
+     * @param RHS
+     * @param assignOp
+     */
+    public void checkAssignment(ABSemanticTokenGroup LHS, ABSemanticTokenGroup RHS, ABToken assignOp) {
+
+        // Get return types
+        List<ABToken> LHSType = LHS.getLastReturnType();
+        List<ABToken> RHSType = RHS.getLastReturnType();
+
+        if(LHSType == null && RHSType == null) {
+            addError(assignOp, String.format(ABSemanticMessageHelper.ASSIGNMENT_TWO_UNDEFINED, assignOp.getRow(), assignOp.getCol()));
+
+        } else if(LHSType == null) {
+            addError(assignOp, String.format(ABSemanticMessageHelper.ASSIGNMENT_LHS_UNDEFINED, RHS.getLastTokenSubGroup().getReturnTypeAsString(), LHS.getLastTokenSubGroup().getUsedToken().getValue(), assignOp.getRow(), assignOp.getCol()));
+
+        } else if(RHSType == null) {
+            addError(assignOp, String.format(ABSemanticMessageHelper.ASSIGNMENT_RHS_UNDEFINED, LHS.getLastTokenSubGroup().getReturnTypeAsString(), assignOp.getRow(), assignOp.getCol()));
+
+        } else {
+
+            // If different size
+            if(LHSType.size() != RHSType.size()) {
+                addError(assignOp, String.format(ABSemanticMessageHelper.ASSIGNMENT_INCOMPATIBLE, RHS.getLastTokenSubGroup().getReturnTypeAsString(), LHS.getLastTokenSubGroup().getReturnTypeAsString(), assignOp.getRow(), assignOp.getCol()));
+
+            } else {
+
+                // Compare each type token
+                for(int i=0; i < LHSType.size(); i++) {
+                    if(!LHSType.get(i).getToken().equals(RHSType.get(i).getToken())) {
+                        addError(assignOp, String.format(ABSemanticMessageHelper.ASSIGNMENT_INCOMPATIBLE, RHS.getLastTokenSubGroup().getReturnTypeAsString(), LHS.getLastTokenSubGroup().getReturnTypeAsString(), assignOp.getRow(), assignOp.getCol()));
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /*****************************************************
@@ -1183,6 +1412,14 @@ public class ABSemantic {
             return tokensSubGroups;
         }
 
+        public List<ABToken> getLastReturnType() {
+            return getLastTokenSubGroup().getReturnTypeList();
+        }
+
+        public List<ABToken> getSecondToLastReturnType() {
+            return getSecondToLastTokenSubGroup().getReturnTypeList();
+        }
+
         @Override
         public String toString() {
             return tokensSubGroups.toString();
@@ -1195,6 +1432,7 @@ public class ABSemantic {
         public class ABSemanticTokenSubGroup {
             private ABToken usedToken;
             private List<List<ABToken>> argumentsTypes;
+            private List<ABToken> returnTypeList;
 
             public ABSemanticTokenSubGroup() {
                 argumentsTypes = new ArrayList<>();
@@ -1213,9 +1451,34 @@ public class ABSemantic {
                 return usedToken;
             }
 
+            public List<ABToken> getReturnTypeList() {
+                return returnTypeList;
+            }
+
+            public void generateReturnType(ABSymbolTableEntry entry) {
+                returnTypeList = new ArrayList<>();
+                returnTypeList.add(entry.getType().get(0));
+                for(int i = 1 + getArgumentsSize(); i < entry.getType().size(); i++)
+                    returnTypeList.add(entry.getType().get(i));
+            }
+
+            public void setReturnTypeList(List<ABToken> returnTypeList) {
+                this.returnTypeList = returnTypeList;
+            }
+
+            public String getReturnTypeAsString() {
+                String output = "No type";
+                if(returnTypeList != null) {
+                    output = returnTypeList.get(0).getValue();
+                    for (int i = 1; i < returnTypeList.size(); i++)
+                        output += "[" + returnTypeList.get(i).getValue() + "]";
+                }
+                return output;
+            }
+
             @Override
             public String toString() {
-                return usedToken + " Args: " + argumentsTypes;
+                return usedToken + " Args: " + argumentsTypes + " Return: " + returnTypeList;
             }
         }
     }
