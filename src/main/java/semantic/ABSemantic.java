@@ -1,5 +1,6 @@
 package semantic;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import parser.grammar.ABGrammarToken;
@@ -7,6 +8,7 @@ import scanner.ABToken;
 import scanner.helper.ABTokenHelper;
 import semantic.helper.ABSemanticMessageHelper;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -53,7 +55,15 @@ public class ABSemantic {
         CREATE_FOR_TABLE("createForTable"),                                                     // Create a for loop table [no entry]
         POP_GROUP_STACK_1("popGroupStack1"),                                                    // Pop token group stack in phase 1
         POP_GROUP_STACK_2("popGroupStack2"),                                                    // Pop token group stack in phase 2
-        INCREMENT_DIMENSION("incrementDimension")                                               // Increment array dimension
+        INCREMENT_DIMENSION("incrementDimension"),                                              // Increment array dimension
+        USE_NOT("useNot"),
+        USE_ADD_OP("useAddOp"),
+        USE_MULT_OP("useMultOp"),
+        USE_PRIMITIVE("usePrimitive"),
+        MATH_ADD_OP("mathAddOp"),
+        MATH_MULT_OP("mathMultOp")
+        // FIXME Change subgroup to have a list<list<token>> types for array and function parameters types concluded
+        // Also we don't need the list of ABTokens for the a[[[, one for the `a` is enough
         ;
 
         private String name;
@@ -167,7 +177,10 @@ public class ABSemantic {
                 // Put token
                 ABSemanticTokenGroup tokenGroup = new ABSemanticTokenGroup();
                 tokenGroupsStack.push(tokenGroup);
-                tokenGroup.addSubGroupToken(inputTokens.get(tokenIndex - 1));
+                tokenGroup.addSubGroupToken(null);
+                List<ABToken> typeTokens = new ArrayList<>();
+                typeTokens.add(inputTokens.get(tokenIndex - 1));
+                tokenGroup.getLastTokenSubGroup().addArgument(typeTokens);
             }
 
         } else if(token.getValue().equals(Type.CREATE_VAR_ENTRY.getName())) {
@@ -181,7 +194,7 @@ public class ABSemantic {
 
                 // Create variable entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createVariableEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getTokens());
+                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getArgumentList(0));
                 entry.setToken(inputToken);
 
                 // If exists already
@@ -212,7 +225,7 @@ public class ABSemantic {
              * Add more types
              */
             if(phase == 1) {
-                tokenGroupsStack.peek().getLastTokenSubGroup().getTokens().add(inputTokens.get(tokenIndex - 1));
+                tokenGroupsStack.peek().getLastTokenSubGroup().getArgumentList(0).add(inputTokens.get(tokenIndex - 1));
             }
 
         } else if(token.getValue().equals(Type.CREATE_PARAM_ENTRY.getName())) {
@@ -228,7 +241,7 @@ public class ABSemantic {
 
                 // Create parameter entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createParameterEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getTokens());
+                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getArgumentList(0));
                 entry.setToken(inputToken);
 
                 // Check if exists
@@ -266,7 +279,7 @@ public class ABSemantic {
 
                 // Create function entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createFunctionEntry(tablesStack.peek(), inputToken.getValue());
-                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getTokens());
+                entry.setType(tokenGroupsStack.peek().getLastTokenSubGroup().getArgumentList(0));
                 entry.setToken(inputToken);
 
                 // If exists already and not a function
@@ -505,7 +518,7 @@ public class ABSemantic {
     public boolean checkArray(ABSymbolTableEntry entry, ABSemanticTokenGroup.ABSemanticTokenSubGroup subGroup) {
 
         // Get the type
-        ABToken usedVarToken = subGroup.getToken(0);
+        ABToken usedVarToken = subGroup.getUsedToken();
 
         // If used as an array but is not
         if(subGroup.getCounter() > 0 && !entry.isArray()) {
@@ -552,7 +565,7 @@ public class ABSemantic {
         ABSemanticTokenGroup.ABSemanticTokenSubGroup usedVarTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
 
         // Get the type
-        ABToken usedVarToken = usedVarTokenSubGroup.getToken(0);
+        ABToken usedVarToken = usedVarTokenSubGroup.getUsedToken();
 
         ABSymbolTableEntry definedVarEntry = searchEntryInTableStack(tablesStack, usedVarToken.getValue(), ABSymbolTableEntry.Kind.VARIABLE);
         ABSymbolTableEntry definedParamEntry = searchEntryInTableStack(tablesStack, usedVarToken.getValue(), ABSymbolTableEntry.Kind.PARAMETER);
@@ -586,8 +599,8 @@ public class ABSemantic {
         ABSemanticTokenGroup.ABSemanticTokenSubGroup memberSubGroup = group.getLastTokenSubGroup();
 
         // Input token
-        ABToken baseInputToken = baseSubGroup.getToken(0);
-        ABToken memberInputToken = memberSubGroup.getToken(0);
+        ABToken baseInputToken = baseSubGroup.getUsedToken();
+        ABToken memberInputToken = memberSubGroup.getUsedToken();
 
         // Get base token table entry
         ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
@@ -636,7 +649,7 @@ public class ABSemantic {
         ABSemanticTokenGroup.ABSemanticTokenSubGroup usedFunctionTokenSubGroup = tokenGroupsStack.peek().getLastTokenSubGroup();
 
         // Get the function name
-        ABToken usedFunctionToken = usedFunctionTokenSubGroup.getToken(0);
+        ABToken usedFunctionToken = usedFunctionTokenSubGroup.getUsedToken();
 
         // Input token
         List<ABSymbolTableEntry> entries = searchEntriesInTableStack(tablesStack, usedFunctionToken.getValue(), ABSymbolTableEntry.Kind.FUNCTION);
@@ -674,8 +687,8 @@ public class ABSemantic {
         ABSemanticTokenGroup.ABSemanticTokenSubGroup memberSubGroup = group.getLastTokenSubGroup();
 
         // Input token
-        ABToken baseInputToken = baseSubGroup.getToken(0);
-        ABToken memberInputToken = memberSubGroup.getToken(0);
+        ABToken baseInputToken = baseSubGroup.getUsedToken();
+        ABToken memberInputToken = memberSubGroup.getUsedToken();
 
         // Get last token table entry
         ABSymbolTableEntry baseTableEntry = tokenEntryMap.get(baseInputToken);
@@ -1055,7 +1068,7 @@ public class ABSemantic {
 
         public void addSubGroupToken(ABToken newToken) {
             ABSemanticTokenSubGroup tokenGroup = new ABSemanticTokenSubGroup();
-            tokenGroup.addToken(newToken);
+            tokenGroup.setUsedToken(newToken);
             tokensSubGroups.add(tokenGroup);
         }
 
@@ -1075,19 +1088,6 @@ public class ABSemantic {
             return tokensSubGroups;
         }
 
-        /**
-         * Create a new list of all tokens
-         * @deprecated
-         * @return
-         */
-        public List<ABToken> getAllTokens() {
-            List<ABToken> allTokens = new ArrayList<>();
-            for(ABSemanticTokenSubGroup subGroup : tokensSubGroups)
-                for(ABToken subGroupToken : subGroup.getTokens())
-                    allTokens.add(subGroupToken);
-            return allTokens;
-        }
-
         @Override
         public String toString() {
             return tokensSubGroups.toString();
@@ -1098,25 +1098,23 @@ public class ABSemantic {
          *****************************/
 
         public class ABSemanticTokenSubGroup {
-            private List<ABToken> tokensList;
+            private ABToken usedToken;
+            private List<List<ABToken>> argumentsTypes;
             private int counter;
 
             public ABSemanticTokenSubGroup() {
-                tokensList = new ArrayList<>();
+                argumentsTypes = new ArrayList<>();
             }
 
-            public void addToken(ABToken token) {
-                tokensList.add(token);
-            }
+            public void addArgument(List<ABToken> argumentType) {argumentsTypes.add(argumentType);}
 
-            public List<ABToken> getTokens() {
-                return tokensList;
-            }
+            public List<ABToken> getArgumentList(int index) { return argumentsTypes.get(index); }
 
-            public ABToken getToken(int index) { return tokensList.get(0); }
+            public void setUsedToken(ABToken usedToken) {
+            this.usedToken = usedToken;}
 
-            public void setTokens(List<ABToken> tokens) {
-                this.tokensList = tokens;
+            public ABToken getUsedToken() {
+                return usedToken;
             }
 
             public void incrementCounter() { counter++; }
@@ -1125,13 +1123,9 @@ public class ABSemantic {
                 return counter;
             }
 
-            public void setCounter(int counter) {
-                this.counter = counter;
-            }
-
             @Override
             public String toString() {
-                return tokensList.toString();
+                return usedToken + " Args: " + argumentsTypes;
             }
         }
     }
