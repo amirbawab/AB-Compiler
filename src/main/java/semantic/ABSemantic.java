@@ -685,8 +685,8 @@ public class ABSemantic {
                     // If entry found
                     if(entry != null) {
 
-                        // If type does not match
-                        if(!entry.getType().get(0).getValue().equals(functionGroup.getLastReturnType().get(0).getValue())) {
+                        // If function group has an array as return type, or if type does not match
+                        if(functionGroup.getLastReturnType().size() > 1 || !entry.getType().get(0).getValue().equals(functionGroup.getLastReturnType().get(0).getValue())) {
                             addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
                         }
 
