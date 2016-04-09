@@ -19,6 +19,7 @@ public class ABSemanticMessageHelper {
     public final static String VARIABLE_IS_ARRAY = "Variable '%s' is an array at line %d column %d";
     public final static String ARRAYS_UNMATCH_DIMENSION = "Variable '%s' must be an array of %d instead of %d dimension at line %d column %d";
     public final static String ARRAY_LARGER_DIMENSION = "Array '%s' does not have dimension %d at line %d column %d";
+    public final static String ARRAY_INDEX_NON_INTEGER = "Array '%s' does not have an integer at dimension %d at line %d column %d";
     public final static String ARITHMETIC_TYPE = "Cannot perform '%s' on the types %s and %s at line %d column %d";
     public final static String ARITHMETIC_ONE_UNDEFINED = "Cannot perform '%s' on the %s and an undefined type at line %d column %d";
     public final static String ARITHMETIC_TWO_UNDEFINED = "Cannot perform '%s' two undefined types at line %d column %d";

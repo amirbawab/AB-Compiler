@@ -820,6 +820,15 @@ public class ABSemantic {
             // Get the defined entry
             ABSymbolTableEntry definedEntry = definedVarEntry != null ? definedVarEntry : definedParamEntry;
 
+            // Check if all arguments are integer, this should not affect the return type
+            for(int i=0; i < usedVarTokenSubGroup.getArgumentsSize(); i++) {
+                List<ABToken> argument = usedVarTokenSubGroup.getArgumentList(i);
+
+                // If argument is not valid, or is not exactly one token, or is not of type integer
+                if(argument == null || argument.size() != 1 || !argument.get(0).getToken().equals(IdentifierHelper.ReservedWords.INT.getToken()))
+                    addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAY_INDEX_NON_INTEGER, usedVarToken.getValue(), i+1, usedVarToken.getRow(), usedVarToken.getCol()));
+            }
+
             // If array dimension is larger than the original dimension
             if(usedVarTokenSubGroup.getArgumentsSize() > definedEntry.getArrayDimension()) {
                 addError(usedVarToken, String.format(ABSemanticMessageHelper.ARRAY_LARGER_DIMENSION, usedVarToken.getValue(), usedVarTokenSubGroup.getArgumentsSize(), usedVarToken.getRow(), usedVarToken.getCol()));
@@ -879,11 +888,26 @@ public class ABSemantic {
                         addError(memberInputToken, String.format(ABSemanticMessageHelper.UNDEFINED_MEMBER_OF_CLASS, memberInputToken.getValue(), classEntry.getName(), memberInputToken.getRow(), memberInputToken.getCol()));
                     } else {
 
-                        // Store in map
-                        tokenEntryMap.put(memberInputToken, entry);
+                        // Check if all arguments are integer, this should not affect the return type
+                        for(int i=0; i < memberSubGroup.getArgumentsSize(); i++) {
+                            List<ABToken> argument = memberSubGroup.getArgumentList(i);
 
-                        // Set return type
-                        memberSubGroup.generateReturnType(entry);
+                            // If argument is not valid, or is not exactly one token, or is not of type integer
+                            if(argument == null || argument.size() != 1 || !argument.get(0).getToken().equals(IdentifierHelper.ReservedWords.INT.getToken()))
+                                addError(memberInputToken, String.format(ABSemanticMessageHelper.ARRAY_INDEX_NON_INTEGER, memberInputToken.getValue(), i+1, memberInputToken.getRow(), memberInputToken.getCol()));
+                        }
+
+                        // If array dimension is larger than the original dimension
+                        if(memberSubGroup.getArgumentsSize() > entry.getArrayDimension()) {
+                            addError(memberInputToken, String.format(ABSemanticMessageHelper.ARRAY_LARGER_DIMENSION, memberInputToken.getValue(), memberSubGroup.getArgumentsSize(), memberInputToken.getRow(), memberInputToken.getCol()));
+
+                        } else {
+                            // Store in map
+                            tokenEntryMap.put(memberInputToken, entry);
+
+                            // Set return type
+                            memberSubGroup.generateReturnType(entry);
+                        }
                     }
                 }
             }
