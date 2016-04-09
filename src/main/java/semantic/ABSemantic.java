@@ -55,13 +55,15 @@ public class ABSemantic {
         CREATE_FOR_TABLE("createForTable"),                                                     // Create a for loop table [no entry]
         POP_GROUP_STACK_1("popGroupStack1"),                                                    // Pop token group stack in phase 1
         POP_GROUP_STACK_2("popGroupStack2"),                                                    // Pop token group stack in phase 2
-        USE_NOT("useNot"),                                                                      // ????
+        USE_NOT("useNot"),                                                                      // Peeek token group
         USE_ADD_OP("useAddOp"),                                                                 // Store operator in symbol stack
         USE_MULT_OP("useMultOp"),                                                               // Store operator in symbol stack
         USE_COMPARE_OP("useCompareOp"),                                                         // Store operator in symbol stack
         USE_ASSIGN_OP("useAssignOp"),                                                           // Store operator in symbol stack
         USE_INT("useInt"),                                                                      // Buffer an integer
         USE_FLOAT("useFloat"),                                                                  // Buffer a float
+        USE_GET("useGet"),                                                                      // Pop token group stack in phase 2
+        USE_PUT("usePut"),                                                                      // Pop token group stack in phase 2
         MATH_ADD_OP("mathAddOp"),                                                               // Check type for two last sub groups
         MATH_MULT_OP("mathMultOp"),                                                             // Check type for two last sub groups
         MATH_ASSIGN_OP("mathAssignOp"),                                                         // Check the type of assignment
@@ -70,6 +72,7 @@ public class ABSemantic {
         FUNCTION_PARAM("functionParam"),                                                        // Check if the index is correct
         FUNCTION_RETURN("functionReturn"),                                                      // Store return into function
         POP_GROUP_STACK_FUNCTION("popGroupStackFunction");                                      // Pop function from stack
+
         private String name;
         Type(String name) {
             this.name = name;
@@ -695,6 +698,26 @@ public class ABSemantic {
                         addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
                     }
                 }
+            }
+
+        } else if(token.getValue().equals(Type.USE_GET.getName())) {
+
+            if(phase == 2) {
+
+                // Get data
+                ABSemanticTokenGroup getGroup = tokenGroupsStack.pop();
+
+                // TODO Generate code
+            }
+
+        } else if(token.getValue().equals(Type.USE_PUT.getName())) {
+
+            if(phase == 2) {
+
+                // Get data
+                ABSemanticTokenGroup putGroup = tokenGroupsStack.pop();
+
+                // TODO Generate code
             }
 
         } else {
