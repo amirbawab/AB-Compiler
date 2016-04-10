@@ -8,6 +8,7 @@ import scanner.helper.ABTokenHelper;
 import scanner.helper.IdentifierHelper;
 import semantic.helper.ABSemanticMessageHelper;
 import translation.ABTranslation;
+import translation.helper.ABArchitectureHelper;
 
 import java.util.*;
 
@@ -179,6 +180,15 @@ public class ABSemantic {
 
             // Pop the table
             tablesStack.pop();
+
+            // If end of phase 2 and no errors
+            if(phase == 2 && tablesStack.isEmpty() && errors.isEmpty()) {
+                try {
+                    prepareTablesForTranslation(globalTable);
+                } catch (NumberFormatException e) {
+                    l.error(e.getMessage());
+                }
+            }
 
         } else if(token.getValue().equals(Type.TYPE.getName())) {
 
@@ -480,13 +490,11 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_1.getName())) {
 
             if(phase == 1) {
-                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
                 tokenGroupsStack.pop();
             }
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_2.getName())) {
 
             if(phase == 2) {
-                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
                 tokenGroupsStack.pop();
             }
 
@@ -568,11 +576,6 @@ public class ABSemantic {
                 // Check if sum has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
-
-                // Print
-                System.out.println(arithOp);
-                System.out.println(LHS);
-                System.out.println(RHS);
             }
 
         } else if(token.getValue().equals(Type.MATH_MULT_OP.getName())) {
@@ -591,11 +594,6 @@ public class ABSemantic {
                 // Check if multiplication has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
-
-                // Print
-                System.out.println(arithOp);
-                System.out.println(LHS);
-                System.out.println(RHS);
             }
 
         } else if(token.getValue().equals(Type.MATH_COMPARE_OP.getName())) {
@@ -614,11 +612,6 @@ public class ABSemantic {
                 // Check if multiplication has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
-
-                // Print
-                System.out.println(arithOp);
-                System.out.println(LHS);
-                System.out.println(RHS);
             }
 
         } else if(token.getValue().equals(Type.MATH_ASSIGN_OP.getName())) {
@@ -632,11 +625,6 @@ public class ABSemantic {
 
                 // Type should math
                 checkAssignment(LHS, RHS, arithOp);
-
-                // Print
-                System.out.println(arithOp);
-                System.out.println(LHS);
-                System.out.println(RHS);
             }
 
         } else if(token.getValue().equals(Type.VAR_INDEX.getName())) {
@@ -674,7 +662,6 @@ public class ABSemantic {
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_FUNCTION.getName())) {
 
             if(phase == 2) {
-                System.out.println(tokenGroupsStack + " : " + tokenGroupsStack.size());
                 ABSemanticTokenGroup functionGroup = tokenGroupsStack.pop();
 
                 // Input token
@@ -1247,6 +1234,77 @@ public class ABSemantic {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Generates sizes for tables and entries
+     */
+    public void prepareTablesForTranslation(ABSymbolTable table) {
+
+        // If table size was not calculated
+        if(table.getSizeInBytes() < 0) {
+
+            // Total size
+            int totalSize = 0;
+
+            // Loop on all entries
+            for(ABSymbolTableEntry entry : table.getRows()) {
+
+                // If has a table
+                if(entry.getLink() != null) {
+
+                    // Generate size for table
+                    prepareTablesForTranslation(entry.getLink());
+
+                    // Set size for entry
+                    entry.setSizeInBytes(entry.getLink().getSizeInBytes());
+                // If variable or parameter
+                } else {
+
+                    // Load type
+                    List<ABToken> typeList = entry.getType();
+
+                    // Get type
+                    ABToken type = typeList.get(0);
+
+                    // If integer
+                    if(type.getToken().equals(ABTokenHelper.T_INT_TYPE)) {
+                        entry.setSizeInBytes(ABArchitectureHelper.Size.INTEGER.getSizeInByte());
+
+                    // If float
+                    } else if(type.getToken().equals(ABTokenHelper.T_FLOAT_TYPE)) {
+                        entry.setSizeInBytes(ABArchitectureHelper.Size.FLOAT.getSizeInByte());
+
+                    // If other type
+                    } else {
+
+                        // Search for table
+                        ABSymbolTableEntry typeClass = searchEntryInTable(globalTable, type.getValue(), ABSymbolTableEntry.Kind.CLASS);
+
+                        // Get size
+                        int typeClassSize = typeClass.getSizeInBytes();
+
+                        // If size was not calculated, then calculate it
+                        if(typeClassSize < 0) {
+                            prepareTablesForTranslation(typeClass.getLink());
+                            typeClassSize = typeClass.getSizeInBytes();
+                        }
+                        entry.setSizeInBytes(typeClassSize);
+                    }
+
+                    // Check if it's an array
+                    for(int i=1; i < typeList.size(); i++) {
+                        entry.setSizeInBytes(entry.getSizeInBytes() * Integer.parseInt(typeList.get(i).getValue()));
+                    }
+
+                    // Update table size
+                    totalSize += entry.getSizeInBytes();
+                }
+            }
+
+            // Set total size
+            table.setSizeInBytes(totalSize);
         }
     }
 

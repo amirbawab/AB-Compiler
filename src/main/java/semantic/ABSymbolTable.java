@@ -1,7 +1,5 @@
 package semantic;
 
-import scanner.ABToken;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +12,7 @@ public class ABSymbolTable {
     private String simpleName;
     private ABSymbolTableEntry.Kind kind;
     private int id;
+    private int sizeInBytes = Integer.MIN_VALUE;
 
     /**
      * Constructor
@@ -41,7 +40,7 @@ public class ABSymbolTable {
     }
 
     public Object[][] getTableData() {
-        Object[][] tableData = new Object[rows.size()][7];
+        Object[][] tableData = new Object[rows.size()][];
 
         for(int i=0; i < tableData.length; i++) {
             ABSymbolTableEntry entry = rows.get(i);
@@ -52,10 +51,12 @@ public class ABSymbolTable {
             String entryType = entry.getTypeAsString();
             String entryParams = entry.getParametersAsString();
             int entryAddress = entry.getAddress();
+            int sizeInByte = entry.getSizeInBytes();
+            String sizeInByteString = sizeInByte == Integer.MIN_VALUE ? "???": sizeInByte+"";
             String entryProperlyDefined = entry.isProperlyDefined() ? "Yes" : "No";
             int entryLink = entry.getLink() == null ? -1 : entry.getLink().getId();
 
-            tableData[i] = new Object[]{entryName, entryKind, entryStructure, entryType, entryParams, entryProperlyDefined,entryAddress, entryLink};
+            tableData[i] = new Object[]{entryName, entryKind, entryStructure, entryType, entryParams, entryProperlyDefined,entryAddress, sizeInByteString, entryLink};
         }
         return tableData;
     }
@@ -119,6 +120,14 @@ public class ABSymbolTable {
 
     public void setKind(ABSymbolTableEntry.Kind kind) {
         this.kind = kind;
+    }
+
+    public int getSizeInBytes() {
+        return sizeInBytes;
+    }
+
+    public void setSizeInBytes(int sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
     }
 
     /**

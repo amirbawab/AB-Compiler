@@ -1,6 +1,5 @@
 package semantic;
 
-import parser.grammar.ABGrammarToken;
 import scanner.ABToken;
 import scanner.helper.ABTokenHelper;
 
@@ -15,6 +14,8 @@ class ABSymbolTableEntry {
     private ABSymbolTable link;
     private ABToken token;
     private boolean properlyDefined = true;
+    private int offset;
+    private int sizeInBytes = Integer.MIN_VALUE;
 
     /**
      * Enum Kind
@@ -226,5 +227,21 @@ class ABSymbolTableEntry {
         }
 
         return true;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public int getSizeInBytes() {
+        return sizeInBytes;
+    }
+
+    public void setSizeInBytes(int sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
     }
 }
