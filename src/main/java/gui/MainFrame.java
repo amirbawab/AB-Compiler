@@ -134,6 +134,9 @@ public class MainFrame extends JFrame {
 							// Clear semantic errors
 							centerPanel.resetTable(CenterPanel.SEMANTIC_ERROR_TITLE);
 
+							// Clear code generation
+							centerPanel.setText(CenterPanel.CODE_GENERATION_TITLE, null);
+
 							// If no parsing errors
 							if(parserErrorData.length == 0){
 								Object[][][] symbolTables = abIDElistener.getSymbolTables();
@@ -146,6 +149,9 @@ public class MainFrame extends JFrame {
 								// Semantic errors
 								Object[][] semanticErrorData = abIDElistener.getSemanticErrors();
 								centerPanel.setTableData(CenterPanel.SEMANTIC_ERROR_TITLE, semanticErrorData);
+
+								// Code generation
+								centerPanel.setText(CenterPanel.CODE_GENERATION_TITLE, abIDElistener.getGeneratedCode());
 
 								// If semantic errors, update compiler message
 								if(semanticErrorData.length > 0)

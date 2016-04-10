@@ -37,7 +37,7 @@ public class TabbedConsolePanel extends JTabbedPane {
 	 * Add a new tab
 	 * @param title Tab title
 	 */
-	public void addTextEditor(String title) {
+	public void addText(String title) {
 		
 		// Create panel
 		JPanel panel = new JPanel();
@@ -169,6 +169,16 @@ public class TabbedConsolePanel extends JTabbedPane {
 	public void addRowToTable(String panelTitle, Object[] data) {
 		ConsoleTable table = (ConsoleTable) getBoard(panelTitle);
 		table.addRow(data);
+	}
+
+	/**
+	 * Set text to text panel
+	 * @param panelTitle
+	 * @param text
+     */
+	public void setText(String panelTitle, String text) {
+		JTextPane textPane = (JTextPane) getBoard(panelTitle);
+		textPane.setText(text);
 	}
 
 	/**

@@ -254,6 +254,11 @@ public class Application {
 				return panel;
 			}
 
+			@Override
+			public String getGeneratedCode() {
+				return abParser.getSemantic().getAbTranslation().generateCode();
+			}
+
 			/**
 			 * Compilation time
 			 */

@@ -18,6 +18,7 @@ public interface ABIDEListener {
 	public String getSymbolTableName(int id);
 	public Object[][] getSemanticErrors();
 	public JPanel getParserTree();
+	public String getGeneratedCode();
 	
 	// Menu
 	public Object[][] getStateTable();

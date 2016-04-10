@@ -35,7 +35,8 @@ public class CenterPanel extends JPanel {
 								PARSER_ERROR_TITLE = "Parser - Error",
 								PARSER_TREE_TITLE = "Parser - Tree",
 								SYMBOL_TABLE_TITLE = "Symbol tables",
-								SEMANTIC_ERROR_TITLE = "Semantic - Error";
+								SEMANTIC_ERROR_TITLE = "Semantic - Error",
+								CODE_GENERATION_TITLE = "Code generation";
 	
 	
 	public CenterPanel() {
@@ -62,6 +63,7 @@ public class CenterPanel extends JPanel {
 		this.tabbedConsolePanel.addPanel(PARSER_TREE_TITLE, new JPanel());
 		this.tabbedConsolePanel.addTableNavigation(SYMBOL_TABLE_TITLE);
 		this.tabbedConsolePanel.addTable(SEMANTIC_ERROR_TITLE, SEMANTIC_ERROR_HEADER);
+		this.tabbedConsolePanel.addText(CODE_GENERATION_TITLE);
 
 		// Resize
 		this.tabbedConsolePanel.setPreferredSize(new Dimension(0, 0));
@@ -94,7 +96,17 @@ public class CenterPanel extends JPanel {
      */
 	public void setPanel(String panelTitle, JPanel panel) {
 		panel = panel == null ? new JPanel() : panel;
-		this.tabbedConsolePanel.setPanel(PARSER_TREE_TITLE, panel);
+		this.tabbedConsolePanel.setPanel(panelTitle, panel);
+	}
+
+	/**
+	 * Set text to a text panel
+	 * @param panelTitle
+	 * @param text
+     */
+	public void setText(String panelTitle, String text) {
+		if(text == null) text = "";
+		this.tabbedConsolePanel.setText(panelTitle, text);
 	}
 
 	/**

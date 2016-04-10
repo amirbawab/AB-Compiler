@@ -1687,4 +1687,12 @@ public class ABSemantic {
         if(!error)
             l.debug("No structure error detected");
     }
+
+    /**
+     * Get Translation instance
+     * @return
+     */
+    public ABTranslation getAbTranslation() {
+        return abTranslation;
+    }
 }

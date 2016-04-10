@@ -1,6 +1,7 @@
 package translation;
 
 import scanner.ABToken;
+import semantic.ABSymbolTable;
 
 /**
  * Created by Amir on 4/10/2016.
@@ -16,7 +17,10 @@ public class ABTranslation {
     private boolean[] free_registers;
     private String code = "";
     private String footer = "";
-    private boolean generate = true;
+
+    // Locks
+    private boolean generateCode = false;
+    private boolean generateFooter = false;
 
     public ABTranslation() {
 
@@ -36,7 +40,35 @@ public class ABTranslation {
         return header;
     }
 
+    public void appendFooter(ABSymbolTable table) {
+        // TODO implement
+    }
+
+    public boolean isGenerateCode() {
+        return generateCode;
+    }
+
+    public void setGenerateCode(boolean generateCode) {
+        this.generateCode = generateCode;
+    }
+
+    public boolean isGenerateFooter() {
+        return generateFooter;
+    }
+
+    public void setGenerateFooter(boolean generateFooter) {
+        this.generateFooter = generateFooter;
+    }
+
+    /**
+     * Generate the final code
+     * @return
+     */
     public String generateCode() {
-        return getHeader() + code + footer;
+        if(generateCode && generateFooter) {
+            return getHeader() + code + footer;
+        } else {
+            return "% Couldn't generate code because of one or more errors";
+        }
     }
 }
