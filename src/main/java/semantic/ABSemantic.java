@@ -7,6 +7,7 @@ import scanner.ABToken;
 import scanner.helper.ABTokenHelper;
 import scanner.helper.IdentifierHelper;
 import semantic.helper.ABSemanticMessageHelper;
+import translation.ABTranslation;
 
 import java.util.*;
 
@@ -17,6 +18,9 @@ public class ABSemantic {
 
     // Logger
     private Logger l = LogManager.getFormatterLogger(getClass());
+
+    // Translation
+    ABTranslation abTranslation;
 
     // Tables
     private ABSymbolTable globalTable;
@@ -90,6 +94,7 @@ public class ABSemantic {
         tokenEntryMap = new HashMap<>();
         tokenGroupsStack = new Stack<>();
         arithOpStack = new Stack<>();
+        abTranslation = new ABTranslation();
     }
 
     /**
