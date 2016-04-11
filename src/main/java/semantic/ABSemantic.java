@@ -147,6 +147,7 @@ public class ABSemantic {
                             switch (table.getKind()) {
                                 case PROGRAM:
                                     abTranslation.appendFooter(table);
+
                                     break;
                             }
                         }
@@ -202,6 +203,15 @@ public class ABSemantic {
             }
 
         } else if(token.getValue().equals(Type.PARENT.getName())) {
+
+            // If phase two and no error
+            if(phase == 2 && errors.isEmpty()) {
+
+                // If program
+                if(tablesStack.peek().getKind() == ABSymbolTableEntry.Kind.PROGRAM) {
+                    abTranslation.stop(ABTranslation.Reason.END_OF_PROGRAM);
+                }
+            }
 
             // Pop the table
             tablesStack.pop();

@@ -36,9 +36,10 @@ public class ABTranslation {
 
     // Locks
     private boolean generateCode = false;
-    private Reason failReason;
+    private Reason reason;
 
     public enum Reason {
+        END_OF_PROGRAM,
         SEMANTIC_ERROR,
         OUT_OF_REGISTERS
     };
@@ -161,11 +162,11 @@ public class ABTranslation {
 
     /**
      * Disable code generation
-     * @param failReason
+     * @param reason
      */
-    public void stop(Reason failReason) {
+    public void stop(Reason reason) {
         this.generateCode = false;
-        this.failReason =failReason;
+        this.reason =reason;
     }
 
     /**
@@ -180,14 +181,20 @@ public class ABTranslation {
      * @return
      */
     public String generateCode() {
-        if(generateCode) {
+        if(generateCode || reason == Reason.END_OF_PROGRAM) {
 
             // Halt
             code += generateLine(true, Instruction.HLT.getName()) + "\n";
 
             return getHeader() + code + footer;
+        } else if(reason == Reason.SEMANTIC_ERROR) {
+            return "% Couldn't generate code because of one or more semantic errors";
+
+        } else if(reason == Reason.OUT_OF_REGISTERS) {
+            return "% Couldn't generate code because the program requires more registers";
+
         } else {
-            return "% Couldn't generate code because of one or more errors";
+            return "% Unexpected error";
         }
     }
 
