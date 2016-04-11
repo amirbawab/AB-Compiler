@@ -22,6 +22,17 @@ public class ABToken {
 	}
 
 	/**
+	 * Create ABToken
+	 * @param token
+	 */
+	public ABToken(ABToken token) {
+		this.token = token.token;
+		this.value = token.value;
+		this.row = token.row;
+		this.col = token.col;
+	}
+
+	/**
 	 * Get token
 	 * @return token
 	 */
@@ -99,5 +110,13 @@ public class ABToken {
 	 */
 	public String toString() {
 		return String.format("%s : %s", token, value);
+	}
+
+	/**
+	 * Create a copy of a token
+	 * @return
+     */
+	public ABToken makeCopy() {
+		return new ABToken(this);
 	}
 }

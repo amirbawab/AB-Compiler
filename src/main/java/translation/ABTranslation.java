@@ -93,6 +93,13 @@ public class ABTranslation {
         }
     }
 
+    /**
+     * Generate code for arithmetic operation
+     * @param LHS
+     * @param RHS
+     * @param arithOp
+     * @param result
+     */
     public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken arithOp, List<ABToken> result) {
 
         // If code generation
@@ -103,8 +110,42 @@ public class ABTranslation {
 
         switch (arithOp.getToken()) {
             case ABTokenHelper.T_PLUS:
-                performArith(LHS, RHS, result);
+                performArith(LHS, RHS, Instruction.ADD, Instruction.ADDI, result, arithOp);
                 break;
+            case ABTokenHelper.T_MINUS:
+                performArith(LHS, RHS, Instruction.SUB, Instruction.SUBI, result, arithOp);
+                break;
+            case ABTokenHelper.T_OR:
+                performArith(LHS, RHS, Instruction.OR, Instruction.ORI, result, arithOp);
+                break;
+            case ABTokenHelper.T_MULTIPLY:
+                performArith(LHS, RHS, Instruction.MUL, Instruction.MULI, result, arithOp);
+                break;
+            case ABTokenHelper.T_DIVIDE:
+                performArith(LHS, RHS, Instruction.DIV, Instruction.DIVI, result, arithOp);
+                break;
+            case ABTokenHelper.T_AND:
+                performArith(LHS, RHS, Instruction.AND, Instruction.ANDI, result, arithOp);
+                break;
+            case ABTokenHelper.T_GREATER_THAN:
+                performArith(LHS, RHS, Instruction.CGT, Instruction.CGTI, result, arithOp);
+                break;
+            case ABTokenHelper.T_LESS_THAN:
+                performArith(LHS, RHS, Instruction.CLT, Instruction.CLTI, result, arithOp);
+                break;
+            case ABTokenHelper.T_LESS_OR_EQUAL:
+                performArith(LHS, RHS, Instruction.CLE, Instruction.CLEI, result, arithOp);
+                break;
+            case ABTokenHelper.T_GREATER_OR_EQUAL:
+                performArith(LHS, RHS, Instruction.CGE, Instruction.CGEI, result, arithOp);
+                break;
+            case ABTokenHelper.T_IS_NOT_EQUAL:
+                performArith(LHS, RHS, Instruction.CNE, Instruction.CNEI, result, arithOp);
+                break;
+            case ABTokenHelper.T_IS_EQUAL:
+                performArith(LHS, RHS, Instruction.CEQ, Instruction.CEQI, result, arithOp);
+                break;
+
         }
 
 
@@ -156,7 +197,7 @@ public class ABTranslation {
      *
      *****************************************************/
 
-    public void performArith(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, List<ABToken> result) {
+    public void performArith(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, Instruction nonImmediate, Instruction immediate, List<ABToken> result, ABToken arithOp) {
 
         // Registers
         Register leftRegister = null;
@@ -176,7 +217,7 @@ public class ABTranslation {
             rightRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
 
             // Add them
-            code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS + ANS";
+            code += generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " ANS";
             newLine();
 
             // Release register
@@ -207,7 +248,7 @@ public class ABTranslation {
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + " + RHSEntry.getName();
+                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " " + RHSEntry.getName();
                 newLine();
 
                 // Release register
@@ -220,7 +261,7 @@ public class ABTranslation {
             } else {
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), leftRegister.getName(), RHSToken.getValue()) + "% ANS + " + RHSToken.getValue();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(), leftRegister.getName(), RHSToken.getValue()) + "% ANS " + arithOp.getValue() + " " + RHSToken.getValue();
                 newLine();
 
                 // Store result
@@ -249,7 +290,7 @@ public class ABTranslation {
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + " + LHSEntry.getName();
+                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " " + LHSEntry.getName();
                 newLine();
 
                 // Release register
@@ -262,7 +303,7 @@ public class ABTranslation {
             } else {
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), leftRegister.getName(), LHSToken.getValue()) + "% ANS + " + LHSToken.getValue();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(), leftRegister.getName(), LHSToken.getValue()) + "% ANS " + arithOp.getValue() + " " + LHSToken.getValue();
                 newLine();
 
                 // Store result
@@ -297,7 +338,7 @@ public class ABTranslation {
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " + " + RHSEntry.getName();
+                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSEntry.getName();
                 newLine();
 
                 // Release
@@ -325,7 +366,7 @@ public class ABTranslation {
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " + " + RHSToken.getValue();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSToken.getValue();
                 newLine();
 
                 // Store result
@@ -350,7 +391,7 @@ public class ABTranslation {
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  LHSToken.getValue(), leftRegister.getName()) + "% " + LHSToken.getValue() + " + " + RHSEntry.getName();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(),  LHSToken.getValue(), leftRegister.getName()) + "% " + LHSToken.getValue() + " " + arithOp.getValue() + " " + RHSEntry.getName();
                 newLine();
 
                 // Store result
@@ -368,11 +409,11 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), LHSToken.getValue()) + "% " +  "0 + " + LHSToken.getValue();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(),  Register.R0.getName(), LHSToken.getValue()) + "% " +  "0 " + arithOp.getValue() + " " + LHSToken.getValue();
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + "ANS + " + RHSToken.getValue();
+                code += generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + "ANS " + arithOp.getValue() + " " + RHSToken.getValue();
                 newLine();
 
                 // Store result

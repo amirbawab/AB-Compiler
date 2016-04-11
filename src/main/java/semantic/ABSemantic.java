@@ -616,6 +616,9 @@ public class ABSemantic {
                 // Check if multiplication has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
+
+                // Generate code
+                abTranslation.generateArithmeticOperation(LHS, RHS, arithOp, returnType);
             }
 
         } else if(token.getValue().equals(Type.MATH_COMPARE_OP.getName())) {
@@ -634,6 +637,9 @@ public class ABSemantic {
                 // Check if multiplication has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
+
+                // Generate code
+                abTranslation.generateArithmeticOperation(LHS, RHS, arithOp, returnType);
             }
 
         } else if(token.getValue().equals(Type.MATH_ASSIGN_OP.getName())) {
@@ -1204,11 +1210,11 @@ public class ABSemantic {
 
             // If both are integer, arbitrary choice because only the token type is important and not the value
             if(leftTypeToken.equals(intTypeToken) && rightTypeToken.equals(intTypeToken)) {
-                return LHSType;
+                return getDeepCopy(LHSType);
 
             // If both are float, arbitrary choice because only the token type is important and not the value
             } else if(leftTypeToken.equals(floatTypeToken) && rightTypeToken.equals(floatTypeToken)) {
-                return LHSType;
+                return getDeepCopy(LHSType);
 
             // Else we can't conclude a return value
             } else {
@@ -1545,7 +1551,7 @@ public class ABSemantic {
 
     /*****************************************************
      *
-     *                   STRING UTILS
+     *                   UTILS
      *
      *****************************************************/
 
@@ -1581,6 +1587,19 @@ public class ABSemantic {
             n /= 26;
         }
         return new String(buf);
+    }
+
+    /**
+     * Create a deep copy of a list of ABToken
+     * @param list
+     * @return
+     */
+    public List<ABToken> getDeepCopy(List<ABToken> list) {
+        List<ABToken> newList = new ArrayList<>(list.size());
+        for(ABToken token : list) {
+            newList.add(token.makeCopy());
+        }
+        return newList;
     }
 
     /*****************************************************
