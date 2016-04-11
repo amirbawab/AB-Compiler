@@ -663,6 +663,9 @@ public class ABSemantic {
 
                 // Type should math
                 checkAssignment(LHS, RHS, arithOp);
+
+                // Generate code
+                abTranslation.generateAssignment(LHS, RHS);
             }
 
         } else if(token.getValue().equals(Type.VAR_INDEX.getName())) {

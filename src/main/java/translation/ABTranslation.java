@@ -106,9 +106,6 @@ public class ABTranslation {
         // If code generation
         if(!generateCode) return;
 
-        // Data
-        String instruction = null;
-
         switch (arithOp.getToken()) {
             case ABTokenHelper.T_PLUS:
                 performArith(LHS, RHS, Instruction.ADD, Instruction.ADDI, result, arithOp);
@@ -427,6 +424,104 @@ public class ABTranslation {
                 storeResultAtRegister(result, leftRegister);
             }
         }
+    }
+
+    /**
+     * Generate assignment code
+     * @param LHS
+     * @param RHS
+     */
+    public void generateAssignment(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS) {
+
+        // If code generation
+        if(!generateCode) return;
+
+        // Registers
+        Register leftRegister = null;
+
+        // Entries
+        ABSymbolTableEntry LHSEntry = null;
+        ABSymbolTableEntry RHSEntry = null;
+
+        // Cache info
+        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
+        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
+
+        // TODO Check if LHS is in stack
+
+        // If RHS is a result
+        // FIXME Assuming that LHS has always an entry and is not in the stack
+        if(RHSToken == null) {
+
+            // Get result register
+            leftRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
+
+            // Get entry
+            LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+            // Add them
+            code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS";
+            newLine();
+
+            // Release register
+            release(leftRegister);
+
+            // If RHS is not a result
+            // FIXME Assuming that LHS has always an entry and is not in the stack
+        }  else {
+
+            // If RHS is an identifier
+            if(RHSToken.isIdentifier()) {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+                RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName();
+                newLine();
+
+                // Release
+                release(leftRegister);
+
+                // If RHS is not an identifier
+            } else {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS";
+                newLine();
+
+                // Release
+                release(leftRegister);
+            }
+        }
+
     }
 
     /*****************************************************
