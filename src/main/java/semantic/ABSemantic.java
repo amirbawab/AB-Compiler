@@ -153,7 +153,7 @@ public class ABSemantic {
 
                     } catch (NumberFormatException e) {
                         l.error(e.getMessage());
-                        abTranslation.setGenerateCode(false);
+                        abTranslation.stop(ABTranslation.Reason.SEMANTIC_ERROR);
                     }
                 }
             }
@@ -398,7 +398,7 @@ public class ABSemantic {
                 tablesStack.push(entry.getLink());
 
                 // Allow code generation
-                abTranslation.setGenerateCode(true);
+                abTranslation.start();
             }
 
         } else if(token.getValue().equals(Type.CREATE_FOR_TABLE.getName())) {
@@ -597,7 +597,7 @@ public class ABSemantic {
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
 
                 // Generate code
-                abTranslation.generateArithmeticOperation(LHS, RHS, arithOp);
+                abTranslation.generateArithmeticOperation(LHS, RHS, arithOp, returnType);
             }
 
         } else if(token.getValue().equals(Type.MATH_MULT_OP.getName())) {
@@ -1540,7 +1540,7 @@ public class ABSemantic {
 
     private void addError(ABToken token, String message) {
         errors.add(new ABSemanticError(message, token));
-        abTranslation.setGenerateCode(false);
+        abTranslation.stop(ABTranslation.Reason.SEMANTIC_ERROR);
     }
 
     /*****************************************************

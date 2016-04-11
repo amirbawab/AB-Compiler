@@ -1,5 +1,7 @@
 package scanner;
 
+import scanner.helper.ABTokenHelper;
+
 public class ABToken {
 	private String token;
 	private String value;
@@ -81,6 +83,14 @@ public class ABToken {
 	 */
 	public void setCol(int col) {
 		this.col = col;
+	}
+
+	/**
+	 * Check if token is an identifier
+	 * @return
+     */
+	public boolean isIdentifier() {
+		return getToken().equals(ABTokenHelper.T_IDENTIFIER);
 	}
 	
 	/**

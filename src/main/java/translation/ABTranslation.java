@@ -1,5 +1,7 @@
 package translation;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import scanner.ABToken;
 import scanner.helper.ABTokenHelper;
 import semantic.ABSemantic;
@@ -9,11 +11,17 @@ import translation.helper.ABArchitectureHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Amir on 4/10/2016.
  */
 public class ABTranslation {
+
+    // Logger
+    private Logger l = LogManager.getFormatterLogger(getClass());
 
     // Constants
     private final int MAX_REGISTERS = 16; // 0 ... 15
@@ -28,12 +36,22 @@ public class ABTranslation {
 
     // Locks
     private boolean generateCode = false;
+    private Reason failReason;
+
+    public enum Reason {
+        SEMANTIC_ERROR,
+        OUT_OF_REGISTERS
+    };
+
+    // Map
+    public Map<List<ABToken>, Register> resultRegisterMap;
 
     public ABTranslation(ABSemantic abSemantic) {
 
         // Init components
         this.abSemantic = abSemantic;
         free_registers = new boolean[15];
+        resultRegisterMap = new HashMap<>();
     }
 
     public String getHeader() {
@@ -75,62 +93,20 @@ public class ABTranslation {
         }
     }
 
-    public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken arithOp) {
+    public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken arithOp, List<ABToken> result) {
+
+        // If code generation
+        if(!generateCode) return;
 
         // Data
         String instruction = null;
 
-        // Cache info
-        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
-        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
-
-        // Check if identfier
-        boolean isLHSIdentifier = LHSToken.getToken().equals(ABTokenHelper.T_IDENTIFIER);
-        boolean isRHSIdentifier = RHSToken.getToken().equals(ABTokenHelper.T_IDENTIFIER);
-
-        // Entries
-        ABSymbolTableEntry LHSEntry = null;
-        ABSymbolTableEntry RHSEntry = null;
-
-        // Adjust entries
-        if(isLHSIdentifier) LHSEntry = abSemantic.getEntryOf(LHSToken);
-        if(isRHSIdentifier) RHSEntry = abSemantic.getEntryOf(RHSToken);
-
-        // Get registers
-        Register leftRegister = Register.getRegisterNotInUse();
-        leftRegister.setInUse(true);
-
-        // Get registers
-        Register middleRegister = Register.getRegisterNotInUse();
-        middleRegister.setInUse(true);
-
-        // Get registers
-        Register rightRegister = Register.getRegisterNotInUse();
-        middleRegister.setInUse(true);
-
         switch (arithOp.getToken()) {
             case ABTokenHelper.T_PLUS:
-                if(isLHSIdentifier && isRHSIdentifier) {
-
-                    // Load LHS
-                    code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), LHSEntry.getLabel()+"(" + Register.R0.getName() + ")") + "% Load " + LHSEntry.getDetails();
-                    newLine();
-
-                    // Load RHS
-                    code += generateLine(true, Instruction.LW.getName(), middleRegister.getName(), RHSEntry.getLabel()+"(" + Register.R0.getName() + ")") + "% Load " + RHSEntry.getDetails();
-                    newLine();
-
-                    // Add them
-                    code += generateLine(true, Instruction.ADD.getName(), rightRegister.getName(),  middleRegister.getName(), leftRegister.getName()) + "% " + LHSEntry.getName() + " + " + RHSEntry.getName();
-                    newLine();
-                }
+                performArith(LHS, RHS, result);
                 break;
         }
 
-        // Free resources
-        leftRegister.setInUse(false);
-        middleRegister.setInUse(false);
-        rightRegister.setInUse(false);
 
     }
 
@@ -143,11 +119,19 @@ public class ABTranslation {
     }
 
     /**
-     * Allow/Disable code generation
-     * @param generateCode
+     * Disable code generation
+     * @param failReason
      */
-    public void setGenerateCode(boolean generateCode) {
-        this.generateCode = generateCode;
+    public void stop(Reason failReason) {
+        this.generateCode = false;
+        this.failReason =failReason;
+    }
+
+    /**
+     * Allow code generation
+     */
+    public void start() {
+        this.generateCode = true;
     }
 
     /**
@@ -168,14 +152,297 @@ public class ABTranslation {
 
     /*****************************************************
      *
+     *                  ARITHMETIC HELPERS
+     *
+     *****************************************************/
+
+    public void performArith(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, List<ABToken> result) {
+
+        // Registers
+        Register leftRegister = null;
+        Register rightRegister = null;
+
+        // Entries
+        ABSymbolTableEntry LHSEntry = null;
+        ABSymbolTableEntry RHSEntry = null;
+
+        // Cache info
+        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
+        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
+
+        // If LHS and RHS are result
+        if(LHSToken == null && RHSToken == null) {
+            leftRegister = getRegisterOfResult( LHS.getLastTokenSubGroup().getReturnTypeList());
+            rightRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
+
+            // Add them
+            code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS + ANS";
+            newLine();
+
+            // Release register
+            release(rightRegister);
+
+            // Store result
+            storeResultAtRegister(result, leftRegister);
+
+            // If LHS is a result
+        } else if(LHSToken == null) {
+
+            // Get result register
+            leftRegister = getRegisterOfResult( LHS.getLastTokenSubGroup().getReturnTypeList());
+
+            // If RHS is an identifier
+            if(RHSToken.isIdentifier()) {
+
+                rightRegister = Register.getRegisterNotInUse();
+                acquire(rightRegister);
+
+                if(registerNotFound(rightRegister)) return;
+
+                // Get entry
+                RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+                // Load LHS
+                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + " + RHSEntry.getName();
+                newLine();
+
+                // Release register
+                release(rightRegister);
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+
+                // If not an identifier
+            } else {
+
+                // Add them
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), leftRegister.getName(), RHSToken.getValue()) + "% ANS + " + RHSToken.getValue();
+                newLine();
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+            }
+
+            // If RHS is a result
+        } else if(RHSToken == null) {
+
+            // Get result register
+            leftRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
+
+            // If LHS is an identifier
+            if(LHSToken.isIdentifier()) {
+
+                rightRegister = Register.getRegisterNotInUse();
+                acquire(rightRegister);
+
+                if(registerNotFound(rightRegister)) return;
+
+                // Get entry
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+                // Load RHS
+                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + " + LHSEntry.getName();
+                newLine();
+
+                // Release register
+                release(rightRegister);
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+
+                // If not an identifier
+            } else {
+
+                // Add them
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), leftRegister.getName(), LHSToken.getValue()) + "% ANS + " + LHSToken.getValue();
+                newLine();
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+            }
+
+            // If both are new
+        }  else {
+
+            // If both are identifier
+            if(LHSToken.isIdentifier() && RHSToken.isIdentifier()) {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+                RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+                rightRegister = Register.getRegisterNotInUse();
+                acquire(rightRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister) || registerNotFound(rightRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                newLine();
+
+                // Load RHS
+                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADD.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " + " + RHSEntry.getName();
+                newLine();
+
+                // Release
+                release(rightRegister);
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+
+                // If LHS only is an identifier
+            } else if (LHSToken.isIdentifier()) {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " + " + RHSToken.getValue();
+                newLine();
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+
+                // If RHS only is an identifier
+            } else if (RHSToken.isIdentifier()) {
+
+                // Adjust entries
+                RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  LHSToken.getValue(), leftRegister.getName()) + "% " + LHSToken.getValue() + " + " + RHSEntry.getName();
+                newLine();
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+
+                // If both are non identifiers
+            } else {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), LHSToken.getValue()) + "% " +  "0 + " + LHSToken.getValue();
+                newLine();
+
+                // Add them
+                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + "ANS + " + RHSToken.getValue();
+                newLine();
+
+                // Store result
+                storeResultAtRegister(result, leftRegister);
+            }
+        }
+    }
+
+    /*****************************************************
+     *
      *                  CODE UTILS
      *
      *****************************************************/
 
+    /**
+     * Generate DATA(R0)
+     * @param data
+     * @param register
+     * @return
+     */
+    public String getDataAt(String data, Register register) {
+        return data + "(" + register.getName() + ")";
+    }
+
+    /**
+     * Check if register is not null
+     * @param register
+     * @return
+     */
+    public boolean registerNotFound(Register register) {
+        // If no more resources
+        if(register == Register.R_NO_FOUND) {
+            l.error("All registers are in use before performing");
+            stop(Reason.OUT_OF_REGISTERS);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the register that stores a result
+     * @param result
+     * @return
+     */
+    public Register getRegisterOfResult(List<ABToken> result) {
+        return resultRegisterMap.get(result);
+    }
+
+    /**
+     * Store result at register
+     * @param result
+     * @param register
+     */
+    public void storeResultAtRegister(List<ABToken> result, Register register) {
+        resultRegisterMap.put(result, register);
+    }
+
+    /**
+     * Add a new line
+     */
     private void newLine() {
         code += "\n";
     }
 
+    /**
+     * Generate a line
+     * @param leftPad
+     * @param args
+     * @return
+     */
     public String generateLine(boolean leftPad, String ... args) {
         switch (args.length) {
             case 1:
@@ -216,9 +483,32 @@ public class ABTranslation {
         return generateLine(true, Instruction.SUB.getName(), register.getName(), register.getName());
     }
 
+    /**
+     * Reserve register
+     * @param register
+     * @return
+     */
+    public boolean acquire(Register register) {
+        if(register == Register.R_NO_FOUND) return false;
+        register.setInUse(true);
+        return true;
+    }
+
+    /**
+     * Release register
+     * @param register
+     * @return
+     */
+    public boolean release(Register register) {
+        if(register == Register.R_NO_FOUND) return false;
+        if(register == null) return true;
+        register.setInUse(false);
+        return true;
+    }
+
     // Registers
     enum Register {
-        R0("r0", true),
+        R0("r0", true), // Zero
         R1("r1"),
         R2("r2"),
         R3("r3"),
@@ -233,7 +523,10 @@ public class ABTranslation {
         R12("r12"),
         R13("r13"),
         R14("r14"),
-        R115("r15", true);
+        R15("r15", true), // Address
+        R_NO_FOUND(null) // Marks that there are not more registers
+        ;
+
         String name;
         boolean inUse = false;
         Register(String name) {
