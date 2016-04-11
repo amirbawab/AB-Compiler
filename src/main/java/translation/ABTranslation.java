@@ -3,6 +3,9 @@ package translation;
 import scanner.ABToken;
 import semantic.ABSymbolTable;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by Amir on 4/10/2016.
  */
@@ -20,7 +23,6 @@ public class ABTranslation {
 
     // Locks
     private boolean generateCode = false;
-    private boolean generateFooter = false;
 
     public ABTranslation() {
 
@@ -34,6 +36,8 @@ public class ABTranslation {
         String header = "";
 
         // Add data to header
+        header += "% The following code is generated automatically by ABCompiler\n";
+        header += "%\tTime generated: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "\n\n";
         header += "entry\n";
         header += "align\n";
 
@@ -52,20 +56,12 @@ public class ABTranslation {
         this.generateCode = generateCode;
     }
 
-    public boolean isGenerateFooter() {
-        return generateFooter;
-    }
-
-    public void setGenerateFooter(boolean generateFooter) {
-        this.generateFooter = generateFooter;
-    }
-
     /**
      * Generate the final code
      * @return
      */
     public String generateCode() {
-        if(generateCode && generateFooter) {
+        if(generateCode) {
             return getHeader() + code + footer;
         } else {
             return "% Couldn't generate code because of one or more errors";

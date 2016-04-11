@@ -9,6 +9,7 @@ import java.util.List;
 class ABSymbolTableEntry {
     private ABSymbolTable table;
     private String name;
+    private String label;
     private Kind kind;
     private List<ABToken> type;
     private ABSymbolTable link;
@@ -243,5 +244,13 @@ class ABSymbolTableEntry {
 
     public void setSizeInBytes(int sizeInBytes) {
         this.sizeInBytes = sizeInBytes;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 }

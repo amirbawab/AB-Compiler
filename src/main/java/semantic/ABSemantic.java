@@ -184,9 +184,25 @@ public class ABSemantic {
             // If end of phase 2 and no errors
             if(phase == 2 && tablesStack.isEmpty() && errors.isEmpty()) {
                 try {
-                    prepareTablesForTranslation(globalTable);
+
+                    // Generate size
+                    generateTableAndEntrySize(globalTable);
+
+                    // Generate labels
+                    generateEntryLabel();
+
+                    // Generate footer from tables
+                    for(ABSymbolTable table : allTables) {
+                        switch (table.getKind()) {
+                            case PROGRAM:
+                                abTranslation.appendFooter(table);
+                                break;
+                        }
+                    }
+
                 } catch (NumberFormatException e) {
                     l.error(e.getMessage());
+                    abTranslation.setGenerateCode(false);
                 }
             }
 
@@ -380,6 +396,9 @@ public class ABSemantic {
 
                 // Push to stack
                 tablesStack.push(entry.getLink());
+
+                // Allow code generation
+                abTranslation.setGenerateCode(true);
             }
 
         } else if(token.getValue().equals(Type.CREATE_FOR_TABLE.getName())) {
@@ -1239,8 +1258,9 @@ public class ABSemantic {
 
     /**
      * Generates sizes for tables and entries
+     * @param  table
      */
-    public void prepareTablesForTranslation(ABSymbolTable table) {
+    public void generateTableAndEntrySize(ABSymbolTable table) {
 
         // If table size was not calculated
         if(table.getSizeInBytes() < 0) {
@@ -1255,7 +1275,7 @@ public class ABSemantic {
                 if(entry.getLink() != null) {
 
                     // Generate size for table
-                    prepareTablesForTranslation(entry.getLink());
+                    generateTableAndEntrySize(entry.getLink());
 
                     // Set size for entry
                     entry.setSizeInBytes(entry.getLink().getSizeInBytes());
@@ -1287,7 +1307,7 @@ public class ABSemantic {
 
                         // If size was not calculated, then calculate it
                         if(typeClassSize < 0) {
-                            prepareTablesForTranslation(typeClass.getLink());
+                            generateTableAndEntrySize(typeClass.getLink());
                             typeClassSize = typeClass.getSizeInBytes();
                         }
                         entry.setSizeInBytes(typeClassSize);
@@ -1305,6 +1325,32 @@ public class ABSemantic {
 
             // Set total size
             table.setSizeInBytes(totalSize);
+        }
+    }
+
+    /**
+     * Generate label for each entry
+     */
+    public void generateEntryLabel() {
+        int uniqueId = 1;
+
+        Queue<ABSymbolTable> tableQueue = new LinkedList<>();
+        tableQueue.offer(globalTable);
+        while(!tableQueue.isEmpty()) {
+
+            // Get table
+            ABSymbolTable table = tableQueue.poll();
+
+            // Loop on entries
+            for(ABSymbolTableEntry entry : table.getRows()) {
+
+                // Generate label
+                entry.setLabel(getAlphaLabel(uniqueId++));
+
+                // If has entry, queue it
+                if(entry.getLink() != null)
+                    tableQueue.offer(entry.getLink());
+            }
         }
     }
 
@@ -1484,6 +1530,7 @@ public class ABSemantic {
 
     private void addError(ABToken token, String message) {
         errors.add(new ABSemanticError(message, token));
+        abTranslation.setGenerateCode(false);
     }
 
     /*****************************************************
@@ -1509,6 +1556,21 @@ public class ABSemantic {
             }
         }
         return tableStr;
+    }
+
+    /**
+     * Generate unique label for each integer
+     * @param n
+     * @return
+     */
+    private String getAlphaLabel(int n) {
+        char[] buf = new char[(int) Math.floor(Math.log(25 * (n + 1)) / Math.log(26))];
+        for (int i = buf.length - 1; i >= 0; i--) {
+            n--;
+            buf[i] = (char) ('A' + n % 26);
+            n /= 26;
+        }
+        return new String(buf);
     }
 
     /*****************************************************
