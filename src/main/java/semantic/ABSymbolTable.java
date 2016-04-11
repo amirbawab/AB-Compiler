@@ -57,7 +57,7 @@ public class ABSymbolTable {
             int entryLink = entry.getLink() == null ? -1 : entry.getLink().getId();
             String entryLabel = entry.getLabel() == null ? "???" : entry.getLabel();
 
-            tableData[i] = new Object[]{entryName, entryKind, entryStructure, entryType, entryParams, entryProperlyDefined,entryAddress, sizeInByteString, entryLink};
+            tableData[i] = new Object[]{entryName, entryKind, entryStructure, entryType, entryParams, entryProperlyDefined,entryAddress, entryLabel, sizeInByteString, entryLink};
         }
         return tableData;
     }

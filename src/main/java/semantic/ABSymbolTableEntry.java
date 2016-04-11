@@ -250,6 +250,10 @@ public class ABSymbolTableEntry {
         return label;
     }
 
+    public String getDetails() {
+        return getTable().getName() + " > " + getName() + " : " + getTypeAsString();
+    }
+
     public void setLabel(String label) {
         this.label = label;
     }

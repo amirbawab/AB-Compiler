@@ -95,7 +95,7 @@ public class ABSemantic {
         tokenEntryMap = new HashMap<>();
         tokenGroupsStack = new Stack<>();
         arithOpStack = new Stack<>();
-        abTranslation = new ABTranslation();
+        abTranslation = new ABTranslation(this);
     }
 
     /**
@@ -131,6 +131,31 @@ public class ABSemantic {
 
                 // Push to table stack
                 tablesStack.push(globalTable);
+
+                // If no errors
+                if(errors.isEmpty()) {
+                    try {
+
+                        // Generate size
+                        generateTableAndEntrySize(globalTable);
+
+                        // Generate labels
+                        generateEntryLabel();
+
+                        // Generate footer from tables
+                        for(ABSymbolTable table : allTables) {
+                            switch (table.getKind()) {
+                                case PROGRAM:
+                                    abTranslation.appendFooter(table);
+                                    break;
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        l.error(e.getMessage());
+                        abTranslation.setGenerateCode(false);
+                    }
+                }
             }
 
         } else if(token.getValue().equals(Type.CREATE_CLASS_TABLE_AND_ENTRY.getName())) {
@@ -180,31 +205,6 @@ public class ABSemantic {
 
             // Pop the table
             tablesStack.pop();
-
-            // If end of phase 2 and no errors
-            if(phase == 2 && tablesStack.isEmpty() && errors.isEmpty()) {
-                try {
-
-                    // Generate size
-                    generateTableAndEntrySize(globalTable);
-
-                    // Generate labels
-                    generateEntryLabel();
-
-                    // Generate footer from tables
-                    for(ABSymbolTable table : allTables) {
-                        switch (table.getKind()) {
-                            case PROGRAM:
-                                abTranslation.appendFooter(table);
-                                break;
-                        }
-                    }
-
-                } catch (NumberFormatException e) {
-                    l.error(e.getMessage());
-                    abTranslation.setGenerateCode(false);
-                }
-            }
 
         } else if(token.getValue().equals(Type.TYPE.getName())) {
 
@@ -595,6 +595,9 @@ public class ABSemantic {
                 // Check if sum has a correct type
                 List<ABToken> returnType = checkArithmeticType(LHS, RHS, arithOp);
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnType);
+
+                // Generate code
+                abTranslation.generateArithmeticOperation(LHS, RHS, arithOp);
             }
 
         } else if(token.getValue().equals(Type.MATH_MULT_OP.getName())) {
@@ -1302,15 +1305,22 @@ public class ABSemantic {
                         // Search for table
                         ABSymbolTableEntry typeClass = searchEntryInTable(globalTable, type.getValue(), ABSymbolTableEntry.Kind.CLASS);
 
-                        // Get size
-                        int typeClassSize = typeClass.getSizeInBytes();
+                        // If class found
+                        if(typeClass != null) {
+                            // Get size
+                            int typeClassSize = typeClass.getSizeInBytes();
 
-                        // If size was not calculated, then calculate it
-                        if(typeClassSize < 0) {
-                            generateTableAndEntrySize(typeClass.getLink());
-                            typeClassSize = typeClass.getSizeInBytes();
+                            // If size was not calculated, then calculate it
+                            if(typeClassSize < 0) {
+                                generateTableAndEntrySize(typeClass.getLink());
+                                typeClassSize = typeClass.getSizeInBytes();
+                            }
+                            entry.setSizeInBytes(typeClassSize);
+                        } else {
+
+                            // If not found, set it to zero
+                            entry.setSizeInBytes(0);
                         }
-                        entry.setSizeInBytes(typeClassSize);
                     }
 
                     // Check if it's an array
@@ -1756,5 +1766,14 @@ public class ABSemantic {
      */
     public ABTranslation getAbTranslation() {
         return abTranslation;
+    }
+
+    /**
+     * Get entry of a token
+     * @param token
+     * @return
+     */
+    public ABSymbolTableEntry getEntryOf(ABToken token) {
+        return tokenEntryMap.get(token);
     }
 }

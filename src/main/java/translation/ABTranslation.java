@@ -24,13 +24,15 @@ public class ABTranslation {
     private boolean[] free_registers;
     private String code = "";
     private String footer = "";
+    private ABSemantic abSemantic;
 
     // Locks
     private boolean generateCode = false;
 
-    public ABTranslation() {
+    public ABTranslation(ABSemantic abSemantic) {
 
         // Init components
+        this.abSemantic = abSemantic;
         free_registers = new boolean[15];
     }
 
@@ -42,8 +44,8 @@ public class ABTranslation {
         // Add data to header
         header += "% The following code is generated automatically by ABCompiler\n";
         header += "%\tTime generated: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "\n\n";
-        header += generateLine(Instruction.ENTRY.getName()) + "\n";
-        header += generateLine(Instruction.ALIGN.getName()) + "\n";
+        header += generateLine(true, Instruction.ENTRY.getName()) + "\n";
+        header += generateLine(true, Instruction.ALIGN.getName()) + "\n";
 
         return header;
     }
@@ -68,20 +70,68 @@ public class ABTranslation {
                 value = entry.getSizeInBytes();
             }
 
-            footer += generateLine(entry.getLabel(), instruction, value + "", "% " + entry.getTable().getName() + " > " + entry.getName() + " : " + entry.getTypeAsString());
+            footer += String.format("%-15s %-15s %-15s", entry.getLabel(), instruction, value+"") + "% " + entry.getDetails();
+            footer += "\n";
         }
     }
 
-    public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken symbol) {
+    public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken arithOp) {
 
         // Data
         String instruction = null;
 
-        switch (symbol.getToken()) {
-            case ABTokenHelper.T_PLUS:
+        // Cache info
+        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
+        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
 
+        // Check if identfier
+        boolean isLHSIdentifier = LHSToken.getToken().equals(ABTokenHelper.T_IDENTIFIER);
+        boolean isRHSIdentifier = RHSToken.getToken().equals(ABTokenHelper.T_IDENTIFIER);
+
+        // Entries
+        ABSymbolTableEntry LHSEntry = null;
+        ABSymbolTableEntry RHSEntry = null;
+
+        // Adjust entries
+        if(isLHSIdentifier) LHSEntry = abSemantic.getEntryOf(LHSToken);
+        if(isRHSIdentifier) RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+        // Get registers
+        Register leftRegister = Register.getRegisterNotInUse();
+        leftRegister.setInUse(true);
+
+        // Get registers
+        Register middleRegister = Register.getRegisterNotInUse();
+        middleRegister.setInUse(true);
+
+        // Get registers
+        Register rightRegister = Register.getRegisterNotInUse();
+        middleRegister.setInUse(true);
+
+        switch (arithOp.getToken()) {
+            case ABTokenHelper.T_PLUS:
+                if(isLHSIdentifier && isRHSIdentifier) {
+
+                    // Load LHS
+                    code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), LHSEntry.getLabel()+"(" + Register.R0.getName() + ")") + "% Load " + LHSEntry.getDetails();
+                    newLine();
+
+                    // Load RHS
+                    code += generateLine(true, Instruction.LW.getName(), middleRegister.getName(), RHSEntry.getLabel()+"(" + Register.R0.getName() + ")") + "% Load " + RHSEntry.getDetails();
+                    newLine();
+
+                    // Add them
+                    code += generateLine(true, Instruction.ADD.getName(), rightRegister.getName(),  middleRegister.getName(), leftRegister.getName()) + "% " + LHSEntry.getName() + " + " + RHSEntry.getName();
+                    newLine();
+                }
                 break;
         }
+
+        // Free resources
+        leftRegister.setInUse(false);
+        middleRegister.setInUse(false);
+        rightRegister.setInUse(false);
+
     }
 
     /**
@@ -108,7 +158,7 @@ public class ABTranslation {
         if(generateCode) {
 
             // Halt
-            code += generateLine(Instruction.HLT.getName()) + "\n";
+            code += generateLine(true, Instruction.HLT.getName()) + "\n";
 
             return getHeader() + code + footer;
         } else {
@@ -122,18 +172,37 @@ public class ABTranslation {
      *
      *****************************************************/
 
-    public String generateLine(String ... args) {
+    private void newLine() {
+        code += "\n";
+    }
+
+    public String generateLine(boolean leftPad, String ... args) {
         switch (args.length) {
             case 1:
-                return String.format("%-15s %s","", args[0]);
+                if(leftPad)
+                    return String.format("%-15s %-15s","", args[0]);
+                return String.format("%-15s", args[0]);
+
             case 2:
-                return String.format("%-15s %-15s %s","", args[0], args[1]);
+                if(leftPad)
+                    return String.format("%-15s %-15s %-15s","", args[0], args[1]);
+                return String.format("%-15s %-15s",args[0], args[1]);
+
             case 3:
-                return String.format("%-15s %-15s %-15s %s","", args[0], args[1], args[2]);
+                if(leftPad)
+                    return String.format("%-15s %-15s %-15s %-15s","", args[0], args[1]+",", args[2]);
+                return String.format("%-15s %-15s %-15s",args[0], args[1]+",", args[2]);
+
             case 4:
-                return String.format("%-15s %-15s %-15s %s",args[0], args[1], args[2], args[3]);
+                if(leftPad)
+                    return String.format("%-15s %-15s %-15s %-15s %-15s", "", args[0], args[1]+",", args[2]+",", args[3]);
+                return String.format("%-15s %-15s %-15s %-15s",args[0], args[1]+",", args[2]+",", args[3]);
+
             case 5:
-                return String.format("%-15s %-15s %-15s %-15s %s",args[0], args[1], args[2], args[3], args[4]);
+                if(leftPad)
+                    return String.format("%-15s %-15s %-15s %-15s %-15s %-15s", "", args[0], args[1]+",", args[2]+",", args[3]+",", args[4]);
+                return String.format("%-15s %-15s %-15s %-15s %-15s", args[0], args[1]+",", args[2]+",", args[3]+",", args[4]);
+
         }
         return null;
     }
@@ -144,7 +213,7 @@ public class ABTranslation {
      * @return
      */
     public String resetRegister(Register register) {
-        return generateLine(Instruction.SUB.getName(), register.getName(), register.getName());
+        return generateLine(true, Instruction.SUB.getName(), register.getName(), register.getName());
     }
 
     // Registers
@@ -192,6 +261,13 @@ public class ABTranslation {
 
         public void setInUse(boolean inUse) {
             this.inUse = inUse;
+        }
+
+        public static Register getRegisterNotInUse() {
+            for(Register r : values())
+                if(!r.isInUse())
+                    return r;
+            return null;
         }
     }
 
