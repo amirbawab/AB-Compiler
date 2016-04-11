@@ -27,6 +27,8 @@ public class ABTranslation {
     private final int MAX_REGISTERS = 16; // 0 ... 15
     private final int ZERO_REGISTER = 0; // Always zero
     private final int ADDRESS_REGISTER = 15; // Store the address
+    private final String STACK = "stack";
+    private final String STACK_SIZE = (4*300) + "";
 
     // Components
     private boolean[] free_registers;
@@ -47,6 +49,9 @@ public class ABTranslation {
     // Map
     public Map<List<ABToken>, Register> resultRegisterMap;
 
+    // Unique id
+    private int unique_id = 0;
+
     public ABTranslation(ABSemantic abSemantic) {
 
         // Init components
@@ -65,6 +70,9 @@ public class ABTranslation {
         header += "%\tTime generated: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "\n\n";
         header += generateLine(true, Instruction.ENTRY.getName()) + "\n";
         header += generateLine(true, Instruction.ALIGN.getName()) + "\n";
+
+        // Reset pointer
+        header += generateLine(true, Instruction.ADDI.getName(), Register.R14.getName(), Register.R0.getName(), STACK) + "% Reset stack pointer\n";
 
         return header;
     }
@@ -143,10 +151,7 @@ public class ABTranslation {
             case ABTokenHelper.T_IS_EQUAL:
                 performArith(LHS, RHS, Instruction.CEQ, Instruction.CEQI, result, arithOp);
                 break;
-
         }
-
-
     }
 
     /**
@@ -183,6 +188,9 @@ public class ABTranslation {
             // Halt
             code += generateLine(true, Instruction.HLT.getName()) + "\n";
 
+            // Stack
+            footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
+
             return getHeader() + code + footer;
         } else if(reason == Reason.SEMANTIC_ERROR) {
             return "% Couldn't generate code because of one or more semantic errors";
@@ -201,6 +209,15 @@ public class ABTranslation {
      *
      *****************************************************/
 
+    /**
+     * Perform arithmetic operations
+     * @param LHS
+     * @param RHS
+     * @param nonImmediate
+     * @param immediate
+     * @param result
+     * @param arithOp
+     */
     public void performArith(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, Instruction nonImmediate, Instruction immediate, List<ABToken> result, ABToken arithOp) {
 
         // Cache info
@@ -550,6 +567,15 @@ public class ABTranslation {
      *****************************************************/
 
     /**
+     * Generate a unique label
+     * @param label
+     * @return
+     */
+    public String generateUniqueLabel(String label) {
+        return label == null ? null : label + (++unique_id);
+    }
+
+    /**
      * Generate DATA(R0)
      * @param data
      * @param register
@@ -620,17 +646,17 @@ public class ABTranslation {
             case 3:
                 if(leftPad)
                     return String.format("%-15s %-15s %-15s %-15s","", args[0], args[1]+",", args[2]);
-                return String.format("%-15s %-15s %-15s",args[0], args[1]+",", args[2]);
+                return String.format("%-15s %-15s %-15s",args[0], args[1], args[2]);
 
             case 4:
                 if(leftPad)
                     return String.format("%-15s %-15s %-15s %-15s %-15s", "", args[0], args[1]+",", args[2]+",", args[3]);
-                return String.format("%-15s %-15s %-15s %-15s",args[0], args[1]+",", args[2]+",", args[3]);
+                return String.format("%-15s %-15s %-15s %-15s",args[0], args[1], args[2]+",", args[3]);
 
             case 5:
                 if(leftPad)
                     return String.format("%-15s %-15s %-15s %-15s %-15s %-15s", "", args[0], args[1]+",", args[2]+",", args[3]+",", args[4]);
-                return String.format("%-15s %-15s %-15s %-15s %-15s", args[0], args[1]+",", args[2]+",", args[3]+",", args[4]);
+                return String.format("%-15s %-15s %-15s %-15s %-15s", args[0], args[1], args[2]+",", args[3]+",", args[4]);
 
         }
         return null;
@@ -688,7 +714,7 @@ public class ABTranslation {
         R11("r11"),
         R12("r12"),
         R13("r13"),
-        R14("r14"),
+        R14("r14", true), // Stack pointer
         R15("r15", true), // Address
         R_NO_FOUND("not_found") // Marks that there are not more registers
         ;
