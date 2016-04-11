@@ -6,7 +6,7 @@ import scanner.helper.ABTokenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-class ABSymbolTableEntry {
+public class ABSymbolTableEntry {
     private ABSymbolTable table;
     private String name;
     private String label;
