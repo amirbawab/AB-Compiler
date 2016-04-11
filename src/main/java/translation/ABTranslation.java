@@ -28,6 +28,7 @@ public class ABTranslation {
     private final int ZERO_REGISTER = 0; // Always zero
     private final int ADDRESS_REGISTER = 15; // Store the address
     private final String STACK = "stack";
+    private final String TOP_ADDRESS = "topaddr";
     private final String STACK_SIZE = (4*300) + "";
 
     // Components
@@ -72,7 +73,7 @@ public class ABTranslation {
         header += generateLine(true, Instruction.ALIGN.getName()) + "\n";
 
         // Reset pointer
-        header += generateLine(true, Instruction.ADDI.getName(), Register.R14.getName(), Register.R0.getName(), STACK) + "% Reset stack pointer\n";
+        header += generateLine(true, Instruction.ADDI.getName(), Register.R14.getName(), Register.R0.getName(), TOP_ADDRESS) + "% Set stack pointer\n";
 
         return header;
     }
