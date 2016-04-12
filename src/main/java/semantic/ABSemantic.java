@@ -1,5 +1,6 @@
 package semantic;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import parser.grammar.ABGrammarToken;
@@ -141,18 +142,6 @@ public class ABSemantic {
 
                         // Generate labels
                         generateEntryLabel();
-
-                        // Generate footer from tables
-                        for(ABSymbolTable table : allTables) {
-                            switch (table.getKind()) {
-                                case PROGRAM:
-                                case CLASS:
-                                case FOR:
-                                case FUNCTION:
-                                    abTranslation.appendFooter(table);
-                                    break;
-                            }
-                        }
 
                     } catch (NumberFormatException e) {
                         l.error(e.getMessage());
@@ -1294,7 +1283,8 @@ public class ABSemantic {
             int totalSize = 0;
 
             // Loop on all entries
-            for(ABSymbolTableEntry entry : table.getRows()) {
+            List<ABSymbolTableEntry> allEntries = ListUtils.union(table.getRows(), table.getVirtualRows());
+            for(ABSymbolTableEntry entry : allEntries) {
 
                 // If has a table
                 if(entry.getLink() != null) {
@@ -1394,6 +1384,9 @@ public class ABSemantic {
                 if(entry.getLink() != null)
                     tableQueue.offer(entry.getLink());
             }
+
+            // Append footer
+            abTranslation.appendFooter(table);
         }
     }
 

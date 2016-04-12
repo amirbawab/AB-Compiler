@@ -19,6 +19,7 @@ mainClassName = "Application"
 dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.3'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.3'
+    compile 'org.apache.commons:commons-collections4:4.1'
     compile 'commons-io:commons-io:2.4'
     compile 'org.apache.commons:commons-lang3:3.0'
     compile name: 'jgraphx'
