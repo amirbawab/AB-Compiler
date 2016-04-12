@@ -77,8 +77,12 @@ public class ABSemantic {
         VAR_INDEX("varIndex"),                                                                  // Check if the type is correct
         FUNCTION_PARAM("functionParam"),                                                        // Check if the index is correct
         FUNCTION_RETURN("functionReturn"),                                                      // Store return into function
-        POP_GROUP_STACK_FUNCTION("popGroupStackFunction");                                      // Pop function from stack
-
+        POP_GROUP_STACK_FUNCTION("popGroupStackFunction"),                                      // Pop function from stack
+        LOGICAL_CHECK("logicalCheck"),                                                          // Peek and generate code for logical expression
+        IF_CHECK("ifCheck"),                                                                    // Pop expression from group stack
+        ELSE_CHECK("elseCheck"),                                                                // Generate code
+        END_IF("endIf"),                                                                        // Generate code
+        ;
         private String name;
         Type(String name) {
             this.name = name;
@@ -514,6 +518,38 @@ public class ABSemantic {
 
             if(phase == 2) {
                 tokenGroupsStack.pop();
+            }
+
+        } else if(token.getValue().equals(Type.LOGICAL_CHECK.getName())) {
+
+            if(phase == 2) {
+                ABSemanticTokenGroup group = tokenGroupsStack.peek();
+
+                // Generate code
+                abTranslation.generateLogicalCheck(group);
+            }
+
+        } else if(token.getValue().equals(Type.IF_CHECK.getName())) {
+
+            if(phase == 2) {
+                ABSemanticTokenGroup group = tokenGroupsStack.pop();
+
+                // Generate code
+                abTranslation.generateIfCheck(group);
+            }
+
+        } else if(token.getValue().equals(Type.ELSE_CHECK.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateElseCheck();
+            }
+
+        } else if(token.getValue().equals(Type.END_IF.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateEndIf();
             }
 
         } else if(token.getValue().equals(Type.USE_NOT.getName())) {

@@ -10,10 +10,7 @@ import semantic.ABSymbolTableEntry;
 import translation.helper.ABArchitectureHelper;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Amir on 4/10/2016.
@@ -51,19 +48,27 @@ public class ABTranslation {
     };
 
     // Map
-    public Map<List<ABToken>, Register> resultRegisterMap;
+    private Map<List<ABToken>, Register> resultRegisterMap;
+    private Map<ABSemantic.ABSemanticTokenGroup, Register> groupRegisterMap;
 
-    // Unique id
+    // Labels
     private int unique_id = 0;
+    private Stack<String> labels;
 
     public ABTranslation(ABSemantic abSemantic) {
 
         // Init components
         this.abSemantic = abSemantic;
         resultRegisterMap = new HashMap<>();
+        groupRegisterMap = new HashMap<>();
+        labels = new Stack<>();
         Register.reset();
     }
 
+    /**
+     * Get header
+     * @return
+     */
     public String getHeader() {
 
         // Prepare header
@@ -118,6 +123,60 @@ public class ABTranslation {
     }
 
     /**
+     * Disable code generation
+     * @param reason
+     */
+    public void foundError(Reason reason) {
+        this.error = true;
+        this.errorReason = reason;
+    }
+
+    /**
+     * Allow code generation
+     */
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Generate the final code
+     * @return
+     */
+    public String generateCode() {
+        if(!error) {
+
+            // Halt
+            entry += generateLine(true, Instruction.HLT.getName()) + "\n";
+
+            // Functions comment
+            functions = "\n% Functions\n" + functions;
+
+            // Footer comment
+            footer = "\n% Footer\n" + footer;
+
+            // Stack
+            footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
+
+            return getHeader() + entry + functions + footer;
+
+        } else if(errorReason == Reason.SEMANTIC_ERROR) {
+            return "% Couldn't generate code because of one or more semantic errors";
+
+        } else if(errorReason == Reason.OUT_OF_REGISTERS) {
+            return "% Couldn't generate code because the program requires more registers";
+
+        } else {
+            return "% Unexpected error";
+        }
+    }
+
+    /*****************************************************
+     *
+     *                  GENERATE METHODS
+     *
+     *****************************************************/
+
+    /**
      * Generate code for arithmetic operation
      * @param LHS
      * @param RHS
@@ -170,51 +229,260 @@ public class ABTranslation {
     }
 
     /**
-     * Disable code generation
-     * @param reason
+     * Generate logical check
+     * @param expr
      */
-    public void foundError(Reason reason) {
-        this.error = true;
-        this.errorReason = reason;
-    }
+    public void generateLogicalCheck(ABSemantic.ABSemanticTokenGroup expr) {
 
-    /**
-     * Allow code generation
-     */
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
+        // If error
+        if(error) return;
 
-    /**
-     * Generate the final code
-     * @return
-     */
-    public String generateCode() {
-        if(!error) {
+        // Cache info
+        ABToken exprToken = expr.getLastTokenSubGroup().getUsedToken();
 
-            // Halt
-            entry += generateLine(true, Instruction.HLT.getName()) + "\n";
+        // Register
+        Register leftRegister;
 
-            // Functions comment
-            functions = "\n% Functions\n" + functions;
+        // If expr is a result
+        if(exprToken == null) {
+            leftRegister = getRegisterOfResult(expr.getLastTokenSubGroup().getReturnTypeList());
 
-            // Footer comment
-            footer = "\n% Footer\n" + footer;
-
-            // Stack
-            footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
-
-            return getHeader() + entry + functions + footer;
-
-        } else if(errorReason == Reason.SEMANTIC_ERROR) {
-            return "% Couldn't generate code because of one or more semantic errors";
-
-        } else if(errorReason == Reason.OUT_OF_REGISTERS) {
-            return "% Couldn't generate code because the program requires more registers";
-
+        // If expr is not a result
         } else {
-            return "% Unexpected error";
+
+            // If expr is an identifier
+            if(exprToken.isIdentifier()) {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Entry
+                ABSymbolTableEntry exprEntry = abSemantic.getEntryOf(exprToken);
+
+                // Load
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(exprEntry.getLabel(), Register.R0)) + "% Load " + exprEntry.getDetails());
+                newLine();
+
+                // If expr is #
+            } else {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), exprToken.getValue()) + "% 0 + " + exprToken.getValue());
+                newLine();
+            }
         }
+
+        // Generate labels
+        String zeroLabel = generateUniqueLabel("zero", false);
+        String endLabel = generateUniqueLabel("end", false);
+
+        // Branch zero
+        addCode(generateLine(true, Instruction.BZ.getName(), leftRegister.getName(), zeroLabel));
+        newLine();
+
+        // Adjust value
+        addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), "1"));
+        newLine();
+
+        // Jump
+        addCode(generateLine(true, Instruction.J.getName(), endLabel));
+        newLine();
+
+        // Adjust value
+        addCode(generateLine(false, zeroLabel, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), "0"));
+        newLine();
+
+        // End
+        addCode(generateLine(false, endLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+
+        // Store
+        storeGroupAtRegister(expr, leftRegister);
+    }
+
+    /**
+     * Generate logical check
+     * @param expr
+     */
+    public void generateIfCheck(ABSemantic.ABSemanticTokenGroup expr) {
+
+        // If error
+        if(error) return;
+
+        // Register
+        Register leftRegister = getRegisterOfGroup(expr);
+
+        // Generate labels
+        String elseLabel = generateUniqueLabel("else", true);
+
+        // Branch zero
+        addCode(generateLine(true, Instruction.BZ.getName(), leftRegister.getName(), elseLabel));
+        newLine();
+
+        // Release registers
+        release(leftRegister);
+    }
+
+    /**
+     * Generate else code
+     */
+    public void generateElseCheck() {
+
+        // If error
+        if(error) return;
+
+        // Labels
+        String elseLabel = getLastGeneratedLabel();
+        String endIfLabel = generateUniqueLabel("endif", true);
+
+        // Jump
+        addCode(generateLine(true, Instruction.J.getName(), endIfLabel));
+        newLine();
+
+        // Label
+        addCode(generateLine(false, elseLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+    }
+
+    /**
+     * Generate end if code
+     */
+    public void generateEndIf() {
+
+        // If error
+        if(error) return;
+
+        // Labels
+        String endIfLabel = getLastGeneratedLabel();
+
+        // Jump
+        addCode(generateLine(false, endIfLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+
+    }
+
+    /**
+     * Generate assignment code
+     * @param LHS
+     * @param RHS
+     */
+    public void generateAssignment(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS) {
+
+        // If error
+        if(error) return;
+
+        // Registers
+        Register leftRegister = null;
+
+        // Entries
+        ABSymbolTableEntry LHSEntry = null;
+        ABSymbolTableEntry RHSEntry = null;
+
+        // Cache info
+        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
+        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
+
+        // TODO Check if LHS is in stack
+
+        // If RHS is a result
+        // FIXME Assuming that LHS has always an entry and is not in the stack
+        if(RHSToken == null) {
+
+            // Get result register
+            leftRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
+
+            // Get entry
+            LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+            // Add them
+            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+            newLine();
+
+            // Release register
+            release(leftRegister);
+
+            // If RHS is not a result
+            // FIXME Assuming that LHS has always an entry and is not in the stack
+        }  else {
+
+            // If RHS is an identifier
+            if(RHSToken.isIdentifier()) {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+                RHSEntry = abSemantic.getEntryOf(RHSToken);
+
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
+                newLine();
+
+                // Add them
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
+                newLine();
+
+                // Release
+                release(leftRegister);
+
+                // If RHS is not an identifier
+            } else {
+
+                // Adjust entries
+                LHSEntry = abSemantic.getEntryOf(LHSToken);
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve registers
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load LHS
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue());
+                newLine();
+
+                // Add them
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+                newLine();
+
+                // Release
+                release(leftRegister);
+            }
+        }
+
+    }
+
+    /**
+     * Generate function header
+     * @param entry
+     */
+    public void generateFunctionHeader(ABSymbolTableEntry entry) {
+
+        // If error
+        if(error) return;
+
+        addCode(generateLine(false, entry.getLabel(), Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0") + "% Start of function: " + entry.getDetails());
+        newLine();
     }
 
     /*****************************************************
@@ -237,6 +505,8 @@ public class ABTranslation {
         // Cache info
         ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
         ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
+
+        // TODO Handle float
 
         // If LHS and RHS are result - Result + Result
         if(LHSToken == null && RHSToken == null) {
@@ -476,113 +746,6 @@ public class ABTranslation {
         }
     }
 
-    /**
-     * Generate assignment code
-     * @param LHS
-     * @param RHS
-     */
-    public void generateAssignment(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS) {
-
-        // If error
-        if(error) return;
-
-        // Registers
-        Register leftRegister = null;
-
-        // Entries
-        ABSymbolTableEntry LHSEntry = null;
-        ABSymbolTableEntry RHSEntry = null;
-
-        // Cache info
-        ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
-        ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
-
-        // TODO Check if LHS is in stack
-
-        // If RHS is a result
-        // FIXME Assuming that LHS has always an entry and is not in the stack
-        if(RHSToken == null) {
-
-            // Get result register
-            leftRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
-
-            // Get entry
-            LHSEntry = abSemantic.getEntryOf(LHSToken);
-
-            // Add them
-            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
-            newLine();
-
-            // Release register
-            release(leftRegister);
-
-            // If RHS is not a result
-            // FIXME Assuming that LHS has always an entry and is not in the stack
-        }  else {
-
-            // If RHS is an identifier
-            if(RHSToken.isIdentifier()) {
-
-                // Adjust entries
-                LHSEntry = abSemantic.getEntryOf(LHSToken);
-                RHSEntry = abSemantic.getEntryOf(RHSToken);
-
-                leftRegister = Register.getRegisterNotInUse();
-                acquire(leftRegister);
-
-                // If can't reserve registers
-                if(registerNotFound(leftRegister))
-                    return;
-
-                // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
-                newLine();
-
-                // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
-                newLine();
-
-                // Release
-                release(leftRegister);
-
-                // If RHS is not an identifier
-            } else {
-
-                // Adjust entries
-                LHSEntry = abSemantic.getEntryOf(LHSToken);
-
-                // Get register
-                leftRegister = Register.getRegisterNotInUse();
-                acquire(leftRegister);
-
-                // If can't reserve registers
-                if(registerNotFound(leftRegister))
-                    return;
-
-                // Load LHS
-                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue());
-                newLine();
-
-                // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
-                newLine();
-
-                // Release
-                release(leftRegister);
-            }
-        }
-
-    }
-
-    /**
-     * Generate function header
-     * @param entry
-     */
-    public void generateFunctionHeader(ABSymbolTableEntry entry) {
-        addCode(generateLine(false, entry.getLabel(), Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0") + "% Start of function: " + entry.getDetails());
-        newLine();
-    }
-
     /*****************************************************
      *
      *                  CODE UTILS
@@ -610,8 +773,19 @@ public class ABTranslation {
      * @param label
      * @return
      */
-    public String generateUniqueLabel(String label) {
-        return label == null ? null : label + (++unique_id);
+    public String generateUniqueLabel(String label, boolean storeInStack) {
+        label = label == null ? null : label + (++unique_id);
+        if(storeInStack)
+            labels.push(label);
+        return label;
+    }
+
+    /**
+     * Get last generated label
+     * @return
+     */
+    public String getLastGeneratedLabel() {
+        return labels.pop();
     }
 
     /**
@@ -655,6 +829,24 @@ public class ABTranslation {
      */
     public void storeResultAtRegister(List<ABToken> result, Register register) {
         resultRegisterMap.put(result, register);
+    }
+
+    /**
+     * Get register of group
+     * @param group
+     * @return
+     */
+    public Register getRegisterOfGroup(ABSemantic.ABSemanticTokenGroup group) {
+        return groupRegisterMap.get(group);
+    }
+
+    /**
+     * Store group at register
+     * @param group
+     * @param register
+     */
+    public void storeGroupAtRegister(ABSemantic.ABSemanticTokenGroup group, Register register) {
+        groupRegisterMap.put(group, register);
     }
 
     /**
@@ -801,7 +993,7 @@ public class ABTranslation {
             for(Register r : values())
                 if(!r.isInUse())
                     return r;
-            return null;
+            return Register.R_NO_FOUND;
         }
     }
 

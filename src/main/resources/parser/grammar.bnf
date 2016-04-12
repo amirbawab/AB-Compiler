@@ -26,7 +26,7 @@ funcBody        -> 'T_OPEN_CURLY' varDeclRptSt closeCurly
 varDeclRptSt    -> 'T_INT_TYPE' #type# identifier #createVarEntry# arraySizeRpt #popGroupStack1# semicolon varDeclRptSt
                 | 'T_FLOAT_TYPE' #type# identifier #createVarEntry# arraySizeRpt #popGroupStack1# semicolon varDeclRptSt
                 | 'T_IDENTIFIER' varDeclRptStDis
-                | 'T_IF' openParen expr #popGroupStack2# closeParen then statBlock else statBlock semicolon statementRpt
+                | 'T_IF' openParen expr #logicalCheck# closeParen then #ifCheck# statBlock else #elseCheck# statBlock #endIf# semicolon statementRpt
                 | 'T_FOR' #createForTable# openParen type #type# identifier #createVarEntry# #popGroupStack1# #useVar# #useVarCheck# assignOp #useAssignOp# expr #mathAssignOp# semicolon relExpr #popGroupStack2# semicolon assignStat closeParen statBlock semicolon #parent# statementRpt
                 | 'T_GET' openParen variable #useGet# closeParen semicolon statementRpt
                 | 'T_PUT' openParen expr #usePut# closeParen semicolon statementRpt
@@ -38,7 +38,7 @@ identifier		-> 'T_IDENTIFIER'
 varDeclRptStDis -> #type# 'T_IDENTIFIER' #createVarEntry# arraySizeRpt #popGroupStack1# semicolon varDeclRptSt | #useVar# idnestRptIdDiIn assignOp #useAssignOp# expr #mathAssignOp# semicolon statementRpt
 statementRpt    -> statement statementRpt | EPSILON
 statement       -> 'T_IDENTIFIER' #useVar# idnestRptIdDiIn assignOp #useAssignOp# expr #mathAssignOp# semicolon
-                | 'T_IF' openParen expr #popGroupStack2# closeParen then statBlock else statBlock semicolon
+                | 'T_IF' openParen expr #logicalCheck# closeParen then #ifCheck# statBlock else #elseCheck# statBlock #endIf# semicolon
                 | 'T_FOR' #createForTable# openParen type #type# identifier #createVarEntry# #popGroupStack1# #useVar# #useVarCheck# assignOp #useAssignOp# expr #mathAssignOp# semicolon relExpr #popGroupStack2# semicolon assignStat closeParen statBlock semicolon #parent#
                 | 'T_GET' openParen variable #useGet# closeParen semicolon
                 | 'T_PUT' openParen expr #usePut# closeParen semicolon
