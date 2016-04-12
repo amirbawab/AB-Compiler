@@ -803,7 +803,8 @@ public class ABSemantic {
                 // Get data
                 ABSemanticTokenGroup getGroup = tokenGroupsStack.pop();
 
-                // TODO Generate code
+                // Generate code
+                abTranslation.generateGet(getGroup);
             }
 
         } else if(token.getValue().equals(Type.USE_PUT.getName())) {
@@ -813,7 +814,8 @@ public class ABSemantic {
                 // Get data
                 ABSemanticTokenGroup putGroup = tokenGroupsStack.pop();
 
-                // TODO Generate code
+                // Generate code
+                abTranslation.generatePut(putGroup);
             }
 
         } else {

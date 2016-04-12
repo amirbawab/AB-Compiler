@@ -25,8 +25,10 @@ public class ABTranslation {
     private final int ZERO_REGISTER = 0; // Always zero
     private final int ADDRESS_REGISTER = 15; // Store the address
     private final String STACK = "stack";
+    private final String BUF = "buf";
     private final String TOP_ADDRESS = "topaddr";
     private final String STACK_SIZE = (4*300) + "";
+    private final String BUF_SIZE = 20 + "";
 
     // Components
     private String entry = "";
@@ -180,6 +182,7 @@ public class ABTranslation {
 
             // Stack
             footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
+            footer += String.format("%-15s %-15s %-15s", BUF, Instruction.RES.getName(), BUF_SIZE) + "% Allocating memory for the buffer\n";
 
             return getHeader() + entry + functions + footer;
 
@@ -495,6 +498,106 @@ public class ABTranslation {
             }
         }
 
+    }
+
+    /**
+     * Generate code for get
+     * @param group
+     */
+    public void generateGet(ABSemantic.ABSemanticTokenGroup group) {
+
+        // If error
+        if(error) return;
+
+        // Cache info
+        ABToken varToken = group.getLastTokenSubGroup().getUsedToken();
+
+        // Get register
+        Register leftRegister = Register.getRegisterNotInUse();
+        acquire(leftRegister);
+
+        // If can't reserve register
+        if(registerNotFound(leftRegister))
+            return;
+
+        // Entry
+        ABSymbolTableEntry varEntry = abSemantic.getEntryOf(varToken);
+
+        // Get
+        addCode(generateLine(true, Instruction.GETC.getName(), leftRegister.getName()));
+        newLine();
+
+        // Store
+        addCode(generateLine(true, Instruction.SW.getName(), getDataAt(varEntry.getLabel(), Register.R0), leftRegister.getName()));
+        newLine();
+
+        // Release registers
+        release(leftRegister);
+    }
+
+    /**
+     * Generate code for get
+     * @param expr
+     */
+    public void generatePut(ABSemantic.ABSemanticTokenGroup expr) {
+
+        // If error
+        if(error) return;
+
+        // Cache info
+        ABToken exprToken = expr.getLastTokenSubGroup().getUsedToken();
+
+        // Register
+        Register leftRegister;
+
+        // If expr is a result
+        if(exprToken == null) {
+            leftRegister = getRegisterOfResult(expr.getLastTokenSubGroup().getReturnTypeList());
+
+            // If expr is not a result
+        } else {
+
+            // If expr is an identifier
+            if(exprToken.isIdentifier()) {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Entry
+                ABSymbolTableEntry exprEntry = abSemantic.getEntryOf(exprToken);
+
+                // Load
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(exprEntry.getLabel(), Register.R0)) + "% Load " + exprEntry.getDetails());
+                newLine();
+
+                // If expr is #
+            } else {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), exprToken.getValue()) + "% 0 + " + exprToken.getValue());
+                newLine();
+            }
+        }
+
+        // Add
+        addCode(generateLine(true, Instruction.PUTC.getName(), leftRegister.getName()));
+        newLine();
+
+        // Release registers
+        release(leftRegister);
     }
 
     /**
@@ -1191,7 +1294,7 @@ public class ABTranslation {
         R10("r10"),
         R11("r11"),
         R12("r12"),
-        R13("r13"),
+        R13("r13", true), // Library
         R14("r14", true), // Stack pointer
         R15("r15", true), // Address
         R_NO_FOUND("not_found") // Marks that there are not more registers
