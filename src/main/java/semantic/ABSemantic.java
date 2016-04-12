@@ -145,7 +145,7 @@ public class ABSemantic {
 
                     } catch (NumberFormatException e) {
                         l.error(e.getMessage());
-                        abTranslation.stop(ABTranslation.Reason.SEMANTIC_ERROR);
+                        abTranslation.foundError(ABTranslation.Reason.SEMANTIC_ERROR);
                     }
                 }
             }
@@ -194,15 +194,6 @@ public class ABSemantic {
             }
 
         } else if(token.getValue().equals(Type.PARENT.getName())) {
-
-            // If phase two and no error
-            if(phase == 2 && errors.isEmpty()) {
-
-                // If program
-                if(tablesStack.peek().getKind() == ABSymbolTableEntry.Kind.PROGRAM) {
-                    abTranslation.stop(ABTranslation.Reason.END_OF_PROGRAM);
-                }
-            }
 
             // Pop the table
             tablesStack.pop();
@@ -362,6 +353,11 @@ public class ABSemantic {
 
                 // Push to table stack
                 tablesStack.push(entry.getLink());
+
+                // Change mode
+                abTranslation.setMode(ABTranslation.Mode.FUNCTION);
+
+                // TODO Specify the function label
             }
 
         } else if(token.getValue().equals(Type.CREATE_PROGRAM_ENTRY_AND_TABLE.getName())) {
@@ -398,8 +394,8 @@ public class ABSemantic {
                 // Push to stack
                 tablesStack.push(entry.getLink());
 
-                // Allow code generation
-                abTranslation.start();
+                // Change mode
+                abTranslation.setMode(ABTranslation.Mode.ENTRY);
             }
 
         } else if(token.getValue().equals(Type.CREATE_FOR_TABLE.getName())) {
@@ -1566,7 +1562,7 @@ public class ABSemantic {
 
     private void addError(ABToken token, String message) {
         errors.add(new ABSemanticError(message, token));
-        abTranslation.stop(ABTranslation.Reason.SEMANTIC_ERROR);
+        abTranslation.foundError(ABTranslation.Reason.SEMANTIC_ERROR);
     }
 
     /*****************************************************

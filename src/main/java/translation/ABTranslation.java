@@ -33,16 +33,20 @@ public class ABTranslation {
 
     // Components
     private boolean[] free_registers;
-    private String code = "";
+    private String entry = "";
+    private String functions = "";
     private String footer = "";
     private ABSemantic abSemantic;
+    private Mode mode;
+    private Reason errorReason;
+    private boolean error = false;
 
-    // Locks
-    private boolean generateCode = false;
-    private Reason reason;
+    public enum Mode {
+        FUNCTION,
+        ENTRY
+    }
 
     public enum Reason {
-        END_OF_PROGRAM,
         SEMANTIC_ERROR,
         OUT_OF_REGISTERS
     };
@@ -118,8 +122,8 @@ public class ABTranslation {
      */
     public void generateArithmeticOperation(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS, ABToken arithOp, List<ABToken> result) {
 
-        // If code generation
-        if(!generateCode) return;
+        // If error
+        if(error) return;
 
         switch (arithOp.getToken()) {
             case ABTokenHelper.T_PLUS:
@@ -162,27 +166,19 @@ public class ABTranslation {
     }
 
     /**
-     * Check if can generate code
-     * @return
-     */
-    public boolean isGenerateCode() {
-        return generateCode;
-    }
-
-    /**
      * Disable code generation
      * @param reason
      */
-    public void stop(Reason reason) {
-        this.generateCode = false;
-        this.reason =reason;
+    public void foundError(Reason reason) {
+        this.error = true;
+        this.errorReason = reason;
     }
 
     /**
      * Allow code generation
      */
-    public void start() {
-        this.generateCode = true;
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     /**
@@ -190,19 +186,20 @@ public class ABTranslation {
      * @return
      */
     public String generateCode() {
-        if(generateCode || reason == Reason.END_OF_PROGRAM) {
+        if(!error) {
 
             // Halt
-            code += generateLine(true, Instruction.HLT.getName()) + "\n";
+            entry += generateLine(true, Instruction.HLT.getName()) + "\n";
 
             // Stack
             footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
 
-            return getHeader() + code + footer;
-        } else if(reason == Reason.SEMANTIC_ERROR) {
+            return getHeader() + entry + functions + footer;
+
+        } else if(errorReason == Reason.SEMANTIC_ERROR) {
             return "% Couldn't generate code because of one or more semantic errors";
 
-        } else if(reason == Reason.OUT_OF_REGISTERS) {
+        } else if(errorReason == Reason.OUT_OF_REGISTERS) {
             return "% Couldn't generate code because the program requires more registers";
 
         } else {
@@ -237,7 +234,7 @@ public class ABTranslation {
             Register rightRegister = getRegisterOfResult( RHS.getLastTokenSubGroup().getReturnTypeList());
 
             // INST L L R
-            code += generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " ANS";
+            addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " ANS");
             newLine();
 
             // Release register
@@ -264,11 +261,11 @@ public class ABTranslation {
                 ABSymbolTableEntry RHSEntry = abSemantic.getEntryOf(RHSToken);
 
                 // Load LHS
-                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " " + RHSEntry.getName();
+                addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " " + RHSEntry.getName());
                 newLine();
 
                 // Release register
@@ -284,7 +281,7 @@ public class ABTranslation {
                 Register leftRegister = getRegisterOfResult( LHS.getLastTokenSubGroup().getReturnTypeList());
 
                 // Add them
-                code += generateLine(true, immediate.getName(), leftRegister.getName(), leftRegister.getName(), RHSToken.getValue()) + "% ANS " + arithOp.getValue() + " " + RHSToken.getValue();
+                addCode(generateLine(true, immediate.getName(), leftRegister.getName(), leftRegister.getName(), RHSToken.getValue()) + "% ANS " + arithOp.getValue() + " " + RHSToken.getValue());
                 newLine();
 
                 // Store result
@@ -309,11 +306,11 @@ public class ABTranslation {
                 ABSymbolTableEntry LHSEntry = abSemantic.getEntryOf(LHSToken);
 
                 // Load LHS
-                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " ANS";
+                addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " ANS");
                 newLine();
 
                 // Release register
@@ -334,11 +331,11 @@ public class ABTranslation {
                 if(registerNotFound(leftRegister)) return;
 
                 // Add them
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue();
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue());
                 newLine();
 
                 // Add them
-                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + ANS";
+                addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(), leftRegister.getName(), rightRegister.getName()) + "% ANS + ANS");
                 newLine();
 
                 // Release register
@@ -368,15 +365,15 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
                 // Load RHS
-                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSEntry.getName();
+                addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSEntry.getName());
                 newLine();
 
                 // Release
@@ -400,11 +397,11 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSToken.getValue();
+                addCode(generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSToken.getValue());
                 newLine();
 
                 // Store result
@@ -427,15 +424,15 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue();
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue());
                 newLine();
 
                 // Load RHS
-                code += generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " ANS";
+                addCode(generateLine(true, nonImmediate.getName(), leftRegister.getName(),  leftRegister.getName(), rightRegister.getName()) + "% ANS " + arithOp.getValue() + " ANS");
                 newLine();
 
                 // Release
@@ -456,11 +453,11 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue();
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue());
                 newLine();
 
                 // Add them
-                code += generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + "ANS " + arithOp.getValue() + " " + RHSToken.getValue();
+                addCode(generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + "ANS " + arithOp.getValue() + " " + RHSToken.getValue());
                 newLine();
 
                 // Store result
@@ -476,8 +473,8 @@ public class ABTranslation {
      */
     public void generateAssignment(ABSemantic.ABSemanticTokenGroup LHS, ABSemantic.ABSemanticTokenGroup RHS) {
 
-        // If code generation
-        if(!generateCode) return;
+        // If error
+        if(error) return;
 
         // Registers
         Register leftRegister = null;
@@ -503,7 +500,7 @@ public class ABTranslation {
             LHSEntry = abSemantic.getEntryOf(LHSToken);
 
             // Add them
-            code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS";
+            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
             newLine();
 
             // Release register
@@ -528,11 +525,11 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails();
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName();
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
                 newLine();
 
                 // Release
@@ -553,11 +550,11 @@ public class ABTranslation {
                     return;
 
                 // Load LHS
-                code += generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue();
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue());
                 newLine();
 
                 // Add them
-                code += generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS";
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
                 newLine();
 
                 // Release
@@ -572,6 +569,18 @@ public class ABTranslation {
      *                  CODE UTILS
      *
      *****************************************************/
+
+    public void addCode(String code) {
+        switch (mode) {
+            case ENTRY:
+                entry += code;
+                break;
+
+            case FUNCTION:
+                functions += code;
+                break;
+        }
+    }
 
     /**
      * Generate a unique label
@@ -601,7 +610,7 @@ public class ABTranslation {
         // If no more resources
         if(register == Register.R_NO_FOUND) {
             l.error("All registers are in use before performing");
-            stop(Reason.OUT_OF_REGISTERS);
+            foundError(Reason.OUT_OF_REGISTERS);
             return true;
         }
         return false;
@@ -629,7 +638,7 @@ public class ABTranslation {
      * Add a new line
      */
     private void newLine() {
-        code += "\n";
+        addCode("\n");
     }
 
     /**
@@ -685,7 +694,7 @@ public class ABTranslation {
      */
     public boolean acquire(Register register) {
         if(register == Register.R_NO_FOUND) return false;
-        code += generateLine(true, "% Register " + register.getName() + " acquired");
+        addCode(generateLine(true, "% Register " + register.getName() + " acquired"));
         newLine();
         register.setInUse(true);
         return true;
@@ -699,7 +708,7 @@ public class ABTranslation {
     public boolean release(Register register) {
         if(register == Register.R_NO_FOUND) return false;
         if(register == null) return true;
-        code += generateLine(true, "% Register " + register.getName() + " released");
+        addCode(generateLine(true, "% Register " + register.getName() + " released"));
         newLine();
         register.setInUse(false);
         return true;
