@@ -303,6 +303,9 @@ public class ABSemantic {
 
                 // If identifier
                 checkTypeExists(entry);
+
+                // Generate code
+                abTranslation.generateParameter(entry);
             }
 
         } else if(token.getValue().equals(Type.CREATE_FUNCTION_ENTRY_AND_TABLE.getName())) {

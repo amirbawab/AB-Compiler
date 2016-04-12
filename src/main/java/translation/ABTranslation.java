@@ -714,6 +714,9 @@ public class ABTranslation {
         addCode(generateLine(true, Instruction.JR.getName(), Register.R15.getName()));
         newLine();
 
+        // Reset params
+        release(Register.R10);
+        release(Register.R11);
     }
 
     /**
@@ -789,6 +792,28 @@ public class ABTranslation {
 
         // Release registers
         release(leftRegister);
+    }
+
+    /**
+     * Generate parameter code
+     * @param entry
+     */
+    public void generateParameter(ABSymbolTableEntry entry) {
+
+        // If error
+        if(error) return;
+
+        // Get register
+        Register paramRegister = Register.getParamNotInUse();
+        acquire(paramRegister);
+
+        // If can't reserve register
+        if(registerNotFound(paramRegister))
+            return;
+
+        // Store
+        addCode(generateLine(true, Instruction.SW.getName(), getDataAt(entry.getLabel(), Register.R0), paramRegister.getName()));
+        newLine();
     }
 
     /*****************************************************
@@ -1273,8 +1298,10 @@ public class ABTranslation {
     public boolean release(Register register) {
         if(register == Register.R_NO_FOUND) return false;
         if(register == null) return true;
-        addCode(generateLine(true, "% Register " + register.getName() + " released"));
-        newLine();
+        if(register.isInUse()) {
+            addCode(generateLine(true, "% Register " + register.getName() + " released"));
+            newLine();
+        }
         register.setInUse(false);
         return true;
     }
@@ -1291,9 +1318,8 @@ public class ABTranslation {
         R7("r7"),
         R8("r8"),
         R9("r9"),
-        R10("r10"),
-        R11("r11"),
-        R12("r12"),
+        R10("r10"), // Param 1
+        R11("r11"), // Param 2
         R13("r13", true), // Library
         R14("r14", true), // Stack pointer
         R15("r15", true), // Address
@@ -1321,6 +1347,12 @@ public class ABTranslation {
             for(Register register : values())
                 if(register.canReset)
                     register.setInUse(false);
+        }
+
+        public static Register getParamNotInUse() {
+            if(R10.isInUse() && R11.isInUse()) return R_NO_FOUND;
+            if(R10.isInUse()) return R11;
+            return R10;
         }
 
         public String getName() {
