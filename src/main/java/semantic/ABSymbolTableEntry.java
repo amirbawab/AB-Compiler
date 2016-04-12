@@ -251,6 +251,10 @@ public class ABSymbolTableEntry {
         return label;
     }
 
+    public String getReturnLabel() {
+        return getLabel() + "ret";
+    }
+
     public String getDetails() {
         return getTable().getName() + " > " + getName() + " : " + getTypeAsString();
     }

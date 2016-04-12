@@ -755,6 +755,9 @@ public class ABSemantic {
 
                 // Add type to function
                 tokenGroupsStack.peek().getLastTokenSubGroup().setReturnTypeList(returnGroup.getLastTokenSubGroup().getReturnTypeList());
+
+                // Generate code
+                abTranslation.generateFunctionReturn(returnGroup, tokenGroupsStack.peek());
             }
 
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_FUNCTION.getName())) {
@@ -788,6 +791,9 @@ public class ABSemantic {
                         addError(usedToken, String.format(ABSemanticMessageHelper.FUNCTION_WRONG_RETURN, usedToken.getValue(),usedToken.getRow(), usedToken.getCol()));
                     }
                 }
+
+                // Generate code
+                abTranslation.generateEndOfFunction();
             }
 
         } else if(token.getValue().equals(Type.USE_GET.getName())) {

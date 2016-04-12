@@ -103,13 +103,13 @@ public class ABTranslation {
             // Cache value
             ABSymbolTableEntry entry = table.getRows().get(i);
 
+            // Data
+            String instruction;
+            int value;
+
             switch (entry.getKind()) {
                 case PARAMETER:
                 case VARIABLE:
-
-                    // Data
-                    String instruction;
-                    int value = 0;
 
                     // If 1 word
                     if(entry.getSizeInBytes() == ABArchitectureHelper.Size.INTEGER.getSizeInByte()) {
@@ -123,6 +123,17 @@ public class ABTranslation {
                     footer += String.format("%-15s %-15s %-15s", entry.getLabel(), instruction, value+"") + "% " + entry.getDetails();
                     footer += "\n";
                     break;
+
+                case FUNCTION:
+
+                    // FIXME Handle int as return type
+                    instruction = Instruction.DW.getName();
+                    value = 0;
+
+                    footer += String.format("%-15s %-15s %-15s", entry.getReturnLabel(), instruction, value+"") + "% " + entry.getDetails();
+                    footer += "\n";
+                    break;
+
             }
         }
     }
@@ -585,6 +596,95 @@ public class ABTranslation {
         // Reset
         addCode(generateLine(false, endForLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
         newLine();
+    }
+
+    /**
+     * Generate end of function code
+     */
+    public void generateEndOfFunction() {
+
+        // If error
+        if(error) return;
+
+        // Jump
+        addCode(generateLine(true, Instruction.JR.getName(), Register.R15.getName()));
+        newLine();
+
+    }
+
+    /**
+     * Generate logical check
+     * @param expr
+     */
+    public void generateFunctionReturn(ABSemantic.ABSemanticTokenGroup expr, ABSemantic.ABSemanticTokenGroup function) {
+
+        // If error
+        if(error) return;
+
+        // Cache info
+        ABToken exprToken = expr.getLastTokenSubGroup().getUsedToken();
+
+        // Register
+        Register leftRegister;
+
+        // If expr is a result
+        if(exprToken == null) {
+            leftRegister = getRegisterOfResult(expr.getLastTokenSubGroup().getReturnTypeList());
+
+            // If expr is not a result
+        } else {
+
+            // If expr is an identifier
+            if(exprToken.isIdentifier()) {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Entry
+                ABSymbolTableEntry exprEntry = abSemantic.getEntryOf(exprToken);
+
+                // Load
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(exprEntry.getLabel(), Register.R0)) + "% Load " + exprEntry.getDetails());
+                newLine();
+
+                // If expr is #
+            } else {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), exprToken.getValue()) + "% 0 + " + exprToken.getValue());
+                newLine();
+            }
+        }
+
+        // Function token
+        ABToken usedFunctionToken = function.getLastTokenSubGroup().getUsedToken();
+
+        // If entry found - (should always be)
+        if(entry != null) {
+
+            // Get function entry
+            ABSymbolTableEntry functionEntry = abSemantic.getEntryOf(usedFunctionToken);
+
+            // Branch zero
+            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(functionEntry.getReturnLabel(), Register.R0), leftRegister.getName()));
+            newLine();
+        }
+
+        // Release registers
+        release(leftRegister);
     }
 
     /*****************************************************
