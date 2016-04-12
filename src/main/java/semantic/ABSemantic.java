@@ -425,6 +425,7 @@ public class ABSemantic {
                 // Create for entry
                 ABSymbolTableEntry entry = ABSymbolTableEntryFactory.createForEntry(tablesStack.peek(), inputToken.getValue());
                 entry.setToken(inputToken);
+                tablesStack.peek().addVirtualRow(entry);
 
                 // Push table to stack
                 tablesStack.push(entry.getLink());
@@ -1374,6 +1375,17 @@ public class ABSemantic {
 
             // Loop on entries
             for(ABSymbolTableEntry entry : table.getRows()) {
+
+                // Generate label
+                entry.setLabel(getAlphaLabel(uniqueId++));
+
+                // If has entry, queue it
+                if(entry.getLink() != null)
+                    tableQueue.offer(entry.getLink());
+            }
+
+            // Loop on virtual entries
+            for(ABSymbolTableEntry entry : table.getVirtualRows()) {
 
                 // Generate label
                 entry.setLabel(getAlphaLabel(uniqueId++));

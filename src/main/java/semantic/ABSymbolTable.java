@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class ABSymbolTable {
     private List<ABSymbolTableEntry> rows;
+    private List<ABSymbolTableEntry> virtualRows;
     private String name;
     private String simpleName;
     private ABSymbolTableEntry.Kind kind;
@@ -22,13 +23,18 @@ public class ABSymbolTable {
         this.kind = kind;
         this.simpleName = simpleName;
         this.rows = new ArrayList<>();
+        this.virtualRows = new ArrayList<>();
     }
 
     public List<ABSymbolTableEntry> getRows() {
         return rows;
     }
+    public List<ABSymbolTableEntry> getVirtualRows() {
+        return virtualRows;
+    }
 
     public void addRow(ABSymbolTableEntry entry) { this.rows.add(entry); }
+    public void addVirtualRow(ABSymbolTableEntry entry) {this.virtualRows.add(entry);}
     public String getName() {
         return name;
     }
