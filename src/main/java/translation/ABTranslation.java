@@ -83,10 +83,14 @@ public class ABTranslation {
      * @param table
      */
     public void appendFooter(ABSymbolTable table) {
+
+        // Comment
+        footer += "% Table: " + table.getName() + "\n";
+
         for(ABSymbolTableEntry entry : table.getRows()) {
 
             // Data
-            String instruction = null;
+            String instruction;
             int value = 0;
 
             // If 1 word
@@ -101,6 +105,8 @@ public class ABTranslation {
             footer += String.format("%-15s %-15s %-15s", entry.getLabel(), instruction, value+"") + "% " + entry.getDetails();
             footer += "\n";
         }
+
+        footer += "\n";
     }
 
     /**

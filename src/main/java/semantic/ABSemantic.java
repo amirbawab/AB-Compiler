@@ -146,8 +146,10 @@ public class ABSemantic {
                         for(ABSymbolTable table : allTables) {
                             switch (table.getKind()) {
                                 case PROGRAM:
+                                case CLASS:
+                                case FOR:
+                                case FUNCTION:
                                     abTranslation.appendFooter(table);
-
                                     break;
                             }
                         }
