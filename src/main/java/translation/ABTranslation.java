@@ -32,14 +32,18 @@ public class ABTranslation {
     private String entry = "";
     private String functions = "";
     private String footer = "";
+    private String buffer = "";
     private ABSemantic abSemantic;
     private Mode mode;
     private Reason errorReason;
     private boolean error = false;
 
+    // Mode
+    private Stack<Mode> modes;
     public enum Mode {
         FUNCTION,
-        ENTRY
+        ENTRY,
+        BUFFER
     }
 
     public enum Reason {
@@ -63,6 +67,7 @@ public class ABTranslation {
         groupRegisterMap = new HashMap<>();
         labels = new Stack<>();
         Register.reset();
+        modes = new Stack<>();
     }
 
     /**
@@ -136,6 +141,14 @@ public class ABTranslation {
      */
     public void setMode(Mode mode) {
         this.mode = mode;
+    }
+
+    /**
+     * Get mode
+     * @return
+     */
+    public Mode getMode() {
+        return mode;
     }
 
     /**
@@ -485,6 +498,95 @@ public class ABTranslation {
         newLine();
     }
 
+    /**
+     * Generate for init code
+     */
+    public void generateForInit() {
+
+        // If error
+        if(error) return;
+
+        // Labels
+        String forLabel = generateUniqueLabel("for", true);
+        String condLabel = generateUniqueLabel("cond", false);
+
+        // Jump
+        addCode(generateLine(true, Instruction.J.getName(), condLabel));
+        newLine();
+
+        // Reset
+        addCode(generateLine(false, forLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+
+        // Set mode
+        modes.push(getMode());
+
+        // Change mode to buffer
+        setMode(Mode.BUFFER);
+
+        // Reset
+        addCode(generateLine(false, condLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+    }
+
+    /**
+     * Generate for check code
+     */
+    public void generateForCheck(ABSemantic.ABSemanticTokenGroup expr) {
+
+        // If error
+        if(error) return;
+
+        // Register
+        Register leftRegister = getRegisterOfGroup(expr);
+
+        // Generate labels
+        String endForLabel = generateUniqueLabel("endfor", true);
+
+        // Branch zero
+        addCode(generateLine(true, Instruction.BZ.getName(), leftRegister.getName(), endForLabel));
+        newLine();
+
+        // Release registers
+        release(leftRegister);
+
+        // Change back the mode
+        setMode(modes.pop());
+    }
+
+    /**
+     * Generate for math code
+     */
+    public void generateForMath() {
+
+        // If error
+        if(error) return;
+
+        // Flush buffer
+        addCode(getBufferAndFlush());
+    }
+
+    /**
+     * Generate end for
+     */
+    public void generateEndFor() {
+
+        // If error
+        if(error) return;
+
+        // Labels
+        String endForLabel = getLastGeneratedLabel();
+        String forLabel = getLastGeneratedLabel();
+
+        // Jump
+        addCode(generateLine(true, Instruction.J.getName(), forLabel));
+        newLine();
+
+        // Reset
+        addCode(generateLine(false, endForLabel, Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0"));
+        newLine();
+    }
+
     /*****************************************************
      *
      *                  ARITHMETIC HELPERS
@@ -765,6 +867,10 @@ public class ABTranslation {
             case FUNCTION:
                 functions += code;
                 break;
+
+            case BUFFER:
+                buffer += code;
+                break;
         }
     }
 
@@ -854,6 +960,16 @@ public class ABTranslation {
      */
     private void newLine() {
         addCode("\n");
+    }
+
+    /**
+     * Get buffer content and flush it
+     * @return
+     */
+    public String getBufferAndFlush() {
+        String tmp = buffer;
+        buffer = "";
+        return tmp;
     }
 
     /**

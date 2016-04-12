@@ -82,6 +82,10 @@ public class ABSemantic {
         IF_CHECK("ifCheck"),                                                                    // Pop expression from group stack
         ELSE_CHECK("elseCheck"),                                                                // Generate code
         END_IF("endIf"),                                                                        // Generate code
+        FOR_INIT("forInit"),
+        FOR_CHECK("forCheck"),
+        FOR_MATH("forMath"),
+        END_FOR("endFor"),
         ;
         private String name;
         Type(String name) {
@@ -550,6 +554,34 @@ public class ABSemantic {
             if(phase == 2) {
                 // Generate code
                 abTranslation.generateEndIf();
+            }
+
+        } else if(token.getValue().equals(Type.FOR_INIT.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateForInit();
+            }
+
+        } else if(token.getValue().equals(Type.FOR_CHECK.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateForCheck(tokenGroupsStack.pop());
+            }
+
+        } else if(token.getValue().equals(Type.FOR_MATH.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateForMath();
+            }
+
+        } else if(token.getValue().equals(Type.END_FOR.getName())) {
+
+            if(phase == 2) {
+                // Generate code
+                abTranslation.generateEndFor();
             }
 
         } else if(token.getValue().equals(Type.USE_NOT.getName())) {
