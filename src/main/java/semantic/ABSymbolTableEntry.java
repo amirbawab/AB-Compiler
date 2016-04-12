@@ -102,6 +102,13 @@ public class ABSymbolTableEntry {
 
     public int getArrayDimension() { return type.size()-1; }
 
+    public int getTotalNumberOfElements() {
+        int numberOfElements = 1;
+        for(int i=1; i < type.size(); i++)
+            numberOfElements *= Integer.parseInt(type.get(i).getValue());
+        return numberOfElements;
+    }
+
     public boolean isArray() { return type.size() > 1; }
 
     public boolean isProperlyDefined() {

@@ -419,10 +419,7 @@ public class ABTranslation {
         ABToken LHSToken = LHS.getLastTokenSubGroup().getUsedToken();
         ABToken RHSToken = RHS.getLastTokenSubGroup().getUsedToken();
 
-        // TODO Check if LHS is in stack
-
         // If RHS is a result
-        // FIXME Assuming that LHS has always an entry and is not in the stack
         if(RHSToken == null) {
 
             // Get result register
@@ -431,15 +428,19 @@ public class ABTranslation {
             // Get entry
             LHSEntry = abSemantic.getEntryOf(LHSToken);
 
+            // Offset register
+            Register offsetRegister = Register.R0;
+
+//            int offset = calculateOffset(LHS);
+
             // Add them
-            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
             newLine();
 
             // Release register
             release(leftRegister);
 
             // If RHS is not a result
-            // FIXME Assuming that LHS has always an entry and is not in the stack
         }  else {
 
             // If RHS is an identifier
@@ -953,6 +954,36 @@ public class ABTranslation {
      *                  CODE UTILS
      *
      *****************************************************/
+
+    public int calculateOffset(ABSemantic.ABSemanticTokenGroup group) {
+
+        // If not an array
+        if(group.getLastTokenSubGroup().getArgumentsSize() == 0) {
+            return 0;
+
+            // If array
+        } else {
+
+            // Find entry
+            ABSymbolTableEntry entry = abSemantic.getEntryOf(group.getLastTokenSubGroup().getUsedToken());
+
+            // Size of one element
+            int elementSize = entry.getSizeInBytes() / entry.getTotalNumberOfElements();
+
+            int offset = 0;
+            int i=0;
+            for(; i < group.getLastTokenSubGroup().getArgumentsSize()-1; i++) {
+                int index = Integer.parseInt(group.getLastTokenSubGroup().getArgumentList(i).get(0).getValue());
+                int size = Integer.parseInt(entry.getType().get(i+1).getValue());
+                offset += index * elementSize * size;
+            }
+
+            int index = Integer.parseInt(group.getLastTokenSubGroup().getArgumentList(i).get(0).getValue());
+            int size = Integer.parseInt(entry.getType().get(i+1).getValue());
+            offset += index * elementSize;
+            return offset;
+        }
+    }
 
     /**
      * Add code based on mode
