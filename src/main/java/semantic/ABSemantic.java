@@ -1603,7 +1603,7 @@ public class ABSemantic {
             buf[i] = (char) ('A' + n % 26);
             n /= 26;
         }
-        return new String(buf);
+        return new String(buf) + "_";
     }
 
     /**

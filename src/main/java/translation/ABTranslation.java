@@ -61,6 +61,7 @@ public class ABTranslation {
         // Init components
         this.abSemantic = abSemantic;
         resultRegisterMap = new HashMap<>();
+        Register.reset();
     }
 
     public String getHeader() {
@@ -759,6 +760,7 @@ public class ABTranslation {
 
         String name;
         boolean inUse = false;
+        boolean canReset = true;
         Register(String name) {
             this.name = name;
             inUse = false;
@@ -767,7 +769,16 @@ public class ABTranslation {
         Register(String name, boolean inUse) {
             this.name = name;
             this.inUse = inUse;
+            if(inUse) canReset = false;
+        }
 
+        /**
+         * Reset registers that can be reset
+         */
+        public static void reset() {
+            for(Register register : values())
+                if(register.canReset)
+                    register.setInUse(false);
         }
 
         public String getName() {
