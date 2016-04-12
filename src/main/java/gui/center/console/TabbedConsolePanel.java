@@ -5,8 +5,7 @@ import gui.center.console.components.ConsoleCellRender;
 import gui.center.console.components.ConsoleTable;
 import gui.center.console.components.ConsoleTableNavigation;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Console;
@@ -45,6 +44,7 @@ public class TabbedConsolePanel extends JTabbedPane {
 		
 		// Create and add text editor to panel
 		JTextPane textPane = new JTextPane();
+		textPane.setFont(new Font("Consolas",Font.PLAIN, 14));
 		textPane.setEditable(false);
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		panel.add(scrollPane, BorderLayout.CENTER);
@@ -179,6 +179,7 @@ public class TabbedConsolePanel extends JTabbedPane {
 	public void setText(String panelTitle, String text) {
 		JTextPane textPane = (JTextPane) getBoard(panelTitle);
 		textPane.setText(text);
+		textPane.setCaretPosition(0);
 	}
 
 	/**
