@@ -1289,8 +1289,6 @@ public class ABSemantic {
                     // Generate size for table
                     generateTableAndEntrySize(entry.getLink());
 
-                    // Set size for entry
-                    entry.setSizeInBytes(entry.getLink().getSizeInBytes());
                 // If variable or parameter
                 } else {
 

@@ -239,6 +239,7 @@ public class ABSymbolTableEntry {
     }
 
     public int getSizeInBytes() {
+        if(getLink() != null) return getLink().getSizeInBytes();
         return sizeInBytes;
     }
 
