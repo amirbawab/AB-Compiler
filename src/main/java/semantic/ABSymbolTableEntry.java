@@ -255,11 +255,17 @@ public class ABSymbolTableEntry {
     }
 
     public String getLabel() {
+        if(kind == Kind.FUNCTION)
+            return getReturnLabel();
+        return getStaticLabel();
+    }
+
+    public String getStaticLabel() {
         return label;
     }
 
     public String getReturnLabel() {
-        return getLabel() + "ret";
+        return label + "ret";
     }
 
     public String getDetails() {

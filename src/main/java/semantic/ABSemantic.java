@@ -498,6 +498,9 @@ public class ABSemantic {
 
             if(phase == 2) {
                 checkFunctionUse();
+
+                // Generate code
+                abTranslation.generateFunctionCall(tokenGroupsStack.peek());
             }
 
         } else if(token.getValue().equals(Type.USE_FUNCTION_BASED_ON_LAST_VAR.getName())) {
@@ -514,6 +517,9 @@ public class ABSemantic {
 
             if(phase == 2) {
                 checkFunctionDataMember();
+
+                // Generate code
+                abTranslation.generateFunctionCall(tokenGroupsStack.peek());
             }
 
         } else if(token.getValue().equals(Type.POP_GROUP_STACK_1.getName())) {
@@ -748,6 +754,9 @@ public class ABSemantic {
 
                 // Add type to function
                 tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(param.getLastTokenSubGroup().getReturnTypeList());
+
+                // Generate code
+                abTranslation.generateParamPass(param);
             }
 
         } else if(token.getValue().equals(Type.FUNCTION_RETURN.getName())) {

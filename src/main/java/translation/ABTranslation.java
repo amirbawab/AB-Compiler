@@ -609,7 +609,7 @@ public class ABTranslation {
         // If error
         if(error) return;
 
-        addCode(generateLine(false, entry.getLabel(), Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0") + "% Start of function: " + entry.getDetails());
+        addCode(generateLine(false, entry.getStaticLabel(), Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0") + "% Start of function: " + entry.getDetails());
         newLine();
     }
 
@@ -720,7 +720,7 @@ public class ABTranslation {
     }
 
     /**
-     * Generate logical check
+     * Generate logical check code
      * @param expr
      */
     public void generateFunctionReturn(ABSemantic.ABSemanticTokenGroup expr, ABSemantic.ABSemanticTokenGroup function) {
@@ -795,6 +795,76 @@ public class ABTranslation {
     }
 
     /**
+     * Generate parameter passing code
+     * @param expr
+     */
+    public void generateParamPass(ABSemantic.ABSemanticTokenGroup expr) {
+
+        // If error
+        if(error) return;
+
+        // Cache info
+        ABToken exprToken = expr.getLastTokenSubGroup().getUsedToken();
+
+        // Register
+        Register leftRegister;
+
+        // If expr is a result
+        if(exprToken == null) {
+            leftRegister = getRegisterOfResult(expr.getLastTokenSubGroup().getReturnTypeList());
+
+            // If expr is not a result
+        } else {
+
+            // If expr is an identifier
+            if(exprToken.isIdentifier()) {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Entry
+                ABSymbolTableEntry exprEntry = abSemantic.getEntryOf(exprToken);
+
+                // Load
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(exprEntry.getLabel(), Register.R0)) + "% Load " + exprEntry.getDetails());
+                newLine();
+
+                // If expr is #
+            } else {
+
+                // Get register
+                leftRegister = Register.getRegisterNotInUse();
+                acquire(leftRegister);
+
+                // If can't reserve register
+                if(registerNotFound(leftRegister))
+                    return;
+
+                // Load
+                addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), exprToken.getValue()) + "% 0 + " + exprToken.getValue());
+                newLine();
+            }
+        }
+
+        // Get register
+        Register paramRegister = Register.getParamNotInUse();
+        acquire(paramRegister);
+
+        // If can't reserve register
+        if(registerNotFound(paramRegister))
+            return;
+
+        // Store in parameter
+        addCode(generateLine(true, Instruction.ADD.getName(), paramRegister.getName(), Register.R0.getName(), leftRegister.getName()) + "% Store ANS in parameter register");
+        newLine();
+    }
+
+    /**
      * Generate parameter code
      * @param entry
      */
@@ -814,6 +884,30 @@ public class ABTranslation {
         // Store
         addCode(generateLine(true, Instruction.SW.getName(), getDataAt(entry.getLabel(), Register.R0), paramRegister.getName()));
         newLine();
+    }
+
+    /**
+     * Generate code for function call
+     * @param function
+     */
+    public void generateFunctionCall(ABSemantic.ABSemanticTokenGroup function) {
+
+        // If error
+        if(error) return;
+
+        // Get token
+        ABToken usedToken = function.getLastTokenSubGroup().getUsedToken();
+
+        // Get entry
+        ABSymbolTableEntry entry = abSemantic.getEntryOf(usedToken);
+
+        // Jump
+        addCode(generateLine(true, Instruction.JL.getName(), Register.R15.getName(), entry.getStaticLabel()));
+        newLine();
+
+        // Release param registers
+        release(Register.R10);
+        release(Register.R11);
     }
 
     /*****************************************************
