@@ -357,7 +357,8 @@ public class ABSemantic {
                 // Change mode
                 abTranslation.setMode(ABTranslation.Mode.FUNCTION);
 
-                // TODO Specify the function label
+                // Mark start of a new function
+                abTranslation.generateFunctionHeader(entry);
             }
 
         } else if(token.getValue().equals(Type.CREATE_PROGRAM_ENTRY_AND_TABLE.getName())) {

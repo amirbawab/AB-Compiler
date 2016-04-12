@@ -32,7 +32,6 @@ public class ABTranslation {
     private final String STACK_SIZE = (4*300) + "";
 
     // Components
-    private boolean[] free_registers;
     private String entry = "";
     private String functions = "";
     private String footer = "";
@@ -61,7 +60,6 @@ public class ABTranslation {
 
         // Init components
         this.abSemantic = abSemantic;
-        free_registers = new boolean[15];
         resultRegisterMap = new HashMap<>();
     }
 
@@ -88,29 +86,34 @@ public class ABTranslation {
      */
     public void appendFooter(ABSymbolTable table) {
 
-        // Comment
-        footer += "% Table: " + table.getName() + "\n";
+        // Loop on entries
+        for(int i=0; i < table.getRows().size(); i++) {
 
-        for(ABSymbolTableEntry entry : table.getRows()) {
+            // Cache value
+            ABSymbolTableEntry entry = table.getRows().get(i);
 
-            // Data
-            String instruction;
-            int value = 0;
+            switch (entry.getKind()) {
+                case PARAMETER:
+                case VARIABLE:
 
-            // If 1 word
-            if(entry.getSizeInBytes() == ABArchitectureHelper.Size.INTEGER.getSizeInByte()) {
-                instruction = Instruction.DW.getName();
-                value = 0;
-            } else {
-                instruction = Instruction.RES.getName();
-                value = entry.getSizeInBytes();
+                    // Data
+                    String instruction;
+                    int value = 0;
+
+                    // If 1 word
+                    if(entry.getSizeInBytes() == ABArchitectureHelper.Size.INTEGER.getSizeInByte()) {
+                        instruction = Instruction.DW.getName();
+                        value = 0;
+                    } else {
+                        instruction = Instruction.RES.getName();
+                        value = entry.getSizeInBytes();
+                    }
+
+                    footer += String.format("%-15s %-15s %-15s", entry.getLabel(), instruction, value+"") + "% " + entry.getDetails();
+                    footer += "\n";
+                    break;
             }
-
-            footer += String.format("%-15s %-15s %-15s", entry.getLabel(), instruction, value+"") + "% " + entry.getDetails();
-            footer += "\n";
         }
-
-        footer += "\n";
     }
 
     /**
@@ -190,6 +193,12 @@ public class ABTranslation {
 
             // Halt
             entry += generateLine(true, Instruction.HLT.getName()) + "\n";
+
+            // Functions comment
+            functions = "\n% Functions\n" + functions;
+
+            // Footer comment
+            footer = "\n% Footer\n" + footer;
 
             // Stack
             footer += String.format("%-15s %-15s %-15s", STACK, Instruction.RES.getName(), STACK_SIZE) + "% Allocating memory for the stack\n";
@@ -564,12 +573,25 @@ public class ABTranslation {
 
     }
 
+    /**
+     * Generate function header
+     * @param entry
+     */
+    public void generateFunctionHeader(ABSymbolTableEntry entry) {
+        addCode(generateLine(false, entry.getLabel(), Instruction.SUBI.getName(), Register.R0.getName(), Register.R0.getName(), "0") + "% Start of function: " + entry.getDetails());
+        newLine();
+    }
+
     /*****************************************************
      *
      *                  CODE UTILS
      *
      *****************************************************/
 
+    /**
+     * Add code based on mode
+     * @param code
+     */
     public void addCode(String code) {
         switch (mode) {
             case ENTRY:
