@@ -34,6 +34,7 @@ public class ABSemantic {
 
     // Helper
     private Map<ABToken, ABSymbolTableEntry> tokenEntryMap;
+    private Map<ABToken, List<List<ABToken>>> varIndexMap;
     private Stack<ABSemanticTokenGroup> tokenGroupsStack;
     private Stack<ABToken> arithOpStack;
 
@@ -105,6 +106,7 @@ public class ABSemantic {
         tokenGroupsStack = new Stack<>();
         arithOpStack = new Stack<>();
         abTranslation = new ABTranslation(this);
+        varIndexMap = new HashMap<>();
     }
 
     /**
@@ -112,6 +114,8 @@ public class ABSemantic {
      * @param token
      * @param tokenIndex
      */
+    // TODO Push a result group after every expression even if it's only one number:
+    // TODO Example: 1, 1+2, x+4, etc... all should be pushed and have a result stored in the map
     public void eval(ABGrammarToken token, int tokenIndex, int phase) {
 
         if(token.getValue().equals(Type.CREATE_GLOBAL_TABLE.getName())) {
@@ -743,6 +747,26 @@ public class ABSemantic {
 
                 // Add type to array
                 tokenGroupsStack.peek().getLastTokenSubGroup().addArgument(index.getLastTokenSubGroup().getReturnTypeList());
+
+                // Variable
+                ABToken varUsedToken = tokenGroupsStack.peek().getLastTokenSubGroup().getUsedToken();
+
+                // If variable does not have record
+                if(!varIndexMap.containsKey(varUsedToken))
+                    varIndexMap.put(varUsedToken, new ArrayList<List<ABToken>>());
+
+                // If a result
+                if(index.getLastTokenSubGroup().getUsedToken() == null) {
+                    varIndexMap.get(varUsedToken).add(index.getLastReturnType());
+
+                // If variable or integer
+                } else {
+
+                    // Tmp list
+                    List<ABToken> tmpList = new ArrayList<>();
+                    tmpList.add(index.getLastTokenSubGroup().getUsedToken());
+                    varIndexMap.get(varUsedToken).add(tmpList);
+                }
             }
 
         } else if(token.getValue().equals(Type.FUNCTION_PARAM.getName())) {
@@ -1897,5 +1921,14 @@ public class ABSemantic {
      */
     public ABSymbolTableEntry getEntryOf(ABToken token) {
         return tokenEntryMap.get(token);
+    }
+
+    /**
+     * Get indices of a variable
+     * @param token
+     * @return
+     */
+    public List<List<ABToken>> getIndicesOf(ABToken token) {
+        return varIndexMap.get(token);
     }
 }

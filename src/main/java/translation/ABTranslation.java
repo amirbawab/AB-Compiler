@@ -432,9 +432,11 @@ public class ABTranslation {
             LHSEntry = abSemantic.getEntryOf(LHSToken);
 
             // Offset register
-            Register offsetRegister = Register.R0;
+            Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
 
-//            int offset = calculateOffset(LHS);
+            // If not found
+            if(registerNotFound(offsetRegister))
+                return;
 
             // Add them
             addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
@@ -442,6 +444,7 @@ public class ABTranslation {
 
             // Release register
             release(leftRegister);
+            release(offsetRegister);
 
             // If RHS is not a result
         }  else {
@@ -464,12 +467,19 @@ public class ABTranslation {
                 addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
+                // Offset register
+                Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
+
+                if(registerNotFound(offsetRegister))
+                    return;
+
                 // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
                 newLine();
 
                 // Release
                 release(leftRegister);
+                release(offsetRegister);
 
                 // If RHS is not an identifier
             } else {
@@ -489,12 +499,17 @@ public class ABTranslation {
                 addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(),  Register.R0.getName(), RHSToken.getValue()) + "% " +  "0 + " + RHSToken.getValue());
                 newLine();
 
+                // Offset register
+                Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
+                acquire(offsetRegister);
+
                 // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), Register.R0),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
                 newLine();
 
                 // Release
                 release(leftRegister);
+                release(offsetRegister);
             }
         }
 
@@ -1177,33 +1192,74 @@ public class ABTranslation {
      *
      *****************************************************/
 
-    public int calculateOffset(ABSemantic.ABSemanticTokenGroup group) {
+    public Register getRegisterOffsetAndAcquire(ABSemantic.ABSemanticTokenGroup group) {
 
         // If not an array
         if(group.getLastTokenSubGroup().getArgumentsSize() == 0) {
-            return 0;
+            return Register.R0;
 
             // If array
         } else {
 
-            // Find entry
-            ABSymbolTableEntry entry = abSemantic.getEntryOf(group.getLastTokenSubGroup().getUsedToken());
+            // Load values
+            List<List<ABToken>> indecies = abSemantic.getIndicesOf(group.getLastTokenSubGroup().getUsedToken());
 
-            // Size of one element
-            int elementSize = entry.getSizeInBytes() / entry.getTotalNumberOfElements();
+            // Store
+            Register offsetRegister = Register.getRegisterNotInUse();
+            acquire(offsetRegister);
 
-            int offset = 0;
-            int i=0;
-            for(; i < group.getLastTokenSubGroup().getArgumentsSize()-1; i++) {
-                int index = Integer.parseInt(group.getLastTokenSubGroup().getArgumentList(i).get(0).getValue());
-                int size = Integer.parseInt(entry.getType().get(i+1).getValue());
-                offset += index * elementSize * size;
+            // Reset
+            addCode(generateLine(true, Instruction.ADD.getName(), offsetRegister.getName(), Register.R0.getName(), Register.R0.getName()));
+            newLine();
+
+            for(int i=0; i < indecies.size(); i++) {
+
+                // Get index
+                List<ABToken> indexTokens = indecies.get(i);
+
+                // Check if it's a result
+                if(getRegisterOfResult(indexTokens) != null) {
+                    addCode(generateLine(true, Instruction.ADD.getName(), offsetRegister.getName(), offsetRegister.getName(), getRegisterOfResult(indexTokens).getName()));
+                    newLine();
+
+                // If variable
+                } else if(abSemantic.getEntryOf(indexTokens.get(0)) != null) {
+
+                    // TODO handle array[array[1]]
+
+                    // Entry
+                    ABSymbolTableEntry varEntry = abSemantic.getEntryOf(indexTokens.get(0));
+
+                    // Get register
+                    Register tmpRegister = Register.getRegisterNotInUse();
+                    acquire(tmpRegister);
+
+                    // If not found
+                    if(registerNotFound(tmpRegister))
+                        return tmpRegister;
+
+                    addCode(generateLine(true, Instruction.LW.getName(), tmpRegister.getName(), getDataAt(varEntry.getLabel(), Register.R0)));
+                    newLine();
+
+                    addCode(generateLine(true, Instruction.ADD.getName(), offsetRegister.getName(), offsetRegister.getName(), tmpRegister.getName()));
+                    newLine();
+
+                    release(tmpRegister);
+
+                // It's an integer
+                } else {
+
+                    // Value
+                    addCode(generateLine(true, Instruction.ADDI.getName(), offsetRegister.getName(), offsetRegister.getName(), indexTokens.get(0).getValue()));
+                    newLine();
+                }
             }
 
-            int index = Integer.parseInt(group.getLastTokenSubGroup().getArgumentList(i).get(0).getValue());
-            int size = Integer.parseInt(entry.getType().get(i+1).getValue());
-            offset += index * elementSize;
-            return offset;
+            // Value
+            addCode(generateLine(true, Instruction.MULI.getName(), offsetRegister.getName(), offsetRegister.getName(), ABArchitectureHelper.Size.INTEGER.getSizeInByte()+""));
+            newLine();
+
+            return offsetRegister;
         }
     }
 
@@ -1392,6 +1448,7 @@ public class ABTranslation {
     public boolean release(Register register) {
         if(register == Register.R_NO_FOUND) return false;
         if(register == null) return true;
+        if(!register.canReset) return true;
         if(register.isInUse()) {
             addCode(generateLine(true, "% Register " + register.getName() + " released"));
             newLine();
