@@ -102,3 +102,7 @@ Registers can be found here:
 
 Architecture can be found here:
 <a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/translation/helper/ABArchitectureHelper.java#L6">ABArchitectureHelper.java</a>
+
+#Running the application:
+
+The project is compiled using Gradle builder. However, the project has an executable JAR file containing all the dependencies and files needed in order to run the application.
