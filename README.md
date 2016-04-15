@@ -58,7 +58,7 @@ DFA input file: <a href="https://github.com/amirbawab/AB-Compiler/blob/master/sr
 |   T_ERR_BLOCK_COMMENT |       /* EOF      | Block comment '%s' at line %d col %d is not closed |
 
 
-## Syntax analysis
+## Syntax analysis: (Top-down parsing)
 
 Link to the most recent Grammar file:
 <a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/resources/parser/grammar.bnf">grammar.bnf</a>
@@ -72,3 +72,20 @@ regex `#[^ ]+#`*
 **Pop** grammar stack if the next input token is in the follow set of the top of the grammar stack or if the input reaches EOF represented by `$`. 
 Otherwise **scan** next input token.
 
+### Error messages:
+
+List of the most recent file:
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/parser/helper/ABParserMessageHelper.java">ABParserMessageHelper.java</a>
+
+## Semantic analysis
+
+In order to perform semantic analysis on the user input, the grammar is augmented with semantic actions tokens of the form` #action#`. Each time the parser encounters a semantic action token, it will execute the corresponding function assigned to it in the code.
+
+### Semantic actions
+Link to all semantic action tokens:
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/semantic/ABSemantic.java#L44">ABSemantic.java</a>
+<br/>
+
+### Error messages
+Link to most recent file: 
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/semantic/helper/ABSemanticMessageHelper.java">ABSemanticMessageHelper.java</a>
