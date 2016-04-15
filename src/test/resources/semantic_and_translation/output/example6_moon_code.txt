@@ -1,0 +1,102 @@
+% The following code is generated automatically by ABCompiler
+%	Time generated: 2016/04/14 23:28:18
+
+                entry          
+                align          
+                addi            r14,            r0,             topaddr        % Set stack pointer
+                % Register r1 acquired
+                getc            r1             
+                sw              F_(r0),         r1             
+                % Register r1 released
+                % Register r1 acquired
+                getc            r1             
+                sw              G_(r0),         r1             
+                % Register r1 released
+                % Register r1 acquired
+                lw              r1,             F_(r0)         % Load Global > program > x : int
+                % Register r10 acquired
+                add             r10,            r0,             r1             % Store ANS in parameter register
+                % Register r2 acquired
+                lw              r2,             G_(r0)         % Load Global > program > y : int
+                % Register r11 acquired
+                add             r11,            r0,             r2             % Store ANS in parameter register
+                jl              r15,            C_             
+                % Register r10 released
+                % Register r11 released
+                % Register r3 acquired
+                lw              r3,             C_ret(r0)      % Load Global > multiply : int
+                sw              H_(r0),         r3             % z = multiply
+                % Register r3 released
+                % Register r3 acquired
+                lw              r3,             H_(r0)         % Load Global > program > z : int
+                putc            r3             
+                % Register r3 released
+                % Register r3 acquired
+                % Register r4 acquired
+                % Register r0 acquired
+                lw              r3,             F_(r0)         % Load Global > program > x : int
+                % Register r0 acquired
+                lw              r4,             G_(r0)         % Load Global > program > y : int
+                add             r3,             r3,             r4             % x + y
+                % Register r4 released
+                % Register r10 acquired
+                add             r10,            r0,             r3             % Store ANS in parameter register
+                jl              r15,            D_             
+                % Register r10 released
+                % Register r4 acquired
+                lw              r4,             D_ret(r0)      % Load Global > Class A > square : int
+                sw              H_(r0),         r4             % z = square
+                % Register r4 released
+                % Register r4 acquired
+                lw              r4,             H_(r0)         % Load Global > program > z : int
+                putc            r4             
+                % Register r4 released
+                hlt            
+
+% Functions
+D_              subi            r0,             r0,             0              % Start of function: Global > Class A > square : int
+                % Register r10 acquired
+                sw              K_(r0),         r10            
+                % Register r1 acquired
+                % Register r2 acquired
+                % Register r0 acquired
+                lw              r1,             K_(r0)         % Load Global > Class A > Function square > a : int
+                % Register r0 acquired
+                lw              r2,             K_(r0)         % Load Global > Class A > Function square > a : int
+                mul             r1,             r1,             r2             % a * a
+                % Register r2 released
+                sw              D_ret(r0),      r1             
+                % Register r1 released
+                jr              r15            
+                % Register r10 released
+C_              subi            r0,             r0,             0              % Start of function: Global > multiply : int
+                % Register r10 acquired
+                sw              I_(r0),         r10            
+                % Register r11 acquired
+                sw              J_(r0),         r11            
+                % Register r4 acquired
+                % Register r5 acquired
+                % Register r0 acquired
+                lw              r4,             I_(r0)         % Load Global > Function multiply > a : int
+                % Register r0 acquired
+                lw              r5,             J_(r0)         % Load Global > Function multiply > b : int
+                mul             r4,             r4,             r5             % a * b
+                % Register r5 released
+                sw              C_ret(r0),      r4             
+                % Register r4 released
+                jr              r15            
+                % Register r10 released
+                % Register r11 released
+
+% Footer
+C_ret           dw              0              % Global > multiply : int
+D_ret           dw              0              % Global > Class A > square : int
+E_              res             0              % Global > program > a : A
+F_              dw              0              % Global > program > x : int
+G_              dw              0              % Global > program > y : int
+H_              dw              0              % Global > program > z : int
+I_              dw              0              % Global > Function multiply > a : int
+J_              dw              0              % Global > Function multiply > b : int
+K_              dw              0              % Global > Class A > Function square > a : int
+stack           res             1200           % Allocating memory for the stack
+buf             res             20             % Allocating memory for the buffer

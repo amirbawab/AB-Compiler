@@ -1,0 +1,12 @@
+/**
+ * Type checking
+ * Array index access
+ */
+
+program {
+	int x[2];
+	int y;	
+	x[0] = 1;
+	x[1] = 2;
+	y= x[0] + x[1];
+};

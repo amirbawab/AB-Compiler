@@ -1,0 +1,33 @@
+/**
+ * Variable override
+ * Multiple declaration not allowed
+ * Error: Line 26
+ */
+
+class A {
+	int x;
+	int y;
+	int f1() {
+		for(int x=0; x < 5; x = x + 1) {
+			y = y + 5;
+		};
+		return (1);
+	};
+};
+
+program {
+	int x;
+	int y;
+	for(int x=0; x < 5; x = x + 1) {
+		y = y + 5;
+	};
+};
+
+int f1(int x) {
+	int x;
+	int y;
+	for(int x=0; x < 5; x = x + 1) {
+		y = y + 5;
+	};
+	return (1);
+};

@@ -1,0 +1,48 @@
+
+======================
+Symbol table: Global
+A || class || Not applicable:Not applicable
+program || program || Not applicable:Not applicable
+f1 || function || int:int
+f1 || function || int:int, int
+f2 || function || int:float
+f2 || function || int:float, float
+====================
+
+======================
+Symbol table: Global > Class A
+f3 || function || int:int
+====================
+
+======================
+Symbol table: Global > Class A > Function f3
+x || parameter || int:Not applicable
+====================
+
+======================
+Symbol table: Global > program
+x || variable || int:Not applicable
+a || variable || A:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f1
+x || parameter || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f1
+x || parameter || int:Not applicable
+y || parameter || int:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f2
+x || parameter || float:Not applicable
+====================
+
+======================
+Symbol table: Global > Function f2
+x || parameter || float:Not applicable
+y || parameter || float:Not applicable
+====================

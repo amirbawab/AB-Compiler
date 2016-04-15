@@ -1,2 +1,9 @@
 maxValue	23	20	Undefined variable 'maxValue' at line 23 column 20
+<	23	18	Cannot perform '<' on the int and an undefined type at line 23 column 18
 maxValue	24	5	Undefined variable 'maxValue' at line 24 column 5
+=	24	14	Cannot assign type 'int' to an undefined variable 'maxValue' at line 24 column 14
+*	42	26	Cannot perform '*' on the types int and float at line 42 column 26
+=	42	13	Cannot assign an undefined type to a variable of type 'int' at line 42 column 13
++	55	19	Cannot perform '+' on the types int and float at line 55 column 19
+*	55	14	Cannot perform '*' on the int and an undefined type at line 55 column 14
+=	55	8	Cannot assign an undefined type to a variable of type 'float' at line 55 column 8

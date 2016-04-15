@@ -1,0 +1,1 @@
+x	21	6	Multiple declaration found for identifier 'x' at line 20 column 12 and at line 21 column 6

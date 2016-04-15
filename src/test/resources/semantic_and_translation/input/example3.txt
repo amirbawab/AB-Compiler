@@ -1,0 +1,8 @@
+// Complex arithmetic operation
+
+program {
+        int x;
+        int c;
+        c = 8;
+        x = ( (1 + 2) * (3 * 4 + (c  * c)) + (1 + c));
+};

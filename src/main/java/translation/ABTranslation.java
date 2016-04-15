@@ -1261,6 +1261,10 @@ public class ABTranslation {
             // Load values
             List<List<ABToken>> indecies = abSemantic.getIndicesOf(group.getLastTokenSubGroup().getUsedToken());
 
+            // If function
+            if(indecies == null)
+                return Register.R0;
+
             // Store
             Register offsetRegister = Register.getRegisterNotInUse();
             acquire(offsetRegister);

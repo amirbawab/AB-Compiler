@@ -1,0 +1,40 @@
+% The following code is generated automatically by ABCompiler
+%       Time generated: 2016/04/14 23:19:55
+
+                entry          
+                align          
+                addi            r14,            r0,             topaddr        % Set stack pointer
+                % Register r1 acquired
+                addi            r1,             r0,             1              % 0 + 1
+                % Register r0 acquired
+                sw              H_(r0),         r1             % y = ANS
+                % Register r1 released
+                % Register r1 acquired
+                addi            r1,             r0,             3              % 0 + 3
+                % Register r0 acquired
+                sw              I_(r0),         r1             % z = ANS
+                % Register r1 released
+                % Register r1 acquired
+                % Register r2 acquired
+                % Register r0 acquired
+                lw              r1,             H_(r0)         % Load Global > Class B > y : int
+                % Register r0 acquired
+                lw              r2,             I_(r0)         % Load Global > Class B > z : int
+                add             r1,             r1,             r2             % y + z
+                % Register r2 released
+                sw              D_(r0),         r1             % x = ANS
+                % Register r1 released
+                hlt            
+
+% Functions
+
+% Footer
+D_              dw              0              % Global > Class A > x : int
+E_              res             400            % Global > Class A > array : int[100]
+F_              res             8              % Global > Class A > y : float
+G_              res             8              % Global > Class A > b : B
+H_              dw              0              % Global > Class B > y : int
+I_              dw              0              % Global > Class B > z : int
+J_              res             420            % Global > program > a : A
+stack           res             1200           % Allocating memory for the stack
+buf             res             20             % Allocating memory for the buffer

@@ -1,0 +1,2 @@
+f1	3	5	Function 'f1' must have a return statement that is compatible with the function declaration type at line 3 column 5
+f2	8	5	Function 'f2' must have a return statement that is compatible with the function declaration type at line 8 column 5

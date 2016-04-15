@@ -1,1 +1,5 @@
 m2	19	12	Recursive declaration found 'm2' at line 19 column 12
+mc1f1	5	7	Function 'mc1f1' must have a return statement that is compatible with the function declaration type at line 5 column 7
+f2	10	6	Function 'f2' must have a return statement that is compatible with the function declaration type at line 10 column 6
+f1	30	7	Function 'f1' must have a return statement that is compatible with the function declaration type at line 30 column 7
+f2	36	5	Function 'f2' must have a return statement that is compatible with the function declaration type at line 36 column 5

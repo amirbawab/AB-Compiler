@@ -1,0 +1,24 @@
+/**
+ * Allocate memory for simlpe, array and class variable
+ * Access data members
+ * Type checking
+ */
+
+class A {
+	int x;
+	int array[100];
+	float y;
+	B b;
+};
+
+class B {
+	int y;
+	int z;
+};
+
+program {
+	A a;
+	a.b.y = 1;
+	a.b.z = 3;
+	a.x = a.b.y + a.b.z;
+};

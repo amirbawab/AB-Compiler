@@ -4,7 +4,7 @@ Symbol table: Global
 MyClass1 || class || Not applicable:Not applicable
 MyClass2 || class || Not applicable:Not applicable
 program || program || Not applicable:Not applicable
-f1 || function || float:int[2][2], float
+f1 || function || float:int22, float
 f2 || function || int:
 ====================
 
@@ -13,8 +13,8 @@ Symbol table: Global > Class MyClass1
 mc1v1 || variable || int[2][4]:Not applicable
 mc1v2 || variable || float:Not applicable
 mc1v3 || variable || MyClass2[3]:Not applicable
-mc1f1 || function || int:int, MyClass2[3]
-f2 || function || int:MyClass1[3]
+mc1f1 || function || int:int, MyClass23
+f2 || function || int:MyClass13
 ====================
 
 ======================

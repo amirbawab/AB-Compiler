@@ -1,0 +1,55 @@
+% The following code is generated automatically by ABCompiler
+%       Time generated: 2016/04/14 23:32:01
+
+                entry          
+                align          
+                addi            r14,            r0,             topaddr        % Set stack pointer
+                % Register r1 acquired
+                addi            r1,             r0,             1              % 0 + 1
+                % Register r2 acquired
+                add             r2,             r0,             r0             
+                addi            r2,             r2,             0              
+                muli            r2,             r2,             4              
+                % Register r2 acquired
+                sw              B_(r2),         r1             % x = ANS
+                % Register r1 released
+                % Register r2 released
+                % Register r1 acquired
+                addi            r1,             r0,             2              % 0 + 2
+                % Register r2 acquired
+                add             r2,             r0,             r0             
+                addi            r2,             r2,             1              
+                muli            r2,             r2,             4              
+                % Register r2 acquired
+                sw              B_(r2),         r1             % x = ANS
+                % Register r1 released
+                % Register r2 released
+                % Register r1 acquired
+                % Register r2 acquired
+                % Register r3 acquired
+                add             r3,             r0,             r0             
+                addi            r3,             r3,             0              
+                muli            r3,             r3,             4              
+                % Register r3 acquired
+                lw              r1,             B_(r3)         % Load Global > program > x : int[2]
+                % Register r3 released
+                % Register r3 acquired
+                add             r3,             r0,             r0             
+                addi            r3,             r3,             1              
+                muli            r3,             r3,             4              
+                % Register r3 acquired
+                lw              r2,             B_(r3)         % Load Global > program > x : int[2]
+                add             r1,             r1,             r2             % x + x
+                % Register r2 released
+                % Register r3 released
+                sw              C_(r0),         r1             % y = ANS
+                % Register r1 released
+                hlt            
+
+% Functions
+
+% Footer
+B_              res             8              % Global > program > x : int[2]
+C_              dw              0              % Global > program > y : int
+stack           res             1200           % Allocating memory for the stack
+buf             res             20             % Allocating memory for the buffer

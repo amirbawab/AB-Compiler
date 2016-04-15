@@ -10,7 +10,7 @@ apply plugin: 'java'
 apply plugin:'application'
 
 // Scanner version
-version = '3.0'
+version = '4.0'
 
 // Driver class
 mainClassName = "Application"

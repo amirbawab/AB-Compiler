@@ -1,1 +1,2 @@
 x	3	8	Multiple declaration found for identifier 'x' at line 2 column 6 and at line 3 column 8
+x	3	8	Function 'x' must have a return statement that is compatible with the function declaration type at line 3 column 8

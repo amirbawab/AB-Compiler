@@ -1,0 +1,49 @@
+% The following code is generated automatically by ABCompiler
+%	Time generated: 2016/04/14 23:21:36
+
+                entry          
+                align          
+                addi            r14,            r0,             topaddr        % Set stack pointer
+                % Register r1 acquired
+                addi            r1,             r0,             0              % 0 + 0
+                % Register r0 acquired
+                sw              E_(r0),         r1             % x = ANS
+                % Register r1 released
+                j               cond2          
+for1            subi            r0,             r0,             0              
+                % Register r1 acquired
+                % Register r0 acquired
+                lw              r1,             E_(r0)         % Load Global > program > for > x : int
+                addi            r1,             r1,             1              % x + 1
+                sw              E_(r0),         r1             % x = ANS
+                % Register r1 released
+cond2           subi            r0,             r0,             0              
+                % Register r1 acquired
+                % Register r0 acquired
+                lw              r1,             E_(r0)         % Load Global > program > for > x : int
+                clti            r1,             r1,             3              % x < 3
+                bz              r1,             zero3          
+                addi            r1,             r0,             1              
+                j               end4           
+zero3           addi            r1,             r0,             0              
+end4            subi            r0,             r0,             0              
+                bz              r1,             endfor5        
+                % Register r1 released
+                % Register r1 acquired
+                % Register r0 acquired
+                lw              r1,             C_(r0)         % Load Global > program > y : int
+                addi            r1,             r1,             2              % y + 2
+                sw              C_(r0),         r1             % y = ANS
+                % Register r1 released
+                j               for1           
+endfor5         subi            r0,             r0,             0              
+                hlt            
+
+% Functions
+
+% Footer
+B_              dw              0              % Global > program > x : int
+C_              dw              0              % Global > program > y : int
+E_              dw              0              % Global > program > for > x : int
+stack           res             1200           % Allocating memory for the stack
+buf             res             20             % Allocating memory for the buffer

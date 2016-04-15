@@ -1,0 +1,1 @@
+fn	3	6	Function 'fn' must have a return statement that is compatible with the function declaration type at line 3 column 6

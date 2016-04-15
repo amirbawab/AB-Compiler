@@ -1,8 +1,16 @@
+t	15	4	Recursive declaration found 't' at line 15 column 4
+not_found	3	4	Undefined identifier type 'N' at line 3 column 2
 y	6	3	Undefined variable 'y' at line 6 column 3
 z	6	7	Undefined variable 'z' at line 6 column 7
-hello	24	6	Undefined variable 'hello' at line 24 column 6
-not_found	3	4	Undefined identifier type 'N' at line 3 column 2
 f_not_found	6	11	Call to undefined function 'f_not_found' at line 6 column 11
++	6	9	Cannot perform '+' on two undefined types at line 6 column 9
+=	6	5	Invalid equation because of two undefined types at line 6 column 5
+t	5	6	Function 't' must have a return statement that is compatible with the function declaration type at line 5 column 6
+f1	16	6	Function 'f1' must have a return statement that is compatible with the function declaration type at line 16 column 6
 k	21	8	Undefined data member 'k' of the class 'T' at line 21 column 8
+=	21	4	Cannot assign an undefined type to a variable of type 'T' at line 21 column 4
 f2	22	12	Undefined data member 'f2' of the class 'V' at line 22 column 12
-t	15	4	Recursive declaration found 't' at line 15 column 4
+=	22	4	Cannot assign an undefined type to a variable of type 'T' at line 22 column 4
+=	23	4	Cannot assign type 'int' to type 'T' at line 23 column 4
+hello	24	6	Undefined variable 'hello' at line 24 column 6
+=	24	4	Cannot assign an undefined type to a variable of type 'T' at line 24 column 4

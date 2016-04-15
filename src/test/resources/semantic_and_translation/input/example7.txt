@@ -1,0 +1,16 @@
+/**
+ * If statement
+ * Complex arithmetic
+ * Type checking
+ */
+
+program {
+	int x;
+	int c;
+	c = 8;
+	if( (1 + 2) * (3 * 4 + (c  * c)) + (1 + c)) then {
+		x = 2;
+	} else {
+		x = 3;
+	};
+};

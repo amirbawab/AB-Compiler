@@ -1,0 +1,43 @@
+/**
+ * Function Overload
+ * Variables allowed as parameters
+ * Function call with checking of correct number and type of parameters
+ */
+
+class A {
+	int f3(int x) {
+		return (1);
+	};
+};
+
+program {
+	int x;
+	A a;
+	x = f1();	
+	x = f1(1);
+	x = f1(x);
+	x = f1(1.5);
+	x = f1(1, 2);
+	x = f2(1);
+	x = f2(1.3);
+	x = f2(1.3, 6.9);
+	x = a.f3();
+	x = a.f3(1.6);
+	x = a.f3(2);
+};
+
+int f1(int x) {
+	return (1);
+};
+
+int f1(int x, int y) {
+	return (1);
+};
+
+int f2(float x) {
+	return (1);
+};
+
+int f2(float x, float y) {
+	return (1);
+};

@@ -10,8 +10,8 @@ randomize || function || float:
 Symbol table: Global > Class Utility
 var1 || variable || int[4][5][7][8][9][1][0]:Not applicable
 var2 || variable || float:Not applicable
-findMax || function || int:int[100]
-findMin || function || int:int[100]
+findMax || function || int:int100
+findMin || function || int:int100
 ====================
 
 ======================

@@ -1,0 +1,10 @@
+f1	16	6	Call to undefined function 'f1' at line 16 column 6
+=	16	4	Cannot assign an undefined type to a variable of type 'int' at line 16 column 4
+f1	19	6	Call to undefined function 'f1' at line 19 column 6
+=	19	4	Cannot assign an undefined type to a variable of type 'int' at line 19 column 4
+f2	21	6	Call to undefined function 'f2' at line 21 column 6
+=	21	4	Cannot assign an undefined type to a variable of type 'int' at line 21 column 4
+f3	24	8	Undefined data member 'f3' of the class 'A' at line 24 column 8
+=	24	4	Cannot assign an undefined type to a variable of type 'int' at line 24 column 4
+f3	25	8	Undefined data member 'f3' of the class 'A' at line 25 column 8
+=	25	4	Cannot assign an undefined type to a variable of type 'int' at line 25 column 4
