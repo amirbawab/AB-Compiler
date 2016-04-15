@@ -432,19 +432,19 @@ public class ABTranslation {
             LHSEntry = abSemantic.getEntryOf(LHSToken);
 
             // Offset register
-            Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
+            Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
 
             // If not found
-            if(registerNotFound(offsetRegister))
+            if(registerNotFound(offsetLeftRegister))
                 return;
 
             // Add them
-            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+            addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister), leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
             newLine();
 
             // Release register
             release(leftRegister);
-            release(offsetRegister);
+            release(offsetLeftRegister);
 
             // If RHS is not a result
         }  else {
@@ -463,23 +463,30 @@ public class ABTranslation {
                 if(registerNotFound(leftRegister))
                     return;
 
+                // Offset register
+                Register offsetRightRegister = getRegisterOffsetAndAcquire(RHS);
+
+                if(registerNotFound(offsetRightRegister))
+                    return;
+
                 // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(RHSEntry.getLabel(), offsetRightRegister)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Offset register
-                Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
+                Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
 
-                if(registerNotFound(offsetRegister))
+                if(registerNotFound(offsetLeftRegister))
                     return;
 
                 // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = " + RHSEntry.getName());
                 newLine();
 
                 // Release
                 release(leftRegister);
-                release(offsetRegister);
+                release(offsetLeftRegister);
+                release(offsetRightRegister);
 
                 // If RHS is not an identifier
             } else {
@@ -500,16 +507,16 @@ public class ABTranslation {
                 newLine();
 
                 // Offset register
-                Register offsetRegister = getRegisterOffsetAndAcquire(LHS);
-                acquire(offsetRegister);
+                Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
+                acquire(offsetLeftRegister);
 
                 // Add them
-                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
+                addCode(generateLine(true, Instruction.SW.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister),  leftRegister.getName()) + "% " + LHSEntry.getName() + " = ANS");
                 newLine();
 
                 // Release
                 release(leftRegister);
-                release(offsetRegister);
+                release(offsetLeftRegister);
             }
         }
 
@@ -980,8 +987,15 @@ public class ABTranslation {
                 // Get entry
                 ABSymbolTableEntry RHSEntry = abSemantic.getEntryOf(RHSToken);
 
+                // Offset register
+                Register offsetRightRegister = getRegisterOffsetAndAcquire(RHS);
+                acquire(offsetRightRegister);
+
+                if(registerNotFound(offsetRightRegister))
+                    return;
+
                 // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), offsetRightRegister)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
@@ -990,6 +1004,7 @@ public class ABTranslation {
 
                 // Release register
                 release(rightRegister);
+                release(offsetRightRegister);
 
                 // Store result
                 storeResultAtRegister(result, leftRegister);
@@ -1025,8 +1040,15 @@ public class ABTranslation {
                 // Get entry
                 ABSymbolTableEntry LHSEntry = abSemantic.getEntryOf(LHSToken);
 
+                // Offset register
+                Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
+                acquire(offsetLeftRegister);
+
+                if(registerNotFound(offsetLeftRegister))
+                    return;
+
                 // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
                 // Add them
@@ -1035,6 +1057,7 @@ public class ABTranslation {
 
                 // Release register
                 release(rightRegister);
+                release(offsetLeftRegister);
 
                 // Store result
                 storeResultAtRegister(result, leftRegister);
@@ -1084,12 +1107,28 @@ public class ABTranslation {
                 if(registerNotFound(leftRegister) || registerNotFound(rightRegister))
                     return;
 
+                // Offset register
+                Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
+                acquire(offsetLeftRegister);
+
+                if(registerNotFound(offsetLeftRegister))
+                    return;
+
                 // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
+                release(offsetLeftRegister);
+
+                // Offset register
+                Register offsetRightRegister = getRegisterOffsetAndAcquire(RHS);
+                acquire(offsetRightRegister);
+
+                if(registerNotFound(offsetRightRegister))
+                    return;
+
                 // Load RHS
-                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), offsetRightRegister)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
@@ -1098,6 +1137,7 @@ public class ABTranslation {
 
                 // Release
                 release(rightRegister);
+                release(offsetRightRegister);
 
                 // Store result
                 storeResultAtRegister(result, leftRegister);
@@ -1116,13 +1156,22 @@ public class ABTranslation {
                 if(registerNotFound(leftRegister))
                     return;
 
+                // Offset register
+                Register offsetLeftRegister = getRegisterOffsetAndAcquire(LHS);
+                acquire(offsetLeftRegister);
+
+                if(registerNotFound(offsetLeftRegister))
+                    return;
+
                 // Load LHS
-                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), Register.R0)) + "% Load " + LHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), leftRegister.getName(), getDataAt(LHSEntry.getLabel(), offsetLeftRegister)) + "% Load " + LHSEntry.getDetails());
                 newLine();
 
                 // Add them
                 addCode(generateLine(true, immediate.getName(), leftRegister.getName(),  leftRegister.getName(), RHSToken.getValue()) + "% " + LHSEntry.getName() + " " + arithOp.getValue() + " " + RHSToken.getValue());
                 newLine();
+
+                release(offsetLeftRegister);
 
                 // Store result
                 storeResultAtRegister(result, leftRegister);
@@ -1147,8 +1196,15 @@ public class ABTranslation {
                 addCode(generateLine(true, Instruction.ADDI.getName(), leftRegister.getName(), Register.R0.getName(), LHSToken.getValue()) + "% 0 + " + LHSToken.getValue());
                 newLine();
 
+                // Offset register
+                Register offsetRightRegister = getRegisterOffsetAndAcquire(RHS);
+                acquire(offsetRightRegister);
+
+                if(registerNotFound(offsetRightRegister))
+                    return;
+
                 // Load RHS
-                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), Register.R0)) + "% Load " + RHSEntry.getDetails());
+                addCode(generateLine(true, Instruction.LW.getName(), rightRegister.getName(), getDataAt(RHSEntry.getLabel(), offsetRightRegister)) + "% Load " + RHSEntry.getDetails());
                 newLine();
 
                 // Add them
@@ -1157,6 +1213,7 @@ public class ABTranslation {
 
                 // Release
                 release(rightRegister);
+                release(offsetRightRegister);
 
                 // Store result
                 storeResultAtRegister(result, leftRegister);
