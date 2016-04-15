@@ -89,3 +89,16 @@ Link to all semantic action tokens:
 ### Error messages
 Link to most recent file: 
 <a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/semantic/helper/ABSemanticMessageHelper.java">ABSemanticMessageHelper.java</a>
+
+## Code generation
+After successfully parsing and applying the semantic analysis on the code, the program will parse the code a second time to generate code executable on the MOON Processor.
+
+### MOON
+Processor instructions can be found here:
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/translation/ABTranslation.java#L1590">ABTranslation.java</a>
+
+Registers can be found here:
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/translation/ABTranslation.java#L1518">ABTranslation.java</a>
+
+Architecture can be found here:
+<a href="https://github.com/amirbawab/AB-Compiler/blob/master/src/main/java/translation/helper/ABArchitectureHelper.java#L6">ABArchitectureHelper.java</a>
