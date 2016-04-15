@@ -120,9 +120,6 @@ public class ABParser {
 		// Get next token
 		ABToken inputToken = tokens.get(inputTokenIndex);
 
-		// Take snapshot
-		snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
-
 		// Set tokens
 		semantic.setInputTokens(tokens);
 
@@ -131,6 +128,11 @@ public class ABParser {
 
 			// Push S
 			stack.push(treeRoot);
+
+			if(phase == 1) {
+				// Take snapshot
+				snapshots.add(new ABParserSnapshot(++step, stackNoAction(stack), tokensStartAt(tokens, inputTokenIndex), "", StringUtils.join(derivation, " "), false));
+			}
 
 			// Reset input token index
 			inputTokenIndex = 0;
